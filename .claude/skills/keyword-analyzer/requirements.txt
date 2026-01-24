@@ -1,0 +1,4 @@
+# 네이버 키워드 분석 도구
+streamlit>=1.30.0
+pandas>=2.0.0
+python-dotenv>=1.0.0

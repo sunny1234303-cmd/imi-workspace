@@ -521,10 +521,83 @@ if 'trend_df' not in st.session_state:
 # 새로운 세션 상태: 히스토리 & 팝업
 if 'keyword_history' not in st.session_state:
     st.session_state.keyword_history = []  # [{timestamp, keywords, analyzed}]
-if 'show_analysis_dialog' not in st.session_state:
-    st.session_state.show_analysis_dialog = False
 if 'auto_show_trend' not in st.session_state:
     st.session_state.auto_show_trend = False
+
+
+# ===== 분석 팝업 (st.dialog 사용) =====
+@st.dialog("📊 트렌드 분석 설정")
+def show_analysis_dialog():
+    """트렌드 분석 옵션 선택 팝업"""
+    st.markdown(f"**{len(st.session_state.selected)}개 키워드**를 분석합니다.")
+    st.caption(", ".join(list(st.session_state.selected)[:5]))
+
+    st.markdown("---")
+
+    # 분석 옵션
+    st.markdown("**분석 옵션**")
+
+    d_col1, d_col2 = st.columns(2)
+    with d_col1:
+        dialog_period = st.selectbox(
+            "기간",
+            options=['1개월', '3개월', '1년'],
+            index=0,
+            key="dialog_period"
+        )
+    with d_col2:
+        dialog_unit = st.selectbox(
+            "단위",
+            options=['date', 'week', 'month'],
+            format_func=lambda x: {'date': '일', 'week': '주', 'month': '월'}[x],
+            key="dialog_unit"
+        )
+
+    d_col3, d_col4 = st.columns(2)
+    with d_col3:
+        dialog_device = st.selectbox(
+            "디바이스",
+            options=['', 'pc', 'mo'],
+            format_func=lambda x: {'': '전체', 'pc': 'PC', 'mo': '모바일'}[x],
+            key="dialog_device"
+        )
+    with d_col4:
+        dialog_gender = st.selectbox(
+            "성별",
+            options=['', 'm', 'f'],
+            format_func=lambda x: {'': '전체', 'm': '남', 'f': '여'}[x],
+            key="dialog_gender"
+        )
+
+    st.markdown("---")
+
+    # 확인 버튼
+    if st.button("분석 시작", type="primary", use_container_width=True, key="start_analysis"):
+        # 기간 매핑
+        period_map = {'1개월': 30, '3개월': 90, '1년': 365}
+        analysis_period = period_map[dialog_period]
+        keywords = list(st.session_state.selected)[:5]
+
+        result = get_trend(
+            keywords=keywords,
+            days=analysis_period,
+            time_unit=dialog_unit,
+            device=dialog_device,
+            gender=dialog_gender,
+            ages=[]
+        )
+        if result:
+            st.session_state.trend_df = format_trend_results(result)
+            st.session_state.trend_keywords = keywords
+            # 히스토리에 저장 (analyzed=True)
+            st.session_state.keyword_history.append({
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                'keywords': keywords,
+                'analyzed': True
+            })
+            st.session_state.selected = set()
+            st.session_state.auto_show_trend = True
+            st.rerun()
 
 # ===== 키워드 분석 페이지 =====
 if menu == "네이버검색광고":
@@ -585,8 +658,7 @@ if menu == "네이버검색광고":
                 st.toast("✅ 히스토리에 저장됨")
         with btn_col2:
             if st.button("📊 분석진행", type="primary", use_container_width=True):
-                st.session_state.show_analysis_dialog = True
-                st.rerun()
+                show_analysis_dialog()
         with btn_col3:
             if st.button("🗑️ 초기화", use_container_width=True):
                 st.session_state.selected = set()
@@ -700,117 +772,6 @@ if menu == "네이버검색광고":
             cols[9].write(row['광고수'])
 
         st.markdown('</div>', unsafe_allow_html=True)
-
-    # ===== 분석진행 팝업 (Dialog) =====
-    if st.session_state.get('show_analysis_dialog', False) and st.session_state.selected:
-        with st.container():
-            st.markdown("""
-            <div style="
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.5); z-index: 9998;
-            "></div>
-            """, unsafe_allow_html=True)
-
-        # 팝업 컨테이너
-        dialog_container = st.container()
-        with dialog_container:
-            st.markdown("""
-            <style>
-                .analysis-dialog {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    border-radius: 12px;
-                    padding: 24px;
-                    width: 500px;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    z-index: 9999;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                }
-            </style>
-            """, unsafe_allow_html=True)
-
-            st.markdown("### 📊 트렌드 분석 설정")
-            st.markdown(f"**{len(st.session_state.selected)}개 키워드**를 분석합니다.")
-            st.caption(", ".join(list(st.session_state.selected)[:5]))
-
-            st.markdown("---")
-
-            # 분석 옵션
-            st.markdown("**분석 옵션**")
-
-            d_col1, d_col2 = st.columns(2)
-            with d_col1:
-                dialog_period = st.selectbox(
-                    "기간",
-                    options=['1개월', '3개월', '1년'],
-                    index=0,
-                    key="dialog_period"
-                )
-            with d_col2:
-                dialog_unit = st.selectbox(
-                    "단위",
-                    options=['date', 'week', 'month'],
-                    format_func=lambda x: {'date': '일', 'week': '주', 'month': '월'}[x],
-                    key="dialog_unit"
-                )
-
-            d_col3, d_col4 = st.columns(2)
-            with d_col3:
-                dialog_device = st.selectbox(
-                    "디바이스",
-                    options=['', 'pc', 'mo'],
-                    format_func=lambda x: {'': '전체', 'pc': 'PC', 'mo': '모바일'}[x],
-                    key="dialog_device"
-                )
-            with d_col4:
-                dialog_gender = st.selectbox(
-                    "성별",
-                    options=['', 'm', 'f'],
-                    format_func=lambda x: {'': '전체', 'm': '남', 'f': '여'}[x],
-                    key="dialog_gender"
-                )
-
-            st.markdown("---")
-
-            # 확인/취소 버튼
-            confirm_col1, confirm_col2 = st.columns(2)
-            with confirm_col1:
-                if st.button("취소", use_container_width=True, key="cancel_dialog"):
-                    st.session_state.show_analysis_dialog = False
-                    st.rerun()
-            with confirm_col2:
-                if st.button("분석 시작", type="primary", use_container_width=True, key="start_analysis"):
-                    # 기간 매핑
-                    period_map = {'1개월': 30, '3개월': 90, '1년': 365}
-                    analysis_period = period_map[dialog_period]
-                    keywords = list(st.session_state.selected)[:5]
-
-                    result = get_trend(
-                        keywords=keywords,
-                        days=analysis_period,
-                        time_unit=dialog_unit,
-                        device=dialog_device,
-                        gender=dialog_gender,
-                        ages=[]
-                    )
-                    if result:
-                        st.session_state.trend_df = format_trend_results(result)
-                        st.session_state.trend_keywords = keywords
-                        # 히스토리에 저장 (analyzed=True)
-                        st.session_state.keyword_history.append({
-                            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                            'keywords': keywords,
-                            'analyzed': True
-                        })
-                        st.session_state.show_analysis_dialog = False
-                        st.session_state.selected = set()
-                        # 트렌드 결과 표시
-                        st.session_state.auto_show_trend = True
-                        st.rerun()
 
     # ===== 트렌드 결과 표시 (분석 후 같은 페이지에서 표시) =====
     if st.session_state.get('auto_show_trend', False) and st.session_state.trend_df is not None:

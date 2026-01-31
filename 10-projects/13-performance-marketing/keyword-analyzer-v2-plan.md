@@ -1,7 +1,40 @@
 # 네이버 키워드 분석 도구 v2 - 설계 문서
 
 > 작성일: 2026-01-24
-> 상태: 계획 단계
+> 최종 업데이트: 2026-01-31
+> 상태: **개발 중** (v3 프로토타입 완료)
+
+---
+
+## 현재 진행 상황
+
+### 완료된 기능
+- [x] Streamlit 웹앱 기본 구조
+- [x] 네이버 검색광고 API 연동 (연관키워드 조회)
+- [x] 네이버 데이터랩 API 연동 (트렌드 분석)
+- [x] 2단 테이블 헤더 (PC/모바일 그룹핑)
+- [x] 키워드 선택 및 CSV 내보내기
+- [x] 트렌드 그래프 표시
+- [x] 사이드바 메뉴 (네이버검색광고/네이버데이터랩)
+- [x] 브랜드 컬러 적용
+
+### 남은 이슈
+- [ ] 일반 브라우저 캐시 문제 (시크릿 모드에서는 정상 작동)
+- [ ] 정렬 기능 확인 필요
+- [ ] 경쟁정도 필터 값 확인
+
+### 실행 방법
+```bash
+cd ~/.claude/skills/keyword-analyzer
+streamlit run app.py --server.port 8501
+```
+
+### 파일 위치
+- 앱: `.claude/skills/keyword-analyzer/app.py`
+- 의존성: `.claude/skills/keyword-analyzer/requirements.txt`
+- API 키: `.claude/skills/gsheet-handler/scripts/.env`
+
+---
 
 ## 개요
 

@@ -414,13 +414,19 @@ with st.sidebar:
 
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
-    # 메뉴 선택
+    # 메뉴 선택 (session_state로 관리)
     st.markdown('<p class="menu-header">분석 도구</p>', unsafe_allow_html=True)
+    if 'menu' not in st.session_state:
+        st.session_state.menu = "네이버검색광고"
+
     menu = st.radio(
         "menu",
         ["네이버검색광고", "네이버데이터랩"],
+        index=["네이버검색광고", "네이버데이터랩"].index(st.session_state.menu),
+        key="menu_radio",
         label_visibility="collapsed"
     )
+    st.session_state.menu = menu
 
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
@@ -596,7 +602,8 @@ def show_analysis_dialog():
                 'analyzed': True
             })
             st.session_state.selected = set()
-            st.session_state.auto_show_trend = True
+            # 메뉴를 데이터랩으로 전환
+            st.session_state.menu = "네이버데이터랩"
             st.rerun()
 
 # ===== 키워드 분석 페이지 =====

@@ -417,12 +417,12 @@ with st.sidebar:
     # 메뉴 선택 (session_state로 관리)
     st.markdown('<p class="menu-header">분석 도구</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
-        st.session_state.menu = "네이버검색광고"
+        st.session_state.menu = "네이버 검색광고"
 
     menu = st.radio(
         "menu",
-        ["네이버검색광고", "네이버데이터랩"],
-        index=["네이버검색광고", "네이버데이터랩"].index(st.session_state.menu),
+        ["네이버 검색광고", "네이버데이터랩"],
+        index=["네이버 검색광고", "네이버데이터랩"].index(st.session_state.menu),
         key="menu_radio",
         label_visibility="collapsed"
     )
@@ -545,9 +545,9 @@ def show_analysis_dialog():
 
     d_col1, d_col2 = st.columns(2)
     with d_col1:
-        dialog_period = st.selectbox(
+        dialog_period_option = st.selectbox(
             "기간",
-            options=['1개월', '3개월', '1년'],
+            options=['1개월', '3개월', '1년', '직접입력'],
             index=0,
             key="dialog_period"
         )
@@ -558,6 +558,29 @@ def show_analysis_dialog():
             format_func=lambda x: {'date': '일', 'week': '주', 'month': '월'}[x],
             key="dialog_unit"
         )
+
+    # 직접입력 선택 시 날짜 선택
+    if dialog_period_option == '직접입력':
+        d_date1, d_date2 = st.columns(2)
+        with d_date1:
+            dialog_start_date = st.date_input(
+                "시작일",
+                value=datetime.now() - timedelta(days=30),
+                max_value=datetime.now(),
+                key="dialog_start_date"
+            )
+        with d_date2:
+            dialog_end_date = st.date_input(
+                "종료일",
+                value=datetime.now(),
+                max_value=datetime.now(),
+                key="dialog_end_date"
+            )
+        dialog_custom_dates = (dialog_start_date, dialog_end_date)
+        dialog_period = dialog_period_option
+    else:
+        dialog_custom_dates = None
+        dialog_period = dialog_period_option
 
     d_col3, d_col4 = st.columns(2)
     with d_col3:
@@ -575,13 +598,39 @@ def show_analysis_dialog():
             key="dialog_gender"
         )
 
+    # 연령 선택
+    st.markdown("**연령**")
+    dialog_all_ages = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+    dialog_age_options = {
+        '1': '0-12', '2': '13-18', '3': '19-24', '4': '25-29',
+        '5': '30-34', '6': '35-39', '7': '40-44', '8': '45-49',
+        '9': '50-54', '10': '55-59', '11': '60+'
+    }
+
+    dialog_select_all_ages = st.checkbox("전체 연령 선택", value=False, key="dialog_all_ages")
+
+    if dialog_select_all_ages:
+        dialog_ages = dialog_all_ages
+        st.caption(f"선택됨: 모든 연령대 (11개)")
+    else:
+        dialog_ages = st.multiselect(
+            "연령 범위",
+            options=dialog_all_ages,
+            format_func=lambda x: dialog_age_options[x],
+            placeholder="선택하세요",
+            key="dialog_ages"
+        )
+
     st.markdown("---")
 
     # 확인 버튼
     if st.button("분석 시작", type="primary", use_container_width=True, key="start_analysis"):
         # 기간 매핑
         period_map = {'1개월': 30, '3개월': 90, '1년': 365}
-        analysis_period = period_map[dialog_period]
+        if dialog_period == '직접입력':
+            analysis_period = (dialog_custom_dates[1] - dialog_custom_dates[0]).days
+        else:
+            analysis_period = period_map[dialog_period]
         keywords = list(st.session_state.selected)[:5]
 
         result = get_trend(
@@ -590,11 +639,22 @@ def show_analysis_dialog():
             time_unit=dialog_unit,
             device=dialog_device,
             gender=dialog_gender,
-            ages=[]
+            ages=dialog_ages,
+            custom_dates=dialog_custom_dates
         )
         if result:
             st.session_state.trend_df = format_trend_results(result)
             st.session_state.trend_keywords = keywords
+            # 분석 조건 저장
+            st.session_state.trend_options = {
+                'period': dialog_period,
+                'time_unit': dialog_unit,
+                'device': dialog_device,
+                'gender': dialog_gender,
+                'ages': dialog_ages,
+                'age_labels': [dialog_age_options[a] for a in dialog_ages] if dialog_ages else [],
+                'custom_dates': dialog_custom_dates
+            }
             # 히스토리에 저장 (analyzed=True)
             st.session_state.keyword_history.append({
                 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M'),
@@ -607,7 +667,7 @@ def show_analysis_dialog():
             st.rerun()
 
 # ===== 키워드 분석 페이지 =====
-if menu == "네이버검색광고":
+if menu == "네이버 검색광고":
 
     # ===== 연동 키워드 바 (상단 고정) =====
     if st.session_state.selected:
@@ -846,6 +906,96 @@ elif menu == "네이버데이터랩":
     st.markdown("### 📈 키워드 트렌드 분석")
     st.markdown("네이버 데이터랩 API를 통해 키워드별 검색 트렌드를 확인합니다.")
 
+    # 분석 조건 표시 바 (조회한 경우에만 표시)
+    if st.session_state.get('trend_options') and st.session_state.get('trend_keywords'):
+        opts = st.session_state.trend_options
+        keywords = st.session_state.trend_keywords
+
+        # 조건 라벨 매핑
+        unit_label = {'date': '일간', 'week': '주간', 'month': '월간'}.get(opts.get('time_unit', ''), '')
+        device_label = {'': '전체', 'pc': 'PC', 'mo': '모바일'}.get(opts.get('device', ''), '전체')
+        gender_label = {'': '전체', 'm': '남성', 'f': '여성'}.get(opts.get('gender', ''), '전체')
+
+        # 연령 표시
+        age_labels = opts.get('age_labels', [])
+        if len(age_labels) == 11:
+            age_display = "전체"
+        elif len(age_labels) > 0:
+            age_display = ", ".join(age_labels[:3]) + ("..." if len(age_labels) > 3 else "")
+        else:
+            age_display = "전체"
+
+        # 기간 표시
+        custom_dates = opts.get('custom_dates')
+        if custom_dates:
+            period_display = f"{custom_dates[0].strftime('%Y.%m.%d')} ~ {custom_dates[1].strftime('%Y.%m.%d')}"
+        else:
+            period_display = opts.get('period', '')
+
+        st.markdown("""
+        <style>
+            .analysis-info-bar {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border: 1px solid #dee2e6;
+                border-left: 4px solid #4A90D9;
+                border-radius: 8px;
+                padding: 12px 16px;
+                margin-bottom: 16px;
+            }
+            .analysis-info-bar .info-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: #495057;
+                margin-bottom: 8px;
+            }
+            .analysis-info-bar .info-content {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .analysis-info-bar .info-item {
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 16px;
+                padding: 4px 12px;
+                font-size: 13px;
+                color: #333;
+            }
+            .analysis-info-bar .info-label {
+                color: #868e96;
+                margin-right: 4px;
+            }
+            .analysis-info-bar .keyword-tags {
+                margin-top: 8px;
+            }
+            .analysis-info-bar .keyword-tag {
+                display: inline-block;
+                background: #4A90D9;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 12px;
+                margin-right: 6px;
+                font-size: 12px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
+        keyword_tags = "".join([f'<span class="keyword-tag">{kw}</span>' for kw in keywords])
+
+        st.markdown(f"""
+        <div class="analysis-info-bar">
+            <div class="info-title">📊 현재 분석 조건</div>
+            <div class="info-content">
+                <span class="info-item"><span class="info-label">기간</span>{period_display}</span>
+                <span class="info-item"><span class="info-label">단위</span>{unit_label}</span>
+                <span class="info-item"><span class="info-label">디바이스</span>{device_label}</span>
+                <span class="info-item"><span class="info-label">성별</span>{gender_label}</span>
+                <span class="info-item"><span class="info-label">연령</span>{age_display}</span>
+            </div>
+            <div class="keyword-tags">{keyword_tags}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
     # 트렌드 조회 실행
     if trend_btn and trend_keywords.strip():
         keywords = [k.strip() for k in trend_keywords.split(',') if k.strip()][:5]
@@ -862,6 +1012,21 @@ elif menu == "네이버데이터랩":
         if result:
             st.session_state.trend_df = format_trend_results(result)
             st.session_state.trend_keywords = keywords
+            # 분석 조건 저장
+            age_labels_map = {
+                '1': '0-12', '2': '13-18', '3': '19-24', '4': '25-29',
+                '5': '30-34', '6': '35-39', '7': '40-44', '8': '45-49',
+                '9': '50-54', '10': '55-59', '11': '60+'
+            }
+            st.session_state.trend_options = {
+                'period': period_option,
+                'time_unit': time_unit,
+                'device': device,
+                'gender': gender,
+                'ages': ages,
+                'age_labels': [age_labels_map[a] for a in ages] if ages else [],
+                'custom_dates': custom_dates
+            }
 
     if st.session_state.trend_df is not None and len(st.session_state.trend_df) > 0:
         trend_df = st.session_state.trend_df

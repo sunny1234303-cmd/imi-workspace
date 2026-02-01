@@ -57,6 +57,155 @@ def generate_signature(timestamp, method, uri):
     return base64.b64encode(signature).decode('utf-8')
 
 
+def api_request(method, uri, params=None, body=None):
+    """네이버 검색광고 API 공통 요청 함수"""
+    if not all([NAVER_AD_ACCESS_LICENSE, NAVER_AD_SECRET_KEY, NAVER_AD_CUSTOMER_ID]):
+        st.error("검색광고 API 키가 설정되지 않았습니다.")
+        return None
+
+    timestamp = str(int(time.time() * 1000))
+    signature = generate_signature(timestamp, method, uri)
+
+    headers = {
+        'X-Timestamp': timestamp,
+        'X-API-KEY': NAVER_AD_ACCESS_LICENSE,
+        'X-Customer': NAVER_AD_CUSTOMER_ID,
+        'X-Signature': signature,
+        'Content-Type': 'application/json'
+    }
+
+    url = "https://api.searchad.naver.com" + uri
+    if params and method == 'GET':
+        url += '?' + urllib.parse.urlencode(params)
+
+    request = urllib.request.Request(url, method=method, headers=headers)
+    if body:
+        request.data = json.dumps(body).encode('utf-8')
+
+    try:
+        response = urllib.request.urlopen(request)
+        return json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        st.error(f"API 오류: {e.code}")
+        return None
+
+
+def get_campaigns():
+    """캠페인 목록 조회"""
+    return api_request('GET', '/ncc/campaigns')
+
+
+def get_adgroups(campaign_id=None):
+    """광고그룹 목록 조회"""
+    if campaign_id:
+        return api_request('GET', '/ncc/adgroups', {'nccCampaignId': campaign_id})
+    return api_request('GET', '/ncc/adgroups')
+
+
+def get_ad_keywords(adgroup_id):
+    """광고 키워드 목록 조회"""
+    return api_request('GET', '/ncc/keywords', {'nccAdgroupId': adgroup_id})
+
+
+def get_stat_report(ids, fields, date_preset='LAST_7_DAYS', start_date=None, end_date=None):
+    """통계 리포트 조회
+
+    Args:
+        ids: 조회할 ID 목록 (캠페인, 광고그룹, 키워드 등)
+        fields: 조회할 필드 (impCnt, clkCnt, salesAmt, ctr, cpc, avgRnk 등)
+        date_preset: TODAY, YESTERDAY, LAST_7_DAYS, LAST_14_DAYS, LAST_30_DAYS
+        start_date: 직접 지정 시 시작일 (YYYY-MM-DD)
+        end_date: 직접 지정 시 종료일 (YYYY-MM-DD)
+    """
+    if not all([NAVER_AD_ACCESS_LICENSE, NAVER_AD_SECRET_KEY, NAVER_AD_CUSTOMER_ID]):
+        return None
+
+    timestamp = str(int(time.time() * 1000))
+    uri = "/stats"
+    signature = generate_signature(timestamp, 'POST', uri)
+
+    headers = {
+        'X-Timestamp': timestamp,
+        'X-API-KEY': NAVER_AD_ACCESS_LICENSE,
+        'X-Customer': NAVER_AD_CUSTOMER_ID,
+        'X-Signature': signature,
+        'Content-Type': 'application/json'
+    }
+
+    body = {
+        "ids": ids if isinstance(ids, list) else [ids],
+        "fields": fields,
+        "timeIncrement": "allDays"  # 일별 데이터
+    }
+
+    if start_date and end_date:
+        body["datePreset"] = "CUSTOM"
+        body["since"] = start_date
+        body["until"] = end_date
+    else:
+        body["datePreset"] = date_preset
+
+    url = "https://api.searchad.naver.com" + uri
+    request = urllib.request.Request(url, method='POST', headers=headers)
+    request.data = json.dumps(body).encode('utf-8')
+
+    try:
+        response = urllib.request.urlopen(request)
+        return json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        st.error(f"통계 API 오류: {e.code} - {error_body}")
+        return None
+
+
+def get_daily_stats(campaign_id, days=7):
+    """캠페인의 일별 통계 데이터 조회"""
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+
+    # 일별 데이터를 위해 각 날짜별로 조회
+    daily_data = []
+
+    for i in range(days):
+        date = end_date - timedelta(days=i)
+        date_str = date.strftime('%Y-%m-%d')
+
+        result = get_stat_report(
+            ids=[campaign_id],
+            fields=["impCnt", "clkCnt", "salesAmt", "ctr"],
+            start_date=date_str,
+            end_date=date_str
+        )
+
+        if result and isinstance(result, list) and len(result) > 0:
+            stat = result[0]
+            daily_data.append({
+                '날짜': date,
+                '노출수': stat.get('impCnt', 0),
+                '클릭수': stat.get('clkCnt', 0),
+                '비용': stat.get('salesAmt', 0),
+                'CTR': stat.get('ctr', 0)
+            })
+        else:
+            # 데이터가 없는 경우 0으로 채움
+            daily_data.append({
+                '날짜': date,
+                '노출수': 0,
+                '클릭수': 0,
+                '비용': 0,
+                'CTR': 0
+            })
+
+    # 날짜순 정렬
+    daily_data.sort(key=lambda x: x['날짜'])
+    return daily_data
+
+
+def get_bizmoney():
+    """비즈머니(잔액) 조회"""
+    return api_request('GET', '/billing/bizmoney')
+
+
 def get_keyword_stats(keywords, include_related=False):
     if not all([NAVER_AD_ACCESS_LICENSE, NAVER_AD_SECRET_KEY, NAVER_AD_CUSTOMER_ID]):
         st.error("검색광고 API 키가 설정되지 않았습니다.")
@@ -419,10 +568,11 @@ with st.sidebar:
     if 'menu' not in st.session_state:
         st.session_state.menu = "네이버 검색광고"
 
+    menu_options = ["네이버 검색광고", "네이버데이터랩", "광고 운영 현황"]
     menu = st.radio(
         "menu",
-        ["네이버 검색광고", "네이버데이터랩"],
-        index=["네이버 검색광고", "네이버데이터랩"].index(st.session_state.menu),
+        menu_options,
+        index=menu_options.index(st.session_state.menu) if st.session_state.menu in menu_options else 0,
         key="menu_radio",
         label_visibility="collapsed"
     )
@@ -1121,3 +1271,516 @@ elif menu == "네이버데이터랩":
         5. **성별/연령**: 타겟 세분화 (선택사항)
         """)
         st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ===== 광고 운영 현황 페이지 =====
+elif menu == "광고 운영 현황":
+    # 세션 상태 초기화
+    if 'campaigns' not in st.session_state:
+        st.session_state.campaigns = None
+    if 'selected_campaign_id' not in st.session_state:
+        st.session_state.selected_campaign_id = None
+    if 'adgroups' not in st.session_state:
+        st.session_state.adgroups = None
+    if 'selected_adgroup_id' not in st.session_state:
+        st.session_state.selected_adgroup_id = None
+    if 'ad_keywords' not in st.session_state:
+        st.session_state.ad_keywords = None
+    if 'bizmoney' not in st.session_state:
+        st.session_state.bizmoney = None
+
+    # ===== 캠페인 상세 뷰 =====
+    if st.session_state.selected_campaign_id and st.session_state.campaigns:
+        selected_campaign = next(
+            (c for c in st.session_state.campaigns if c.get('nccCampaignId') == st.session_state.selected_campaign_id),
+            None
+        )
+
+        if selected_campaign:
+            campaign_id = selected_campaign.get('nccCampaignId')
+            campaign_name = selected_campaign.get('name', '')
+
+            # 캠페인 유형 매핑
+            campaign_type = {
+                'WEB_SITE': '웹사이트',
+                'SHOPPING': '쇼핑',
+                'BRAND_SEARCH': '브랜드검색/신제품검색',
+                'POWER_CONTENTS': '파워콘텐츠'
+            }.get(selected_campaign.get('campaignTp'), selected_campaign.get('campaignTp', '-'))
+
+            # 상태 매핑
+            if selected_campaign.get('userLock'):
+                campaign_status = "사용자 OFF"
+                status_color = "#ff6b6b"
+            elif selected_campaign.get('status') == 'ELIGIBLE':
+                campaign_status = "노출가능"
+                status_color = "#51cf66"
+            else:
+                campaign_status = selected_campaign.get('status', '-')
+                status_color = "#868e96"
+
+            # 상단 네비게이션
+            st.markdown("""
+            <style>
+                .campaign-detail-header {
+                    background: white;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    padding: 16px 20px;
+                    margin-bottom: 16px;
+                }
+                .breadcrumb {
+                    color: #4A90D9;
+                    font-size: 13px;
+                    cursor: pointer;
+                    margin-bottom: 8px;
+                }
+                .breadcrumb:hover {
+                    text-decoration: underline;
+                }
+                .campaign-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #333;
+                }
+                .campaign-info-panel {
+                    background: #f8f9fa;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 8px;
+                    padding: 16px;
+                }
+                .info-row {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 8px 0;
+                    border-bottom: 1px solid #e9ecef;
+                }
+                .info-row:last-child {
+                    border-bottom: none;
+                }
+                .info-label {
+                    color: #666;
+                    font-size: 14px;
+                }
+                .info-value {
+                    font-weight: 500;
+                    font-size: 14px;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+
+            # 뒤로 가기 버튼
+            if st.button("← 모든 캠페인", key="back_to_campaigns"):
+                st.session_state.selected_campaign_id = None
+                st.session_state.adgroups = None
+                st.session_state.selected_adgroup_id = None
+                st.session_state.ad_keywords = None
+                st.rerun()
+
+            # 캠페인 제목
+            st.markdown(f"### {campaign_type} 캠페인: {campaign_name}")
+
+            # 상단 레이아웃: 성과 그래프 + 캠페인 정보
+            col_graph, col_info = st.columns([3, 1])
+
+            with col_graph:
+                # 성과 그래프 영역
+                st.markdown(f"**캠페인 : {campaign_name}**")
+
+                # 지표 선택 + 기간 선택
+                metric_col1, metric_col2, metric_col3 = st.columns([1, 1, 2])
+                with metric_col1:
+                    primary_metric = st.selectbox(
+                        "지표",
+                        options=['노출수', '클릭수', '비용', 'CTR'],
+                        label_visibility="collapsed",
+                        key="primary_metric"
+                    )
+                with metric_col2:
+                    period_days = st.selectbox(
+                        "기간",
+                        options=[7, 14, 30],
+                        format_func=lambda x: f"최근 {x}일",
+                        label_visibility="collapsed",
+                        key="stat_period"
+                    )
+
+                # 세션 상태에 통계 데이터 저장
+                if 'campaign_stats' not in st.session_state:
+                    st.session_state.campaign_stats = None
+                if 'campaign_stats_id' not in st.session_state:
+                    st.session_state.campaign_stats_id = None
+
+                # 통계 데이터 조회 버튼
+                if st.button("📊 성과 조회", key="load_stats"):
+                    with st.spinner("성과 데이터 조회 중..."):
+                        stats = get_daily_stats(campaign_id, days=period_days)
+                        st.session_state.campaign_stats = stats
+                        st.session_state.campaign_stats_id = campaign_id
+
+                # 그래프 표시
+                if st.session_state.campaign_stats and st.session_state.campaign_stats_id == campaign_id:
+                    stats_df = pd.DataFrame(st.session_state.campaign_stats)
+
+                    if len(stats_df) > 0 and stats_df[primary_metric].sum() > 0:
+                        # 지표 매핑
+                        metric_map = {
+                            '노출수': '노출수',
+                            '클릭수': '클릭수',
+                            '비용': '비용',
+                            'CTR': 'CTR'
+                        }
+
+                        # Altair 차트
+                        chart_df = stats_df.copy()
+                        chart_df['날짜_표시'] = chart_df['날짜'].dt.strftime('%m/%d')
+
+                        # 호버 선택
+                        nearest = alt.selection_point(nearest=True, on='mouseover', fields=['날짜'], empty=False)
+
+                        # 라인 차트
+                        line = alt.Chart(chart_df).mark_line(
+                            color=COLORS['primary'],
+                            strokeWidth=2
+                        ).encode(
+                            x=alt.X('날짜:T', title='', axis=alt.Axis(format='%m/%d')),
+                            y=alt.Y(f'{primary_metric}:Q', title=primary_metric)
+                        )
+
+                        # 포인트 (호버 시)
+                        points = line.mark_point(size=80, color=COLORS['primary']).encode(
+                            opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+                        ).add_params(nearest)
+
+                        # 툴팁용 투명 셀렉터
+                        selectors = alt.Chart(chart_df).mark_point(size=1, opacity=0).encode(
+                            x='날짜:T',
+                            tooltip=[
+                                alt.Tooltip('날짜_표시:N', title='날짜'),
+                                alt.Tooltip(f'{primary_metric}:Q', title=primary_metric, format=',.0f')
+                            ]
+                        ).add_params(nearest)
+
+                        chart = alt.layer(line, points, selectors).properties(height=250).interactive()
+                        st.altair_chart(chart, use_container_width=True)
+
+                        # 기간 요약 지표
+                        sum_cols = st.columns(4)
+                        with sum_cols[0]:
+                            total_imp = stats_df['노출수'].sum()
+                            st.metric("총 노출수", f"{total_imp:,.0f}")
+                        with sum_cols[1]:
+                            total_clk = stats_df['클릭수'].sum()
+                            st.metric("총 클릭수", f"{total_clk:,.0f}")
+                        with sum_cols[2]:
+                            total_cost = stats_df['비용'].sum()
+                            st.metric("총 비용", f"{total_cost:,.0f}원")
+                        with sum_cols[3]:
+                            avg_ctr = (total_clk / total_imp * 100) if total_imp > 0 else 0
+                            st.metric("평균 CTR", f"{avg_ctr:.2f}%")
+                    else:
+                        st.info("조회 기간에 성과 데이터가 없습니다.")
+                else:
+                    # 조회 전 안내
+                    st.markdown("""
+                    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center; color: #666;">
+                        <div style="font-size: 36px; margin-bottom: 8px;">📊</div>
+                        <div>'성과 조회' 버튼을 클릭하여 데이터를 불러오세요</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            with col_info:
+                # 캠페인 정보 패널
+                st.markdown("**캠페인 정보**")
+
+                # ON/OFF 상태
+                is_on = not selected_campaign.get('userLock', False) and selected_campaign.get('status') == 'ELIGIBLE'
+                st.markdown(f"""
+                <div class="campaign-info-panel">
+                    <div class="info-row">
+                        <span class="info-label">상태</span>
+                        <span class="info-value" style="color: {status_color};">{campaign_status}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">캠페인 유형</span>
+                        <span class="info-value">{campaign_type}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">일 예산</span>
+                        <span class="info-value">{selected_campaign.get('dailyBudget', 0):,}원</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("---")
+
+            # 광고그룹 섹션
+            st.markdown("#### 광고그룹")
+
+            # 광고그룹 자동 로드 (최초 1회)
+            if st.session_state.adgroups is None:
+                with st.spinner("광고그룹 불러오는 중..."):
+                    st.session_state.adgroups = get_adgroups(campaign_id)
+
+            if st.session_state.adgroups:
+                adgroups = st.session_state.adgroups
+
+                # 광고그룹 테이블 헤더
+                st.markdown("""
+                <table class="header-table">
+                    <tr>
+                        <th style="width:60px">ON/OFF</th>
+                        <th style="width:80px">상태</th>
+                        <th>광고그룹 이름</th>
+                        <th style="width:100px">입찰가</th>
+                        <th style="width:100px">노출수</th>
+                        <th style="width:100px">클릭수</th>
+                        <th style="width:80px">클릭률</th>
+                    </tr>
+                </table>
+                """, unsafe_allow_html=True)
+
+                for idx, ag in enumerate(adgroups):
+                    ag_id = ag.get('nccAdgroupId', '')
+                    ag_name = ag.get('name', '')
+                    ag_bid = ag.get('bidAmt', 0)
+
+                    # 상태 판단
+                    if ag.get('userLock'):
+                        ag_status = "⏸️ 중지"
+                        ag_on = False
+                    elif ag.get('status') == 'ELIGIBLE':
+                        ag_status = "🟢 노출가능"
+                        ag_on = True
+                    else:
+                        ag_status = f"⚪ {ag.get('status', '-')}"
+                        ag_on = False
+
+                    # 행 표시
+                    cols = st.columns([0.6, 0.8, 2.5, 1, 1, 1, 0.8])
+
+                    with cols[0]:
+                        st.markdown("🟢" if ag_on else "⚪")
+                    with cols[1]:
+                        st.markdown(ag_status)
+                    with cols[2]:
+                        # 광고그룹명 클릭 시 키워드 조회
+                        if st.button(ag_name, key=f"ag_{idx}", use_container_width=True):
+                            st.session_state.selected_adgroup_id = ag_id
+                            with st.spinner("키워드 불러오는 중..."):
+                                st.session_state.ad_keywords = get_ad_keywords(ag_id)
+                            st.rerun()
+                    with cols[3]:
+                        st.markdown(f"{ag_bid:,}원" if ag_bid else "-")
+                    with cols[4]:
+                        st.markdown("-")  # 노출수 placeholder
+                    with cols[5]:
+                        st.markdown("-")  # 클릭수 placeholder
+                    with cols[6]:
+                        st.markdown("-")  # 클릭률 placeholder
+
+                # 선택된 광고그룹의 키워드 표시
+                if st.session_state.selected_adgroup_id and st.session_state.ad_keywords:
+                    selected_ag = next(
+                        (ag for ag in adgroups if ag.get('nccAdgroupId') == st.session_state.selected_adgroup_id),
+                        None
+                    )
+                    if selected_ag:
+                        st.markdown("---")
+                        st.markdown(f"#### 🔑 키워드: {selected_ag.get('name', '')}")
+
+                        keywords = st.session_state.ad_keywords
+
+                        if keywords:
+                            keyword_data = []
+                            for kw in keywords:
+                                if kw.get('userLock'):
+                                    kw_status = "⏸️ 중지"
+                                elif kw.get('status') == 'ELIGIBLE':
+                                    kw_status = "🟢 운영 중"
+                                else:
+                                    kw_status = f"⚪ {kw.get('status', '-')}"
+
+                                bid = kw.get('bidAmt', 0)
+
+                                keyword_data.append({
+                                    '키워드': kw.get('keyword', ''),
+                                    '상태': kw_status,
+                                    '입찰가': f"{bid:,}원" if bid else '그룹 설정',
+                                    '품질지수': kw.get('qualityIndex', '-'),
+                                    '매칭타입': kw.get('keywordPlusType', 'EXACT')
+                                })
+
+                            keyword_df = pd.DataFrame(keyword_data)
+                            st.dataframe(keyword_df, use_container_width=True, hide_index=True)
+
+                            # CSV 다운로드
+                            csv = keyword_df.to_csv(index=False, encoding='utf-8-sig')
+                            st.download_button(
+                                "📥 키워드 CSV 다운로드",
+                                csv,
+                                f"keywords_{selected_ag.get('name', '')}_{datetime.now().strftime('%Y%m%d')}.csv",
+                                "text/csv"
+                            )
+
+                        # 키워드 닫기 버튼
+                        if st.button("키워드 닫기", key="close_keywords"):
+                            st.session_state.selected_adgroup_id = None
+                            st.session_state.ad_keywords = None
+                            st.rerun()
+
+            else:
+                st.info("광고그룹이 없습니다.")
+
+    # ===== 캠페인 목록 뷰 (기본) =====
+    else:
+        st.markdown("### 📊 네이버 광고 운영 현황")
+        st.markdown("네이버 검색광고 계정의 캠페인, 광고그룹, 키워드 현황을 확인합니다.")
+
+        # 데이터 불러오기 버튼
+        col_refresh, col_spacer = st.columns([1, 5])
+        with col_refresh:
+            if st.button("🔄 데이터 불러오기", type="primary", use_container_width=True):
+                with st.spinner("캠페인 데이터 불러오는 중..."):
+                    st.session_state.campaigns = get_campaigns()
+                    st.session_state.bizmoney = get_bizmoney()
+                if st.session_state.campaigns:
+                    st.toast(f"✅ {len(st.session_state.campaigns)}개 캠페인 로드 완료")
+
+        # 비즈머니 정보
+        if st.session_state.bizmoney:
+            bm = st.session_state.bizmoney
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%); color: white; padding: 16px 20px; border-radius: 10px; margin: 16px 0;">
+                <div style="font-size: 13px; opacity: 0.8;">💰 비즈머니 잔액</div>
+                <div style="font-size: 28px; font-weight: 700; margin-top: 4px;">{bm.get('bizmoney', 0):,.0f}원</div>
+                <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">
+                    환불 가능: {bm.get('refundableAmount', 0):,.0f}원 |
+                    예치금: {bm.get('budgetLock', 0):,.0f}원
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # 캠페인 목록
+        if st.session_state.campaigns:
+            campaigns = st.session_state.campaigns
+
+            st.markdown("---")
+            st.markdown("#### 📁 캠페인 목록")
+            st.caption("캠페인명을 클릭하면 상세 정보를 확인할 수 있습니다.")
+
+            # 캠페인 상태별 분류
+            active_campaigns = [c for c in campaigns if c.get('status') == 'ELIGIBLE' and c.get('userLock') == False]
+            paused_campaigns = [c for c in campaigns if c.get('userLock') == True or c.get('status') == 'PAUSED']
+
+            # 요약 카드
+            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+            with summary_col1:
+                st.metric("전체 캠페인", len(campaigns))
+            with summary_col2:
+                st.metric("운영 중", len(active_campaigns))
+            with summary_col3:
+                st.metric("일시 중지", len(paused_campaigns))
+            with summary_col4:
+                total_budget = sum(c.get('dailyBudget', 0) for c in active_campaigns if c.get('dailyBudget'))
+                st.metric("일 예산 합계", f"{total_budget:,}원")
+
+            st.markdown("")
+
+            # 캠페인 테이블 (클릭 가능)
+            st.markdown("""
+            <style>
+                .campaign-row {
+                    padding: 12px 0;
+                    border-bottom: 1px solid #e9ecef;
+                }
+                .campaign-name-btn {
+                    color: #4A90D9 !important;
+                    text-decoration: none;
+                    font-weight: 500;
+                }
+                .campaign-name-btn:hover {
+                    text-decoration: underline;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+
+            # 테이블 헤더
+            header_cols = st.columns([0.5, 0.8, 2.5, 1, 1, 1])
+            with header_cols[0]:
+                st.markdown("**ON/OFF**")
+            with header_cols[1]:
+                st.markdown("**상태**")
+            with header_cols[2]:
+                st.markdown("**캠페인명**")
+            with header_cols[3]:
+                st.markdown("**유형**")
+            with header_cols[4]:
+                st.markdown("**일 예산**")
+            with header_cols[5]:
+                st.markdown("**입찰전략**")
+
+            st.markdown("---")
+
+            for idx, c in enumerate(campaigns):
+                campaign_id = c.get('nccCampaignId', '')
+                campaign_name = c.get('name', '')
+
+                # 상태 표시
+                if c.get('userLock'):
+                    status = "⏸️ 중지"
+                    is_on = False
+                elif c.get('status') == 'ELIGIBLE':
+                    status = "🟢 노출가능"
+                    is_on = True
+                elif c.get('status') == 'PAUSED':
+                    status = "⏸️ 중지"
+                    is_on = False
+                else:
+                    status = f"⚪ {c.get('status', '-')}"
+                    is_on = False
+
+                # 캠페인 유형
+                campaign_type = {
+                    'WEB_SITE': '웹사이트',
+                    'SHOPPING': '쇼핑',
+                    'BRAND_SEARCH': '브랜드검색',
+                    'POWER_CONTENTS': '파워콘텐츠'
+                }.get(c.get('campaignTp'), c.get('campaignTp', '-'))
+
+                # 행 표시
+                cols = st.columns([0.5, 0.8, 2.5, 1, 1, 1])
+
+                with cols[0]:
+                    st.markdown("🟢" if is_on else "⚪")
+                with cols[1]:
+                    st.markdown(status)
+                with cols[2]:
+                    # 캠페인명 클릭 시 상세 페이지로 이동
+                    if st.button(campaign_name, key=f"camp_{idx}", use_container_width=True):
+                        st.session_state.selected_campaign_id = campaign_id
+                        st.session_state.adgroups = None
+                        st.session_state.selected_adgroup_id = None
+                        st.session_state.ad_keywords = None
+                        st.rerun()
+                with cols[3]:
+                    st.markdown(campaign_type)
+                with cols[4]:
+                    budget = c.get('dailyBudget', 0)
+                    st.markdown(f"{budget:,}원" if budget else "무제한")
+                with cols[5]:
+                    bid_strategy = c.get('bidStrategy', {}).get('type', '-') if c.get('bidStrategy') else '-'
+                    st.markdown(bid_strategy)
+
+        else:
+            st.markdown('<div class="result-box">', unsafe_allow_html=True)
+            st.info("👆 '데이터 불러오기' 버튼을 클릭하여 캠페인 목록을 조회하세요.")
+            st.markdown("")
+            st.markdown("**조회 가능 정보:**")
+            st.markdown("""
+            - 💰 비즈머니 잔액
+            - 📁 캠페인 목록 및 상태
+            - 📂 광고그룹 상세
+            - 🔑 키워드별 입찰가 및 품질지수
+            """)
+            st.markdown('</div>', unsafe_allow_html=True)

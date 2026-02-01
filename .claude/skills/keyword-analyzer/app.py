@@ -398,6 +398,10 @@ st.markdown(f"""
     /* Hide branding */
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        visibility: hidden;
+    }}
 
     /* 달력 요일 헤더 한글화 */
     [data-baseweb="calendar"] [role="columnheader"] {{
@@ -635,20 +639,15 @@ if not st.session_state.onboarding_complete:
         .hello-text {{
             font-size: 180px;
             font-weight: 700;
-            color: {COLORS['primary']};
+            color: #1a1a1a;
             letter-spacing: -6px;
-            background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['accent']} 50%, {COLORS['success']} 100%);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientShift 4s ease infinite, fadeInUp 1s ease-out;
+            animation: fadeInUp 1s ease-out;
+            transition: color 0.3s ease;
+            cursor: default;
         }}
 
-        @keyframes gradientShift {{
-            0% {{ background-position: 0% 50%; }}
-            50% {{ background-position: 100% 50%; }}
-            100% {{ background-position: 0% 50%; }}
+        .hello-text:hover {{
+            color: #888888;
         }}
 
         @keyframes fadeInUp {{
@@ -663,9 +662,9 @@ if not st.session_state.onboarding_complete:
         }}
 
         .hello-subtitle {{
-            font-size: 18px;
+            font-size: 28px;
             color: rgba(26, 26, 26, 0.6);
-            margin-top: 16px;
+            margin-top: 24px;
             animation: fadeInUp 1s ease-out 0.3s both;
         }}
 
@@ -692,18 +691,90 @@ if not st.session_state.onboarding_complete:
 
         .setup-form {{
             background: transparent;
-            border-radius: 16px;
-            padding: 32px;
+            padding: 0;
             border: none;
             box-shadow: none;
         }}
 
+        /* 모던 입력 필드 스타일 */
+        .setup-form .stTextInput > div > div,
+        .setup-form .stSelectbox > div > div {{
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(26, 26, 26, 0.15) !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 8px 0 !important;
+        }}
+
+        .setup-form .stTextInput input,
+        .setup-form .stSelectbox [data-baseweb="select"] {{
+            background: transparent !important;
+            border: none !important;
+            padding-left: 0 !important;
+            font-size: 16px !important;
+        }}
+
+        .setup-form .stTextInput input:focus {{
+            box-shadow: none !important;
+            border-bottom: 2px solid #1a1a1a !important;
+        }}
+
+        .setup-form label {{
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: rgba(26, 26, 26, 0.5) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }}
+
+        .setup-form .stTextInput,
+        .setup-form .stSelectbox {{
+            margin-bottom: 32px !important;
+        }}
+
+        /* 버튼 스타일 */
+        .setup-form .stButton > button,
+        .setup-form .stButton button[kind="primary"],
+        .setup-form .stButton button[kind="secondary"],
+        .setup-form div[data-testid="stButton"] button {{
+            background: #1a1a1a !important;
+            background-color: #1a1a1a !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 12px 32px !important;
+            font-weight: 500 !important;
+            margin-top: 24px !important;
+            transition: background 0.2s ease !important;
+        }}
+
+        .setup-form .stButton > button:hover,
+        .setup-form .stButton button:hover,
+        .setup-form div[data-testid="stButton"] button:hover {{
+            background: #6366F1 !important;
+            background-color: #6366F1 !important;
+        }}
+
+        /* 건너뛰기 버튼 */
+        .setup-form .stButton:last-child button {{
+            background: transparent !important;
+            color: rgba(26, 26, 26, 0.4) !important;
+            margin-top: 8px !important;
+        }}
+
+        .setup-form .stButton:last-child button:hover {{
+            color: #1a1a1a !important;
+            background: transparent !important;
+        }}
+
         .scroll-indicator {{
-            position: absolute;
-            bottom: 60px;
+            position: fixed;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             animation: bounce 2s infinite;
+            z-index: 100;
             color: rgba(26, 26, 26, 0.3);
         }}
 
@@ -738,7 +809,7 @@ if not st.session_state.onboarding_complete:
             gap: 8px;
         ">
             <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="20" r="18" fill="#6366F1"/>
+                <circle cx="20" cy="20" r="18" fill="#1a1a1a"/>
                 <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
                 <circle cx="20" cy="20" r="4" fill="white"/>
                 <path d="M20 24V28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
@@ -967,8 +1038,58 @@ with st.sidebar:
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<p class="sidebar-title">키워드 분석</p>', unsafe_allow_html=True)
-    st.markdown('<p class="sidebar-subtitle">Naver API 기반 분석 도구</p>', unsafe_allow_html=True)
+    # 로고 (클릭 시 온보딩으로)
+    st.markdown("""
+    <style>
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .sidebar-logo:hover {
+            opacity: 0.7;
+        }
+        .sidebar-logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: white !important;
+            letter-spacing: -0.5px;
+        }
+        /* 홈 버튼 스타일 숨기기 */
+        div[data-testid="stButton"]:has(button[key="home_btn"]) button {
+            position: absolute;
+            width: 150px;
+            height: 40px;
+            opacity: 0;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+        }
+        .logo-container {
+            position: relative;
+        }
+    </style>
+    <div class="logo-container">
+        <div class="sidebar-logo">
+            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" fill="white"/>
+                <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="20" cy="20" r="4" fill="#1a1a1a"/>
+                <path d="M20 24V28" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span class="sidebar-logo-text">Aha AI</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("홈", key="home_btn", type="secondary"):
+        st.session_state.onboarding_complete = False
+        st.rerun()
+
+    st.markdown('<p class="sidebar-subtitle">마케터를 위한 올인원 AI</p>', unsafe_allow_html=True)
 
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 

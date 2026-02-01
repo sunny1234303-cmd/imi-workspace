@@ -38,13 +38,17 @@ NAVER_AD_CUSTOMER_ID = os.getenv('NAVER_AD_CUSTOMER_ID')
 NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
 NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET')
 
-# 브랜드 컬러 (personal-branding-guide.md)
+# 디자인 시스템 컬러 (DESIGN_GUIDE.md)
 COLORS = {
-    'primary': '#1E3A5F',
-    'secondary': '#4A90D9',
-    'background': '#FFFFFF',
-    'text': '#333333',
+    'bg': '#F0EFEA',           # Background
+    'primary': '#1a1a1a',       # Primary (헤더, 사이드바, 텍스트)
+    'accent': '#6366F1',        # Accent (CTA, 활성 상태)
+    'success': '#10B981',       # Success (긍정 지표)
+    'accent_hover': '#4F46E5',  # Accent hover
 }
+
+# 차트 컬러
+CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444']
 
 # ===== 검색광고 API =====
 def generate_signature(timestamp, method, uri):
@@ -373,11 +377,16 @@ def format_trend_results(api_result):
 # ===== 페이지 설정 =====
 st.set_page_config(page_title="키워드 분석 도구", page_icon="🔍", layout="wide")
 
-# CSS 스타일
+# CSS 스타일 (DESIGN_GUIDE.md 기반)
 st.markdown(f"""
 <style>
+    /* === Global === */
     .main > div {{ padding-top: 1rem; }}
-    .stApp {{ background-color: #f8f9fa; }}
+    .stApp {{ background-color: {COLORS['bg']}; }}
+
+    /* Hide branding */
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
 
     /* 달력 요일 헤더 한글화 */
     [data-baseweb="calendar"] [role="columnheader"] {{
@@ -391,170 +400,281 @@ st.markdown(f"""
     [data-baseweb="calendar"] [role="columnheader"]:nth-child(6)::after {{ content: "금"; font-size: 14px; }}
     [data-baseweb="calendar"] [role="columnheader"]:nth-child(7)::after {{ content: "토"; font-size: 14px; }}
 
+    /* === Sidebar === */
     [data-testid="stSidebar"] {{
         background-color: {COLORS['primary']};
     }}
-    /* 사이드바 기본 텍스트만 흰색 (하위 요소 제외) */
     [data-testid="stSidebar"] > div > div > div {{
         color: white;
     }}
     [data-testid="stSidebar"] p,
     [data-testid="stSidebar"] label {{
-        color: white !important;
+        color: rgba(255, 255, 255, 0.7) !important;
     }}
-    /* 드롭다운 메뉴 (body에 렌더링됨) */
+
+    /* 드롭다운 메뉴 */
     [data-baseweb="popover"] [data-baseweb="menu"] {{
         background-color: white !important;
     }}
     [data-baseweb="popover"] li {{
-        color: #333333 !important;
+        color: {COLORS['primary']} !important;
     }}
     [data-baseweb="popover"] li:hover {{
-        background-color: #f0f7ff !important;
+        background-color: rgba(99, 102, 241, 0.1) !important;
     }}
+
+    /* 사이드바 입력 필드 */
     [data-testid="stSidebar"] input,
     [data-testid="stSidebar"] .stTextInput input,
     [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] span,
     [data-testid="stSidebar"] [data-baseweb="input"] input {{
-        color: #333333 !important;
+        color: {COLORS['primary']} !important;
         background-color: white !important;
     }}
-    /* Selectbox 드롭다운 옵션 */
     [data-testid="stSidebar"] [data-baseweb="select"] div,
     [data-testid="stSidebar"] [data-baseweb="select"] svg {{
-        color: #333333 !important;
+        color: {COLORS['primary']} !important;
     }}
-    /* Multiselect 선택된 태그 */
+
+    /* Multiselect 태그 */
     [data-testid="stSidebar"] [data-baseweb="tag"] {{
-        background-color: {COLORS['secondary']} !important;
+        background-color: {COLORS['accent']} !important;
     }}
     [data-testid="stSidebar"] [data-baseweb="tag"] span {{
         color: white !important;
     }}
+
     /* Checkbox */
     [data-testid="stSidebar"] .stCheckbox label span {{
-        color: white !important;
+        color: rgba(255, 255, 255, 0.7) !important;
     }}
+
     /* Date input */
     [data-testid="stSidebar"] [data-baseweb="input"] {{
         background-color: white !important;
     }}
     [data-testid="stSidebar"] .stDateInput input {{
-        color: #333333 !important;
+        color: {COLORS['primary']} !important;
     }}
     [data-testid="stSidebar"] .stSelectbox label,
     [data-testid="stSidebar"] .stMultiSelect label,
     [data-testid="stSidebar"] .stTextInput label {{
-        color: white !important;
+        color: rgba(255, 255, 255, 0.7) !important;
     }}
 
+    /* === Metrics === */
+    [data-testid="stMetricValue"] {{
+        font-size: 32px;
+        font-weight: 300;
+    }}
+    [data-testid="stMetricLabel"] {{
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(26, 26, 26, 0.6);
+    }}
+
+    /* === Buttons === */
+    .stButton button {{
+        background-color: {COLORS['accent']};
+        color: white;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 500;
+        border: none;
+        transition: all 0.2s;
+    }}
+    .stButton button:hover {{
+        background-color: {COLORS['accent_hover']};
+        transform: translateY(-1px);
+    }}
+    .stButton button[kind="secondary"] {{
+        background-color: transparent;
+        border: 1px solid {COLORS['primary']};
+        color: {COLORS['primary']};
+    }}
+    .stButton button[kind="secondary"]:hover {{
+        background-color: {COLORS['primary']};
+        color: white;
+    }}
+
+    /* === Input === */
+    .stTextInput input, .stSelectbox select {{
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 6px;
+    }}
+    .stTextInput input:focus, .stSelectbox select:focus {{
+        border-color: {COLORS['accent']};
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }}
+
+    /* === Cards === */
     .header-box {{
         background: white;
-        border: 1px solid #e0e0e0;
+        border: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
     }}
     .result-box {{
         background: white;
-        border: 1px solid #e0e0e0;
+        border: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 8px;
-        padding: 20px;
+        padding: 24px;
     }}
     .selected-box {{
-        background: #f0f7ff;
-        border: 1px solid {COLORS['secondary']};
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid {COLORS['accent']};
         border-radius: 8px;
         padding: 16px;
         margin-top: 16px;
     }}
+
+    /* Card hover effect */
+    .stat-card {{
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }}
+    .stat-card:hover {{
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }}
+
+    /* === Tables === */
     .header-table {{
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 8px;
     }}
     .header-table th {{
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        padding: 8px;
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        padding: 12px;
         text-align: center;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
+        color: rgba(26, 26, 26, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }}
     .header-table .group-header {{
-        background: #e8f4f8;
+        background: rgba(99, 102, 241, 0.05);
+    }}
+
+    /* DataFrame */
+    .dataframe thead th {{
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: rgba(26, 26, 26, 0.6);
+    }}
+    .dataframe tbody tr:hover {{
+        background: rgba(99, 102, 241, 0.02);
+    }}
+
+    /* === Badge === */
+    .badge {{
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }}
+    .badge-success {{
+        background: rgba(16, 185, 129, 0.1);
+        color: {COLORS['success']};
+    }}
+    .badge-accent {{
+        background: rgba(99, 102, 241, 0.1);
+        color: {COLORS['accent']};
     }}
 </style>
 """, unsafe_allow_html=True)
 
 # ===== 사이드바 =====
 with st.sidebar:
-    # 사이드바 스타일
-    st.markdown("""
+    # 사이드바 스타일 (DESIGN_GUIDE.md 기반)
+    st.markdown(f"""
     <style>
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #1E3A5F 0%, #2C5282 100%);
+        [data-testid="stSidebar"] {{
+            background-color: {COLORS['primary']};
             padding-top: 2rem;
-        }
-        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
-            color: white !important;
-        }
-        [data-testid="stSidebar"] label {
-            color: white !important;
-        }
+        }}
+        [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
+            color: rgba(255, 255, 255, 0.7) !important;
+        }}
+        [data-testid="stSidebar"] label {{
+            color: rgba(255, 255, 255, 0.7) !important;
+        }}
         [data-testid="stSidebar"] .stSelectbox label p,
         [data-testid="stSidebar"] .stTextInput label p,
-        [data-testid="stSidebar"] .stMultiSelect label p {
-            color: rgba(255,255,255,0.9) !important;
-            font-size: 13px !important;
-        }
-        .sidebar-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: white !important;
-            margin-bottom: 8px;
-        }
-        .sidebar-subtitle {
-            font-size: 14px;
+        [data-testid="stSidebar"] .stMultiSelect label p {{
             color: rgba(255,255,255,0.7) !important;
-            margin-bottom: 24px;
-        }
-        .menu-header {
-            font-size: 16px;
+            font-size: 13px !important;
+        }}
+        .sidebar-title {{
+            font-size: 20px;
             font-weight: 600;
             color: white !important;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }}
+        .sidebar-subtitle {{
+            font-size: 13px;
+            color: rgba(255,255,255,0.5) !important;
+            margin-bottom: 24px;
+        }}
+        .menu-header {{
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5) !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             margin-top: 16px;
             margin-bottom: 8px;
-        }
-        .menu-divider {
-            border-top: 1px solid rgba(255,255,255,0.2);
+        }}
+        .menu-divider {{
+            border-top: 1px solid rgba(255,255,255,0.1);
             margin: 16px 0;
-        }
-        /* 라디오 버튼 동그라미 숨기기 */
-        [data-testid="stSidebar"] .stRadio > div {
+        }}
+        /* 네비게이션 아이템 스타일 */
+        [data-testid="stSidebar"] .stRadio > div {{
             gap: 0 !important;
-        }
-        [data-testid="stSidebar"] .stRadio > div > label > div:first-child {
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label > div:first-child {{
             display: none !important;
-        }
-        [data-testid="stSidebar"] .stRadio > div > label {
-            padding: 8px 0 !important;
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label {{
+            padding: 10px 24px 10px 36px !important;
             cursor: pointer;
-        }
-        [data-testid="stSidebar"] .stRadio > div > label > div:last-child p {
-            font-size: 15px !important;
-            color: rgba(255,255,255,0.75) !important;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label:hover {{
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: rgba(255, 255, 255, 0.3);
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label > div:last-child p {{
+            font-size: 13px !important;
+            color: rgba(255,255,255,0.6) !important;
             font-weight: 400 !important;
-            transition: all 0.15s ease;
-        }
-        [data-testid="stSidebar"] .stRadio > div > label:hover > div:last-child p {
+            transition: all 0.2s;
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label:hover > div:last-child p {{
+            color: rgba(255,255,255,0.9) !important;
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] {{
+            background: rgba(99, 102, 241, 0.15) !important;
+            border-left-color: {COLORS['accent']} !important;
+        }}
+        [data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] > div:last-child p {{
             color: white !important;
-            font-weight: 600 !important;
-        }
-        [data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] > div:last-child p {
-            color: white !important;
-            font-weight: 700 !important;
-        }
+            font-weight: 500 !important;
+        }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -564,11 +684,11 @@ with st.sidebar:
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
     # 메뉴 선택 (session_state로 관리)
-    st.markdown('<p class="menu-header">분석 도구</p>', unsafe_allow_html=True)
+    st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
-        st.session_state.menu = "네이버 검색광고"
+        st.session_state.menu = "연관키워드"
 
-    menu_options = ["네이버 검색광고", "네이버데이터랩", "광고 운영 현황"]
+    menu_options = ["연관키워드", "트렌드 분석", "광고 현황"]
     menu = st.radio(
         "menu",
         menu_options,
@@ -581,7 +701,7 @@ with st.sidebar:
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
     # 트렌드 설정 (트렌드 메뉴일 때만)
-    if menu == "네이버데이터랩":
+    if menu == "트렌드 분석":
         st.markdown('<p class="menu-header">조회 설정</p>', unsafe_allow_html=True)
 
         trend_keywords = st.text_input(
@@ -813,42 +933,45 @@ def show_analysis_dialog():
             })
             st.session_state.selected = set()
             # 메뉴를 데이터랩으로 전환
-            st.session_state.menu = "네이버데이터랩"
+            st.session_state.menu = "트렌드 분석"
             st.rerun()
 
 # ===== 키워드 분석 페이지 =====
-if menu == "네이버 검색광고":
+if menu == "연관키워드":
 
     # ===== 연동 키워드 바 (상단 고정) =====
     if st.session_state.selected:
-        st.markdown("""
+        st.markdown(f"""
         <style>
-            .linked-keywords-bar {
-                background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%);
-                border-radius: 10px;
-                padding: 16px 20px;
-                margin-bottom: 16px;
+            .linked-keywords-bar {{
+                background: {COLORS['primary']};
+                border-radius: 8px;
+                padding: 16px 24px;
+                margin-bottom: 20px;
                 color: white;
-            }
-            .linked-keywords-bar .title {
-                font-size: 14px;
-                font-weight: 600;
-                margin-bottom: 8px;
-                color: rgba(255,255,255,0.8);
-            }
-            .linked-keywords-bar .keywords {
-                font-size: 15px;
+            }}
+            .linked-keywords-bar .title {{
+                font-size: 13px;
                 font-weight: 500;
-            }
-            .linked-keywords-bar .keyword-tag {
+                margin-bottom: 8px;
+                color: rgba(255,255,255,0.6);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }}
+            .linked-keywords-bar .keywords {{
+                font-size: 14px;
+                font-weight: 400;
+            }}
+            .linked-keywords-bar .keyword-tag {{
                 display: inline-block;
-                background: rgba(255,255,255,0.2);
+                background: {COLORS['accent']};
                 padding: 4px 12px;
-                border-radius: 20px;
+                border-radius: 12px;
                 margin-right: 8px;
                 margin-bottom: 4px;
-                font-size: 14px;
-            }
+                font-size: 12px;
+                font-weight: 500;
+            }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -1002,7 +1125,7 @@ if menu == "네이버 검색광고":
         chart_df['검색지수'] = chart_df['검색지수'].round(0).astype(int)
         chart_df['날짜_표시'] = chart_df['날짜'].dt.strftime('%Y. %m. %d.')
 
-        chart_colors = [COLORS['primary'], COLORS['secondary'], '#34a853', '#ea4335', '#fbbc05']
+        chart_colors = CHART_COLORS
         nearest = alt.selection_point(nearest=True, on='mouseover', fields=['날짜'], empty=False)
 
         line = alt.Chart(chart_df).mark_line().encode(
@@ -1052,7 +1175,7 @@ if menu == "네이버 검색광고":
 
 
 # ===== 트렌드 분석 페이지 =====
-elif menu == "네이버데이터랩":
+elif menu == "트렌드 분석":
     st.markdown("### 📈 키워드 트렌드 분석")
     st.markdown("네이버 데이터랩 API를 통해 키워드별 검색 트렌드를 확인합니다.")
 
@@ -1082,51 +1205,54 @@ elif menu == "네이버데이터랩":
         else:
             period_display = opts.get('period', '')
 
-        st.markdown("""
+        st.markdown(f"""
         <style>
-            .analysis-info-bar {
-                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                border: 1px solid #dee2e6;
-                border-left: 4px solid #4A90D9;
+            .analysis-info-bar {{
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-left: 4px solid {COLORS['accent']};
                 border-radius: 8px;
-                padding: 12px 16px;
-                margin-bottom: 16px;
-            }
-            .analysis-info-bar .info-title {
+                padding: 16px 20px;
+                margin-bottom: 20px;
+            }}
+            .analysis-info-bar .info-title {{
                 font-size: 13px;
-                font-weight: 600;
-                color: #495057;
-                margin-bottom: 8px;
-            }
-            .analysis-info-bar .info-content {
+                font-weight: 500;
+                color: rgba(26, 26, 26, 0.6);
+                margin-bottom: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }}
+            .analysis-info-bar .info-content {{
                 display: flex;
                 flex-wrap: wrap;
-                gap: 12px;
-            }
-            .analysis-info-bar .info-item {
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 16px;
+                gap: 8px;
+            }}
+            .analysis-info-bar .info-item {{
+                background: {COLORS['bg']};
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-radius: 12px;
                 padding: 4px 12px;
                 font-size: 13px;
-                color: #333;
-            }
-            .analysis-info-bar .info-label {
-                color: #868e96;
+                color: {COLORS['primary']};
+            }}
+            .analysis-info-bar .info-label {{
+                color: rgba(26, 26, 26, 0.5);
                 margin-right: 4px;
-            }
-            .analysis-info-bar .keyword-tags {
-                margin-top: 8px;
-            }
-            .analysis-info-bar .keyword-tag {
+            }}
+            .analysis-info-bar .keyword-tags {{
+                margin-top: 12px;
+            }}
+            .analysis-info-bar .keyword-tag {{
                 display: inline-block;
-                background: #4A90D9;
+                background: {COLORS['accent']};
                 color: white;
-                padding: 3px 10px;
+                padding: 4px 12px;
                 border-radius: 12px;
                 margin-right: 6px;
                 font-size: 12px;
-            }
+                font-weight: 500;
+            }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -1192,7 +1318,7 @@ elif menu == "네이버데이터랩":
         chart_df['날짜_표시'] = chart_df['날짜'].dt.strftime('%Y. %m. %d.')
 
         # Altair 차트 (툴팁 커스터마이징)
-        chart_colors = [COLORS['primary'], COLORS['secondary'], '#34a853', '#ea4335', '#fbbc05']
+        chart_colors = CHART_COLORS
 
         # hover selection
         nearest = alt.selection_point(nearest=True, on='mouseover', fields=['날짜'], empty=False)
@@ -1274,7 +1400,7 @@ elif menu == "네이버데이터랩":
 
 
 # ===== 광고 운영 현황 페이지 =====
-elif menu == "광고 운영 현황":
+elif menu == "광고 현황":
     # 세션 상태 초기화
     if 'campaigns' not in st.session_state:
         st.session_state.campaigns = None
@@ -1320,52 +1446,53 @@ elif menu == "광고 운영 현황":
                 status_color = "#868e96"
 
             # 상단 네비게이션
-            st.markdown("""
+            st.markdown(f"""
             <style>
-                .campaign-detail-header {
+                .campaign-detail-header {{
                     background: white;
-                    border: 1px solid #e0e0e0;
+                    border: 1px solid rgba(0, 0, 0, 0.06);
                     border-radius: 8px;
-                    padding: 16px 20px;
-                    margin-bottom: 16px;
-                }
-                .breadcrumb {
-                    color: #4A90D9;
+                    padding: 24px;
+                    margin-bottom: 20px;
+                }}
+                .breadcrumb {{
+                    color: {COLORS['accent']};
                     font-size: 13px;
                     cursor: pointer;
                     margin-bottom: 8px;
-                }
-                .breadcrumb:hover {
+                }}
+                .breadcrumb:hover {{
                     text-decoration: underline;
-                }
-                .campaign-title {
+                }}
+                .campaign-title {{
                     font-size: 18px;
-                    font-weight: 600;
-                    color: #333;
-                }
-                .campaign-info-panel {
-                    background: #f8f9fa;
-                    border: 1px solid #e0e0e0;
+                    font-weight: 500;
+                    color: {COLORS['primary']};
+                }}
+                .campaign-info-panel {{
+                    background: {COLORS['bg']};
+                    border: 1px solid rgba(0, 0, 0, 0.06);
                     border-radius: 8px;
-                    padding: 16px;
-                }
-                .info-row {
+                    padding: 20px;
+                }}
+                .info-row {{
                     display: flex;
                     justify-content: space-between;
-                    padding: 8px 0;
-                    border-bottom: 1px solid #e9ecef;
-                }
-                .info-row:last-child {
+                    padding: 12px 0;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+                }}
+                .info-row:last-child {{
                     border-bottom: none;
-                }
-                .info-label {
-                    color: #666;
-                    font-size: 14px;
-                }
-                .info-value {
+                }}
+                .info-label {{
+                    color: rgba(26, 26, 26, 0.6);
+                    font-size: 13px;
+                }}
+                .info-value {{
                     font-weight: 500;
                     font-size: 14px;
-                }
+                    color: {COLORS['primary']};
+                }}
             </style>
             """, unsafe_allow_html=True)
 
@@ -1440,7 +1567,7 @@ elif menu == "광고 운영 현황":
 
                         # 라인 차트
                         line = alt.Chart(chart_df).mark_line(
-                            color=COLORS['primary'],
+                            color=COLORS['accent'],
                             strokeWidth=2
                         ).encode(
                             x=alt.X('날짜:T', title='', axis=alt.Axis(format='%m/%d')),
@@ -1448,7 +1575,7 @@ elif menu == "광고 운영 현황":
                         )
 
                         # 포인트 (호버 시)
-                        points = line.mark_point(size=80, color=COLORS['primary']).encode(
+                        points = line.mark_point(size=80, color=COLORS['accent']).encode(
                             opacity=alt.condition(nearest, alt.value(1), alt.value(0))
                         ).add_params(nearest)
 
@@ -1482,10 +1609,10 @@ elif menu == "광고 운영 현황":
                         st.info("조회 기간에 성과 데이터가 없습니다.")
                 else:
                     # 조회 전 안내
-                    st.markdown("""
-                    <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 30px; text-align: center; color: #666;">
-                        <div style="font-size: 36px; margin-bottom: 8px;">📊</div>
-                        <div>'성과 조회' 버튼을 클릭하여 데이터를 불러오세요</div>
+                    st.markdown(f"""
+                    <div style="background: white; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 8px; padding: 48px; text-align: center; color: rgba(26, 26, 26, 0.6);">
+                        <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📊</div>
+                        <div style="font-size: 14px;">'성과 조회' 버튼을 클릭하여 데이터를 불러오세요</div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -1651,10 +1778,10 @@ elif menu == "광고 운영 현황":
         if st.session_state.bizmoney:
             bm = st.session_state.bizmoney
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #1E3A5F 0%, #2C5282 100%); color: white; padding: 16px 20px; border-radius: 10px; margin: 16px 0;">
-                <div style="font-size: 13px; opacity: 0.8;">💰 비즈머니 잔액</div>
-                <div style="font-size: 28px; font-weight: 700; margin-top: 4px;">{bm.get('bizmoney', 0):,.0f}원</div>
-                <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">
+            <div style="background: {COLORS['primary']}; color: white; padding: 24px; border-radius: 8px; margin: 20px 0;">
+                <div style="font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px;">비즈머니 잔액</div>
+                <div style="font-size: 32px; font-weight: 300; margin-top: 8px;">{bm.get('bizmoney', 0):,.0f}원</div>
+                <div style="font-size: 13px; margin-top: 12px; color: rgba(255,255,255,0.5);">
                     환불 가능: {bm.get('refundableAmount', 0):,.0f}원 |
                     예치금: {bm.get('budgetLock', 0):,.0f}원
                 </div>
@@ -1688,20 +1815,20 @@ elif menu == "광고 운영 현황":
             st.markdown("")
 
             # 캠페인 테이블 (클릭 가능)
-            st.markdown("""
+            st.markdown(f"""
             <style>
-                .campaign-row {
-                    padding: 12px 0;
-                    border-bottom: 1px solid #e9ecef;
-                }
-                .campaign-name-btn {
-                    color: #4A90D9 !important;
+                .campaign-row {{
+                    padding: 16px 0;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+                }}
+                .campaign-name-btn {{
+                    color: {COLORS['accent']} !important;
                     text-decoration: none;
                     font-weight: 500;
-                }
-                .campaign-name-btn:hover {
+                }}
+                .campaign-name-btn:hover {{
                     text-decoration: underline;
-                }
+                }}
             </style>
             """, unsafe_allow_html=True)
 

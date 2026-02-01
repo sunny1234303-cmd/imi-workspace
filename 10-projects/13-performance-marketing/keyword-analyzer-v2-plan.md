@@ -2,7 +2,7 @@
 
 > 작성일: 2026-01-24
 > 최종 업데이트: 2026-02-01
-> 상태: **개발 중** (v3.5 광고 운영 현황 추가)
+> 상태: **개발 중** (v3.8 사이드바 구조 개선)
 
 ---
 
@@ -73,6 +73,35 @@
 - [x] 키워드 닫기 기능
 - [x] 통계 API 함수 개선 (`get_stat_report`, `get_daily_stats`)
 
+#### v3.7 업데이트 (2026-02-01)
+- [x] DESIGN_GUIDE.md 기반 디자인 시스템 적용
+- [x] 4색 컬러 팔레트 적용
+  - Background: `#F0EFEA`
+  - Primary: `#1a1a1a` (사이드바, 텍스트)
+  - Accent: `#6366F1` (CTA, 활성 상태)
+  - Success: `#10B981` (긍정 지표)
+- [x] 사이드바 스타일 업데이트 (인디고 활성 메뉴)
+- [x] 버튼 호버 애니메이션 (`translateY(-1px)`)
+- [x] 카드/테이블 미니멀 스타일 (subtle border)
+- [x] Altair 차트 컬러 통일 (`CHART_COLORS`)
+- [x] 메트릭 스타일 (32px, font-weight: 300)
+- [x] 연동 키워드 바/분석 조건 바 스타일 개선
+- [x] 비즈머니 패널/캠페인 상세 뷰 스타일 개선
+
+#### v3.8 업데이트 (2026-02-01)
+- [x] 사이드바 메뉴 구조 개선 - NAVER 그룹핑
+  - 그룹 헤더: "NAVER"
+  - 하위 메뉴: 연관키워드, 트렌드 분석, 광고 현황
+- [x] 메뉴 이름 간소화 (네이버 접두어 제거)
+  - "네이버 검색광고" → "연관키워드"
+  - "네이버데이터랩" → "트렌드 분석"
+  - "광고 운영 현황" → "광고 현황"
+- [x] 하위 메뉴 스타일 적용
+  - 들여쓰기 (padding-left: 36px)
+  - 좌측 border 인디케이터
+  - 호버 시 subtle 배경 + border 색상 변경
+  - 선택 시 인디고 배경 + border
+
 ### 남은 이슈
 - [ ] 일반 브라우저 캐시 문제 (시크릿 모드에서는 정상 작동)
 - [ ] 정렬 기능 확인 필요
@@ -93,6 +122,7 @@ streamlit run app.py --server.port 8501
 - 앱: `.claude/skills/keyword-analyzer/app.py`
 - 의존성: `.claude/skills/keyword-analyzer/requirements.txt`
 - API 키: `.claude/skills/gsheet-handler/scripts/.env`
+- 디자인 가이드: `10-projects/13-performance-marketing/DESIGN_GUIDE.md`
 
 ---
 

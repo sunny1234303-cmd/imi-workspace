@@ -377,6 +377,17 @@ def format_trend_results(api_result):
 # ===== 페이지 설정 =====
 st.set_page_config(page_title="키워드 분석 도구", page_icon="🔍", layout="wide")
 
+# ===== 온보딩 상태 관리 =====
+if 'onboarding_complete' not in st.session_state:
+    st.session_state.onboarding_complete = False
+if 'user_profile' not in st.session_state:
+    st.session_state.user_profile = {
+        'name': '',
+        'occupation': '',
+        'role': '',
+        'age_group': ''
+    }
+
 # CSS 스타일 (DESIGN_GUIDE.md 기반)
 st.markdown(f"""
 <style>
@@ -595,6 +606,192 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+# ===== 온보딩 페이지 =====
+if not st.session_state.onboarding_complete:
+    # 온보딩 CSS
+    st.markdown(f"""
+    <style>
+        /* 온보딩 전용 스타일 */
+        .onboarding-container {{
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 24px;
+        }}
+
+        .hello-section {{
+            text-align: center;
+            margin-bottom: 60px;
+        }}
+
+        .hello-text {{
+            font-size: 72px;
+            font-weight: 200;
+            color: {COLORS['primary']};
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['accent']} 50%, {COLORS['success']} 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease infinite, fadeInUp 1s ease-out;
+        }}
+
+        @keyframes gradientShift {{
+            0% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+            100% {{ background-position: 0% 50%; }}
+        }}
+
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+
+        .hello-subtitle {{
+            font-size: 18px;
+            color: rgba(26, 26, 26, 0.6);
+            margin-top: 16px;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }}
+
+        .setup-section {{
+            max-width: 400px;
+            width: 100%;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }}
+
+        .setup-title {{
+            font-size: 24px;
+            font-weight: 500;
+            color: {COLORS['primary']};
+            text-align: center;
+            margin-bottom: 8px;
+        }}
+
+        .setup-subtitle {{
+            font-size: 14px;
+            color: rgba(26, 26, 26, 0.6);
+            text-align: center;
+            margin-bottom: 32px;
+        }}
+
+        .setup-form {{
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        }}
+
+        .scroll-indicator {{
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: rgba(26, 26, 26, 0.4);
+            font-size: 24px;
+        }}
+
+        @keyframes bounce {{
+            0%, 20%, 50%, 80%, 100% {{ transform: translateX(-50%) translateY(0); }}
+            40% {{ transform: translateX(-50%) translateY(-10px); }}
+            60% {{ transform: translateX(-50%) translateY(-5px); }}
+        }}
+
+        /* 사이드바 숨기기 (온보딩 시) */
+        [data-testid="stSidebar"] {{
+            display: none !important;
+        }}
+        [data-testid="collapsedControl"] {{
+            display: none !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Hello 섹션
+    st.markdown("""
+    <div class="hello-section">
+        <div class="hello-text">Hello.</div>
+        <div class="hello-subtitle">네이버 키워드 분석 도구에 오신 것을 환영합니다</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 설정 섹션
+    st.markdown("""
+    <div class="setup-title">몇 가지 설정이 필요해요</div>
+    <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
+    """, unsafe_allow_html=True)
+
+    # 입력 폼
+    with st.container():
+        col_left, col_center, col_right = st.columns([1, 2, 1])
+
+        with col_center:
+            st.markdown('<div class="setup-form">', unsafe_allow_html=True)
+
+            # 이름
+            user_name = st.text_input(
+                "이름",
+                placeholder="홍길동",
+                key="onboard_name"
+            )
+
+            # 직업
+            user_occupation = st.selectbox(
+                "직업",
+                options=['', '마케터', '기획자', '개발자', '디자이너', '사업가', '학생', '프리랜서', '기타'],
+                key="onboard_occupation"
+            )
+
+            # 직무
+            user_role = st.text_input(
+                "직무 / 담당 업무",
+                placeholder="퍼포먼스 마케팅, 브랜드 마케팅 등",
+                key="onboard_role"
+            )
+
+            # 연령대
+            user_age = st.selectbox(
+                "연령대",
+                options=['', '20대', '30대', '40대', '50대 이상'],
+                key="onboard_age"
+            )
+
+            st.markdown("")
+
+            # 시작하기 버튼
+            if st.button("시작하기", type="primary", use_container_width=True, key="start_btn"):
+                if user_name.strip():
+                    st.session_state.user_profile = {
+                        'name': user_name,
+                        'occupation': user_occupation,
+                        'role': user_role,
+                        'age_group': user_age
+                    }
+                    st.session_state.onboarding_complete = True
+                    st.rerun()
+                else:
+                    st.warning("이름을 입력해주세요")
+
+            # 건너뛰기
+            if st.button("건너뛰기", use_container_width=True, key="skip_btn"):
+                st.session_state.onboarding_complete = True
+                st.rerun()
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    st.stop()
+
 # ===== 사이드바 =====
 with st.sidebar:
     # 사이드바 스타일 (DESIGN_GUIDE.md 기반)
@@ -675,6 +872,23 @@ with st.sidebar:
             color: white !important;
             font-weight: 500 !important;
         }}
+
+        /* 사이드바 접혔을 때 아이콘만 표시 */
+        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label > div:last-child p {{
+            font-size: 0 !important;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label > div:last-child p::first-letter {{
+            font-size: 18px !important;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .sidebar-title,
+        [data-testid="stSidebar"][aria-expanded="false"] .sidebar-subtitle,
+        [data-testid="stSidebar"][aria-expanded="false"] .menu-header {{
+            display: none !important;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label {{
+            padding: 12px 0 !important;
+            justify-content: center;
+        }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -686,9 +900,10 @@ with st.sidebar:
     # 메뉴 선택 (session_state로 관리)
     st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
-        st.session_state.menu = "연관키워드"
+        st.session_state.menu = "🔗  연관키워드"
 
-    menu_options = ["연관키워드", "트렌드 분석", "광고 현황"]
+    # 아이콘 포함 메뉴 옵션
+    menu_options = ["🔗  연관키워드", "📈  트렌드 분석", "📊  광고 현황"]
     menu = st.radio(
         "menu",
         menu_options,
@@ -698,10 +913,13 @@ with st.sidebar:
     )
     st.session_state.menu = menu
 
+    # 메뉴 값에서 아이콘 제거한 실제 메뉴명
+    menu_clean = menu.split("  ")[-1] if "  " in menu else menu
+
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
     # 트렌드 설정 (트렌드 메뉴일 때만)
-    if menu == "트렌드 분석":
+    if menu_clean == "트렌드 분석":
         st.markdown('<p class="menu-header">조회 설정</p>', unsafe_allow_html=True)
 
         trend_keywords = st.text_input(
@@ -933,11 +1151,11 @@ def show_analysis_dialog():
             })
             st.session_state.selected = set()
             # 메뉴를 데이터랩으로 전환
-            st.session_state.menu = "트렌드 분석"
+            st.session_state.menu = "📈  트렌드 분석"
             st.rerun()
 
 # ===== 키워드 분석 페이지 =====
-if menu == "연관키워드":
+if menu_clean == "연관키워드":
 
     # ===== 연동 키워드 바 (상단 고정) =====
     if st.session_state.selected:
@@ -1175,7 +1393,7 @@ if menu == "연관키워드":
 
 
 # ===== 트렌드 분석 페이지 =====
-elif menu == "트렌드 분석":
+elif menu_clean == "트렌드 분석":
     st.markdown("### 📈 키워드 트렌드 분석")
     st.markdown("네이버 데이터랩 API를 통해 키워드별 검색 트렌드를 확인합니다.")
 
@@ -1400,7 +1618,7 @@ elif menu == "트렌드 분석":
 
 
 # ===== 광고 운영 현황 페이지 =====
-elif menu == "광고 현황":
+elif menu_clean == "광고 현황":
     # 세션 상태 초기화
     if 'campaigns' not in st.session_state:
         st.session_state.campaigns = None

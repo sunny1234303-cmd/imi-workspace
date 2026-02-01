@@ -623,14 +623,20 @@ if not st.session_state.onboarding_complete:
 
         .hello-section {{
             text-align: center;
-            margin-bottom: 60px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding-bottom: 25vh;
         }}
 
         .hello-text {{
-            font-size: 72px;
-            font-weight: 200;
+            font-size: 180px;
+            font-weight: 700;
             color: {COLORS['primary']};
-            letter-spacing: -2px;
+            letter-spacing: -6px;
             background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['accent']} 50%, {COLORS['success']} 100%);
             background-size: 200% 200%;
             -webkit-background-clip: text;
@@ -685,21 +691,20 @@ if not st.session_state.onboarding_complete:
         }}
 
         .setup-form {{
-            background: white;
+            background: transparent;
             border-radius: 16px;
             padding: 32px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            border: none;
+            box-shadow: none;
         }}
 
         .scroll-indicator {{
-            position: fixed;
-            bottom: 40px;
+            position: absolute;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
             animation: bounce 2s infinite;
-            color: rgba(26, 26, 26, 0.4);
-            font-size: 24px;
+            color: rgba(26, 26, 26, 0.3);
         }}
 
         @keyframes bounce {{
@@ -718,18 +723,55 @@ if not st.session_state.onboarding_complete:
     </style>
     """, unsafe_allow_html=True)
 
-    # Hello 섹션
+    # 로고 (왼쪽 상단)
     st.markdown("""
-    <div class="hello-section">
-        <div class="hello-text">Hello.</div>
-        <div class="hello-subtitle">네이버 키워드 분석 도구에 오신 것을 환영합니다</div>
+    <div class="logo-section" style="
+        position: fixed;
+        top: 24px;
+        left: 32px;
+        z-index: 1000;
+        animation: fadeInUp 0.8s ease-out;
+    ">
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        ">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" fill="#6366F1"/>
+                <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="20" cy="20" r="4" fill="white"/>
+                <path d="M20 24V28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <span style="
+                font-size: 18px;
+                font-weight: 600;
+                color: #1a1a1a;
+                letter-spacing: -0.5px;
+            ">Aha AI</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 설정 섹션
+    # Hello 섹션 (전체 화면)
     st.markdown("""
-    <div class="setup-title">몇 가지 설정이 필요해요</div>
-    <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
+    <div class="hello-section">
+        <div class="hello-text">Hello.</div>
+        <div class="hello-subtitle">마케터를 위한 올인원 AI 업무플로우입니다.</div>
+        <div class="scroll-indicator">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 설정 섹션 (스크롤 후)
+    st.markdown("""
+    <div style="padding-top: 80px; padding-bottom: 40px;">
+        <div class="setup-title">몇 가지 설정이 필요해요</div>
+        <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
+    </div>
     """, unsafe_allow_html=True)
 
     # 입력 폼
@@ -838,56 +880,89 @@ with st.sidebar:
             border-top: 1px solid rgba(255,255,255,0.1);
             margin: 16px 0;
         }}
-        /* 네비게이션 아이템 스타일 */
-        [data-testid="stSidebar"] .stRadio > div {{
-            gap: 0 !important;
+        /* 커스텀 메뉴 버튼 스타일 */
+        .nav-menu {{
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }}
-        [data-testid="stSidebar"] .stRadio > div > label > div:first-child {{
-            display: none !important;
-        }}
-        [data-testid="stSidebar"] .stRadio > div > label {{
-            padding: 10px 24px 10px 36px !important;
+        .nav-btn {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px 12px 24px;
+            background: transparent;
+            border: none;
+            border-left: 2px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
-            border-left: 2px solid transparent;
+            width: 100%;
+            text-align: left;
         }}
-        [data-testid="stSidebar"] .stRadio > div > label:hover {{
+        .nav-btn:hover {{
             background: rgba(255, 255, 255, 0.05);
             border-left-color: rgba(255, 255, 255, 0.3);
         }}
-        [data-testid="stSidebar"] .stRadio > div > label > div:last-child p {{
-            font-size: 13px !important;
-            color: rgba(255,255,255,0.6) !important;
-            font-weight: 400 !important;
+        .nav-btn.active {{
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: {COLORS['accent']};
+        }}
+        .nav-btn .nav-icon {{
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }}
+        .nav-btn .nav-icon svg {{
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.6);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }}
+        .nav-btn:hover .nav-icon svg {{
+            stroke: rgba(255, 255, 255, 0.9);
+        }}
+        .nav-btn.active .nav-icon svg {{
+            stroke: white;
+        }}
+        .nav-btn .nav-label {{
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
             transition: all 0.2s;
+            white-space: nowrap;
         }}
-        [data-testid="stSidebar"] .stRadio > div > label:hover > div:last-child p {{
-            color: rgba(255,255,255,0.9) !important;
+        .nav-btn:hover .nav-label {{
+            color: rgba(255, 255, 255, 0.9);
         }}
-        [data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] {{
-            background: rgba(99, 102, 241, 0.15) !important;
-            border-left-color: {COLORS['accent']} !important;
-        }}
-        [data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] > div:last-child p {{
-            color: white !important;
-            font-weight: 500 !important;
+        .nav-btn.active .nav-label {{
+            color: white;
+            font-weight: 500;
         }}
 
         /* 사이드바 접혔을 때 아이콘만 표시 */
-        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label > div:last-child p {{
-            font-size: 0 !important;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label > div:last-child p::first-letter {{
-            font-size: 18px !important;
-        }}
         [data-testid="stSidebar"][aria-expanded="false"] .sidebar-title,
         [data-testid="stSidebar"][aria-expanded="false"] .sidebar-subtitle,
-        [data-testid="stSidebar"][aria-expanded="false"] .menu-header {{
+        [data-testid="stSidebar"][aria-expanded="false"] .menu-header,
+        [data-testid="stSidebar"][aria-expanded="false"] .menu-divider {{
             display: none !important;
         }}
-        [data-testid="stSidebar"][aria-expanded="false"] .stRadio > div > label {{
-            padding: 12px 0 !important;
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn {{
+            padding: 14px 0;
             justify-content: center;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-label {{
+            display: none;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-icon {{
+            width: 24px;
+            height: 24px;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-icon svg {{
+            width: 24px;
+            height: 24px;
         }}
     </style>
     """, unsafe_allow_html=True)
@@ -900,21 +975,96 @@ with st.sidebar:
     # 메뉴 선택 (session_state로 관리)
     st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
-        st.session_state.menu = "🔗  연관키워드"
+        st.session_state.menu = "연관키워드"
 
-    # 아이콘 포함 메뉴 옵션
-    menu_options = ["🔗  연관키워드", "📈  트렌드 분석", "📊  광고 현황"]
-    menu = st.radio(
-        "menu",
-        menu_options,
-        index=menu_options.index(st.session_state.menu) if st.session_state.menu in menu_options else 0,
-        key="menu_radio",
-        label_visibility="collapsed"
-    )
-    st.session_state.menu = menu
+    # SVG 아이콘 정의 (Feather Icons 스타일)
+    MENU_ICONS = {
+        "연관키워드": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+        "트렌드 분석": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+        "광고 현황": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'
+    }
 
-    # 메뉴 값에서 아이콘 제거한 실제 메뉴명
-    menu_clean = menu.split("  ")[-1] if "  " in menu else menu
+    menu_items = ["연관키워드", "트렌드 분석", "광고 현황"]
+
+    # 각 메뉴 항목을 개별 버튼으로 생성
+    for item in menu_items:
+        is_active = st.session_state.menu == item
+        icon = MENU_ICONS[item]
+
+        # 버튼 컨테이너에 스타일 적용
+        btn_style = f"""
+        <style>
+            div[data-testid="stButton"]:has(button[kind="secondary"]:contains("{item}")) button {{
+                background: {'rgba(99, 102, 241, 0.15)' if is_active else 'transparent'} !important;
+                border-left: 2px solid {COLORS['accent'] if is_active else 'transparent'} !important;
+                border-right: none !important;
+                border-top: none !important;
+                border-bottom: none !important;
+                border-radius: 0 !important;
+                color: {'white' if is_active else 'rgba(255,255,255,0.6)'} !important;
+                font-weight: {'500' if is_active else '400'} !important;
+            }}
+        </style>
+        """
+
+        # 아이콘 + 텍스트 표시
+        st.markdown(f'''
+        <div class="nav-item {'active' if is_active else ''}" style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px 12px 24px;
+            background: {'rgba(99, 102, 241, 0.15)' if is_active else 'transparent'};
+            border-left: 2px solid {'#6366F1' if is_active else 'transparent'};
+            cursor: pointer;
+            color: {'white' if is_active else 'rgba(255,255,255,0.6)'};
+            font-size: 13px;
+            font-weight: {'500' if is_active else '400'};
+            transition: all 0.2s;
+        ">
+            <span style="display: flex; align-items: center;">{icon}</span>
+            <span class="nav-label">{item}</span>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        # 실제 클릭 처리를 위한 투명 버튼
+        if st.button(item, key=f"nav_{item}", use_container_width=True):
+            st.session_state.menu = item
+            st.rerun()
+
+    # 버튼 스타일 오버라이드 (투명하게)
+    st.markdown(f'''
+    <style>
+        [data-testid="stSidebar"] div[data-testid="stButton"] button {{
+            background: transparent !important;
+            border: none !important;
+            color: transparent !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin-top: -48px !important;
+            position: relative !important;
+            z-index: 10 !important;
+        }}
+        [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {{
+            background: transparent !important;
+        }}
+        /* 사이드바 접혔을 때 아이콘만 표시 */
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-label {{
+            display: none !important;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-item {{
+            padding: 14px 0 !important;
+            justify-content: center !important;
+        }}
+        [data-testid="stSidebar"][aria-expanded="false"] .nav-item svg {{
+            width: 24px !important;
+            height: 24px !important;
+        }}
+    </style>
+    ''', unsafe_allow_html=True)
+
+    menu_clean = st.session_state.menu
 
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 

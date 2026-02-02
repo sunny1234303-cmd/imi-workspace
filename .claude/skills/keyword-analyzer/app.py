@@ -50,6 +50,17 @@ COLORS = {
 # 차트 컬러
 CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444']
 
+# SVG 아이콘 (흰색)
+ICONS = {
+    'link': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>''',
+    'trend': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>''',
+    'chart': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>''',
+    'menu': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>''',
+    'close': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>''',
+    'panel_left': '''<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>''',
+    'panel_left_close': '''<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="16 8 12 12 16 16"/></svg>''',
+}
+
 # ===== 검색광고 API =====
 def generate_signature(timestamp, method, uri):
     message = f"{timestamp}.{method}.{uri}"
@@ -382,7 +393,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ===== 온보딩 상태 관리 =====
+# ===== 온보딩 및 사이드바 상태 관리 =====
 if 'onboarding_complete' not in st.session_state:
     st.session_state.onboarding_complete = False
 if 'user_profile' not in st.session_state:
@@ -392,6 +403,8 @@ if 'user_profile' not in st.session_state:
         'role': '',
         'age_group': ''
     }
+if 'sidebar_expanded' not in st.session_state:
+    st.session_state.sidebar_expanded = True
 
 # CSS 스타일 (DESIGN_GUIDE.md 기반)
 st.markdown(f"""
@@ -914,36 +927,83 @@ if not st.session_state.onboarding_complete:
     st.stop()
 
 # ===== 사이드바 표시 (온보딩 완료 후) =====
+sidebar_width = "280px" if st.session_state.sidebar_expanded else "72px"
+
 st.markdown(f"""
 <style>
-    /* 사이드바 강제 표시 - 온보딩 CSS 오버라이드 */
+    /* 사이드바 크기 조절 */
     [data-testid="stSidebar"] {{
-        width: 280px !important;
-        min-width: 280px !important;
+        width: {sidebar_width} !important;
+        min-width: {sidebar_width} !important;
+        max-width: {sidebar_width} !important;
         transform: translateX(0) !important;
         display: block !important;
         visibility: visible !important;
+        transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
     }}
 
-    /* 사이드바 토글 버튼 표시 */
+    [data-testid="stSidebar"] > div:first-child {{
+        width: {sidebar_width} !important;
+        transition: width 0.3s ease !important;
+    }}
+
+    /* Streamlit 기본 토글 버튼 숨기기 */
     [data-testid="collapsedControl"] {{
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        display: flex !important;
-        visibility: visible !important;
+        display: none !important;
+    }}
+
+    /* Streamlit 사이드바 닫기 버튼(X) 숨기기 */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="baseButton-header"],
+    button[kind="header"] {{
+        display: none !important;
+    }}
+
+    /* 커스텀 토글 버튼 */
+    .sidebar-toggle {{
+        position: fixed;
+        top: 16px;
+        left: calc({sidebar_width} + 16px);
+        z-index: 1000;
+        background: {COLORS['primary']};
+        border: none;
+        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }}
+    .sidebar-toggle:hover {{
+        background: {COLORS['accent']};
+        transform: scale(1.05);
+    }}
+    .sidebar-toggle svg {{
+        stroke: white;
     }}
 </style>
 """, unsafe_allow_html=True)
 
 # ===== 사이드바 =====
+is_expanded = st.session_state.sidebar_expanded
+
 with st.sidebar:
     # 사이드바 스타일
+    nav_padding = "12px 16px" if is_expanded else "12px"
+    nav_justify = "flex-start" if is_expanded else "center"
+    toggle_justify = "flex-end" if is_expanded else "center"
+    toggle_padding = "16px" if is_expanded else "8px"
+
     st.markdown(f"""
     <style>
         /* 사이드바 기본 스타일 */
         [data-testid="stSidebar"] {{
             background-color: {COLORS['primary']} !important;
-            padding-top: 1.5rem;
+            padding-top: 1rem;
         }}
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {COLORS['primary']} !important;
@@ -971,66 +1031,214 @@ with st.sidebar:
         }}
         .menu-divider {{
             border-top: 1px solid rgba(255,255,255,0.1);
-            margin: 16px 0;
+            margin: 12px 8px;
         }}
 
-        /* 사이드바 네비게이션 버튼 스타일 */
-        [data-testid="stSidebar"] div[data-testid="stButton"] button {{
+        /* 토글 버튼 (확장 시 - 우측 정렬) */
+        .toggle-btn-right {{
+            display: flex;
+            justify-content: flex-end;
+            padding: 4px 8px;
+        }}
+        .toggle-btn-right button {{
+            background: transparent !important;
+            border: none !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            font-size: 24px !important;
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            min-height: 40px !important;
+        }}
+        .toggle-btn-right button:hover {{
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: white !important;
+        }}
+
+        /* 토글 버튼 (축소 시 - 중앙 정렬) */
+        .toggle-btn-center {{
+            display: flex;
+            justify-content: center;
+            padding: 8px 0;
+        }}
+        .toggle-btn-center button {{
+            background: transparent !important;
+            border: none !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            font-size: 24px !important;
+            padding: 10px !important;
+            border-radius: 8px !important;
+            min-height: 44px !important;
+        }}
+        .toggle-btn-center button:hover {{
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: white !important;
+        }}
+
+        /* 네비게이션 버튼 래퍼 */
+        .nav-wrapper {{
+            position: relative;
+            margin: 0 8px 4px 8px;
+        }}
+
+        /* SVG 아이콘 + 라벨 오버레이 */
+        .nav-display {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: {nav_padding};
+            border-radius: 8px;
+            pointer-events: none;
+            justify-content: {nav_justify};
+        }}
+        .nav-display svg {{
+            stroke: rgba(255, 255, 255, 0.7);
+            flex-shrink: 0;
+        }}
+        .nav-display span {{
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 400;
+            white-space: nowrap;
+        }}
+
+        /* Streamlit 버튼 스타일 오버라이드 */
+        [data-testid="stSidebar"] .stButton > button {{
             background: transparent !important;
             border: none !important;
             border-radius: 8px !important;
             color: rgba(255, 255, 255, 0.7) !important;
             text-align: left !important;
-            padding: 12px 16px !important;
+            padding: {nav_padding} !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             transition: all 0.2s ease !important;
-            justify-content: flex-start !important;
+            justify-content: {nav_justify} !important;
+            width: 100% !important;
         }}
-        [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {{
+        [data-testid="stSidebar"] .stButton > button:hover {{
             background: rgba(255, 255, 255, 0.08) !important;
             color: white !important;
         }}
-        [data-testid="stSidebar"] div[data-testid="stButton"] button:focus {{
+        [data-testid="stSidebar"] .stButton > button:focus {{
             box-shadow: none !important;
         }}
-        /* 활성 메뉴 버튼 */
-        [data-testid="stSidebar"] div[data-testid="stButton"] button[data-active="true"] {{
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] {{
             background: rgba(99, 102, 241, 0.2) !important;
             color: white !important;
             font-weight: 500 !important;
         }}
+
+        /* 아이콘 버튼 (축소 시) */
+        .icon-btn {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            margin: 4px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }}
+        .icon-btn:hover {{
+            background: rgba(255, 255, 255, 0.08);
+        }}
+        .icon-btn[data-active="true"] {{
+            background: rgba(99, 102, 241, 0.2);
+        }}
+        .icon-btn svg {{
+            stroke: rgba(255, 255, 255, 0.7);
+        }}
+        .icon-btn:hover svg,
+        .icon-btn[data-active="true"] svg {{
+            stroke: white;
+        }}
+
+        /* 축소 시 버튼 스타일 */
+        {"" if is_expanded else '''
+        [data-testid="stSidebar"] .nav-wrapper + div .stButton > button {
+            opacity: 0 !important;
+            position: absolute !important;
+            width: 56px !important;
+            height: 44px !important;
+            top: -44px !important;
+            left: 8px !important;
+            z-index: 10 !important;
+        }
+        [data-testid="stSidebar"] .nav-wrapper + div {
+            height: 0 !important;
+            overflow: visible !important;
+        }
+        '''}
     </style>
     """, unsafe_allow_html=True)
 
-    # 메뉴 선택 (session_state로 관리)
-    st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
-    if 'menu' not in st.session_state:
-        st.session_state.menu = "연관키워드"
-
-    # 메뉴 아이템과 아이콘
-    menu_items = [
-        ("연관키워드", "🔗"),
-        ("트렌드 분석", "📈"),
-        ("광고 현황", "📊")
-    ]
-
-    # 네비게이션 버튼 생성
-    for item, icon in menu_items:
-        is_active = st.session_state.menu == item
-        btn_label = f"{icon}  {item}"
-
-        # 활성 상태에 따라 다른 타입 사용
-        if st.button(btn_label, key=f"nav_{item}", use_container_width=True, type="primary" if is_active else "secondary"):
-            st.session_state.menu = item
+    # 토글 버튼
+    if is_expanded:
+        # 확장 시: 우측 정렬
+        st.markdown('<div class="toggle-btn-right">', unsafe_allow_html=True)
+        if st.button("⊟", key="toggle_sidebar", help="사이드바 접기"):
+            st.session_state.sidebar_expanded = False
             st.rerun()
-
-    menu_clean = st.session_state.menu
+        st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        # 축소 시: 중앙 정렬
+        st.markdown('<div class="toggle-btn-center">', unsafe_allow_html=True)
+        if st.button("⊞", key="toggle_sidebar", help="사이드바 펼치기"):
+            st.session_state.sidebar_expanded = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
-    # 트렌드 설정 (트렌드 메뉴일 때만)
-    if menu_clean == "트렌드 분석":
+    # 메뉴 선택 (session_state로 관리)
+    if is_expanded:
+        st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
+    if 'menu' not in st.session_state:
+        st.session_state.menu = "연관키워드"
+
+    # 메뉴 아이템 (SVG 아이콘 사용)
+    menu_items = [
+        ("연관키워드", "link"),
+        ("트렌드 분석", "trend"),
+        ("광고 현황", "chart")
+    ]
+
+    # 메뉴 버튼 생성 - st.columns로 아이콘과 버튼 배치
+    for item, icon_key in menu_items:
+        is_active = st.session_state.menu == item
+        icon_svg = ICONS[icon_key]
+        btn_type = "primary" if is_active else "secondary"
+
+        if is_expanded:
+            # 확장 시: 아이콘 + 텍스트
+            col_icon, col_text = st.columns([1, 5])
+            with col_icon:
+                st.markdown(f'<div style="padding:8px 0; text-align:center;">{icon_svg}</div>', unsafe_allow_html=True)
+            with col_text:
+                if st.button(item, key=f"nav_{item}", use_container_width=True, type=btn_type):
+                    st.session_state.menu = item
+                    st.rerun()
+        else:
+            # 축소 시: 아이콘만 표시 (nav-wrapper로 감싸기)
+            st.markdown(f'''
+            <div class="nav-wrapper">
+                <div class="icon-btn" data-active="{str(is_active).lower()}">
+                    {icon_svg}
+                </div>
+            </div>
+            ''', unsafe_allow_html=True)
+            # 투명 버튼 오버레이
+            if st.button(" ", key=f"nav_{item}", use_container_width=True):
+                st.session_state.menu = item
+                st.rerun()
+
+    menu_clean = st.session_state.menu
+
+    if is_expanded:
+        st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
+
+    # 트렌드 설정 (트렌드 메뉴 + 사이드바 확장 시에만)
+    if menu_clean == "트렌드 분석" and is_expanded:
         st.markdown('<p class="menu-header">조회 설정</p>', unsafe_allow_html=True)
 
         trend_keywords = st.text_input(

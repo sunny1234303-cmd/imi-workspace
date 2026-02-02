@@ -1668,17 +1668,13 @@ if menu_clean == "연관키워드":
 
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
 
-        top_col1, top_col2, top_col3, top_col4 = st.columns([3, 1, 1, 1])
+        top_col1, top_col2, top_col3 = st.columns([4, 1, 1])
         with top_col1:
             st.markdown(f"#### 연관키워드 조회 결과 ({len(df)}개)")
         with top_col2:
-            if st.button("전체추가", use_container_width=True):
-                st.session_state.selected = set(df['연관키워드'].tolist())
-                st.rerun()
-        with top_col3:
             csv = df.drop(columns=['_총검색량']).to_csv(index=False, encoding='utf-8-sig')
             st.download_button("다운로드", csv, "keywords.csv", "text/csv", use_container_width=True)
-        with top_col4:
+        with top_col3:
             filter_comp = st.selectbox("경쟁정도", ["전체", "높음", "중간", "낮음"], label_visibility="collapsed")
 
         if filter_comp != "전체":
@@ -1686,31 +1682,31 @@ if menu_clean == "연관키워드":
 
         st.markdown("---")
 
-        # 2단 헤더
+        # 2단 헤더 - st.columns 비율과 동일하게 맞춤
         st.markdown("""
-        <table class="header-table">
+        <table class="header-table" style="width:100%; table-layout:fixed;">
             <tr>
-                <th rowspan="2" style="width:60px"></th>
-                <th rowspan="2" style="width:200px">연관키워드</th>
-                <th colspan="2" class="group-header">월간검색수</th>
-                <th colspan="2" class="group-header">월평균클릭수</th>
-                <th colspan="2" class="group-header">월평균클릭률</th>
-                <th rowspan="2" style="width:70px">경쟁정도</th>
-                <th rowspan="2" style="width:50px">광고수</th>
+                <th rowspan="2" style="width:6%"></th>
+                <th rowspan="2" style="width:22%">연관키워드</th>
+                <th colspan="2" class="group-header" style="width:16%">월간검색수</th>
+                <th colspan="2" class="group-header" style="width:16%">월평균클릭수</th>
+                <th colspan="2" class="group-header" style="width:16%">월평균클릭률</th>
+                <th rowspan="2" style="width:12%">경쟁정도</th>
+                <th rowspan="2" style="width:6%">광고수</th>
             </tr>
             <tr>
-                <th style="width:70px">PC</th>
-                <th style="width:70px">모바일</th>
-                <th style="width:70px">PC</th>
-                <th style="width:70px">모바일</th>
-                <th style="width:70px">PC</th>
-                <th style="width:70px">모바일</th>
+                <th style="width:8%">PC</th>
+                <th style="width:8%">모바일</th>
+                <th style="width:8%">PC</th>
+                <th style="width:8%">모바일</th>
+                <th style="width:8%">PC</th>
+                <th style="width:8%">모바일</th>
             </tr>
         </table>
         """, unsafe_allow_html=True)
 
         for idx, row in df.iterrows():
-            cols = st.columns([0.5, 2.5, 1.0, 1.0, 0.8, 0.8, 0.7, 0.7, 0.7, 0.5])
+            cols = st.columns([0.6, 2.2, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 1.2, 0.6])
             kw = row['연관키워드']
             is_selected = kw in st.session_state.selected
 
@@ -2388,15 +2384,13 @@ elif menu_clean == "광고 현황":
         st.markdown("### 네이버 광고 운영 현황")
         st.markdown("네이버 검색광고 계정의 캠페인, 광고그룹, 키워드 현황을 확인합니다.")
 
-        # 데이터 불러오기 버튼
-        col_refresh, col_spacer = st.columns([1, 5])
-        with col_refresh:
-            if st.button("🔄 데이터 불러오기", type="primary", use_container_width=True):
-                with st.spinner("캠페인 데이터 불러오는 중..."):
-                    st.session_state.campaigns = get_campaigns()
-                    st.session_state.bizmoney = get_bizmoney()
-                if st.session_state.campaigns:
-                    st.toast(f"✅ {len(st.session_state.campaigns)}개 캠페인 로드 완료")
+        # 페이지 진입 시 자동으로 데이터 로드
+        if st.session_state.campaigns is None:
+            with st.spinner("캠페인 데이터 불러오는 중..."):
+                st.session_state.campaigns = get_campaigns()
+                st.session_state.bizmoney = get_bizmoney()
+            if st.session_state.campaigns:
+                st.rerun()
 
         # 비즈머니 정보
         if st.session_state.bizmoney:
@@ -2445,13 +2439,25 @@ elif menu_clean == "광고 현황":
                     padding: 16px 0;
                     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
                 }}
-                .campaign-name-btn {{
+                /* 캠페인명 버튼을 링크 스타일로 변경 */
+                .campaign-link-btn button {{
+                    background: transparent !important;
+                    border: none !important;
                     color: {COLORS['accent']} !important;
-                    text-decoration: none;
-                    font-weight: 500;
+                    padding: 0 !important;
+                    font-weight: 500 !important;
+                    text-align: left !important;
+                    box-shadow: none !important;
                 }}
-                .campaign-name-btn:hover {{
+                .campaign-link-btn button:hover {{
                     text-decoration: underline;
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                }}
+                .campaign-link-btn button:focus {{
+                    box-shadow: none !important;
+                    outline: none !important;
                 }}
             </style>
             """, unsafe_allow_html=True)
@@ -2507,13 +2513,15 @@ elif menu_clean == "광고 현황":
                 with cols[1]:
                     st.markdown(status)
                 with cols[2]:
-                    # 캠페인명 클릭 시 상세 페이지로 이동
-                    if st.button(campaign_name, key=f"camp_{idx}", use_container_width=True):
+                    # 캠페인명 클릭 시 상세 페이지로 이동 (링크 스타일)
+                    st.markdown('<div class="campaign-link-btn">', unsafe_allow_html=True)
+                    if st.button(campaign_name, key=f"camp_{idx}"):
                         st.session_state.selected_campaign_id = campaign_id
                         st.session_state.adgroups = None
                         st.session_state.selected_adgroup_id = None
                         st.session_state.ad_keywords = None
                         st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
                 with cols[3]:
                     st.markdown(campaign_type)
                 with cols[4]:
@@ -2524,12 +2532,4 @@ elif menu_clean == "광고 현황":
                     st.markdown(bid_strategy)
 
         else:
-            st.info("'데이터 불러오기' 버튼을 클릭하여 캠페인 목록을 조회하세요.")
-            st.markdown("")
-            st.markdown("**조회 가능 정보:**")
-            st.markdown("""
-            - 비즈머니 잔액
-            - 캠페인 목록 및 상태
-            - 광고그룹 상세
-            - 키워드별 입찰가 및 품질지수
-            """)
+            st.warning("캠페인 데이터를 불러올 수 없습니다. API 설정을 확인해주세요.")

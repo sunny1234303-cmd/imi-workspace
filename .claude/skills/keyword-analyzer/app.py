@@ -1322,6 +1322,30 @@ with st.sidebar:
         st.markdown("")
         trend_btn = st.button("조회하기", type="primary", use_container_width=True)
 
+    # ===== 개인설정 (하단 고정) =====
+    if is_expanded:
+        # 하단 여백 확보
+        st.markdown('<div style="flex: 1;"></div>', unsafe_allow_html=True)
+        st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
+
+        user_name = st.session_state.user_profile.get('name', '')
+        user_role = st.session_state.user_profile.get('role', '')
+
+        if user_name:
+            st.markdown(f"""
+            <div style="padding: 12px 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 36px; height: 36px; background: {COLORS['accent']}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 500; font-size: 14px;">
+                        {user_name[0].upper() if user_name else '?'}
+                    </div>
+                    <div>
+                        <div style="color: white; font-size: 14px; font-weight: 500;">{user_name}</div>
+                        <div style="color: rgba(255,255,255,0.5); font-size: 12px;">{user_role if user_role else '마케터'}</div>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
 # ===== 메인 콘텐츠 =====
 
 # 세션 상태
@@ -1544,7 +1568,6 @@ if menu_clean == "연관키워드":
         st.markdown("")
 
     # ===== 검색 박스 =====
-    st.markdown('<div class="header-box">', unsafe_allow_html=True)
     st.markdown("### 연관키워드 조회")
 
     col1, col2, col3 = st.columns([2, 1, 1])
@@ -1558,8 +1581,6 @@ if menu_clean == "연관키워드":
         include_related = st.checkbox("연관 키워드 포함", value=True)
     with col3:
         search_btn = st.button("조회하기", type="primary", use_container_width=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
     if search_btn and keywords_input.strip():
         keywords = [k.strip() for k in keywords_input.replace('\n', ',').split(',') if k.strip()][:5]
@@ -1713,7 +1734,7 @@ if menu_clean == "연관키워드":
 
 # ===== 트렌드 분석 페이지 =====
 elif menu_clean == "트렌드 분석":
-    st.markdown("### 📈 키워드 트렌드 분석")
+    st.markdown("### 키워드 트렌드 분석")
     st.markdown("네이버 데이터랩 API를 통해 키워드별 검색 트렌드를 확인합니다.")
 
     # 분석 조건 표시 바 (조회한 경우에만 표시)
@@ -1745,10 +1766,10 @@ elif menu_clean == "트렌드 분석":
         st.markdown(f"""
         <style>
             .analysis-info-bar {{
-                background: white;
-                border: 1px solid rgba(0, 0, 0, 0.06);
+                background: transparent;
+                border: none;
                 border-left: 4px solid {COLORS['accent']};
-                border-radius: 8px;
+                border-radius: 0;
                 padding: 16px 20px;
                 margin-bottom: 20px;
             }}
@@ -1797,7 +1818,7 @@ elif menu_clean == "트렌드 분석":
 
         st.markdown(f"""
         <div class="analysis-info-bar">
-            <div class="info-title">📊 현재 분석 조건</div>
+            <div class="info-title">현재 분석 조건</div>
             <div class="info-content">
                 <span class="info-item"><span class="info-label">기간</span>{period_display}</span>
                 <span class="info-item"><span class="info-label">단위</span>{unit_label}</span>
@@ -1921,8 +1942,7 @@ elif menu_clean == "트렌드 분석":
         st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        st.markdown('<div class="result-box">', unsafe_allow_html=True)
-        st.info("👈 왼쪽 사이드바에서 키워드와 조건을 입력하고 '트렌드 조회' 버튼을 클릭하세요.")
+        st.info("왼쪽 사이드바에서 키워드와 조건을 입력하고 '트렌드 조회' 버튼을 클릭하세요.")
 
         st.markdown("---")
         st.markdown("**사용 방법:**")
@@ -1933,7 +1953,6 @@ elif menu_clean == "트렌드 분석":
         4. **디바이스**: PC/모바일/전체
         5. **성별/연령**: 타겟 세분화 (선택사항)
         """)
-        st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ===== 광고 운영 현황 페이지 =====
@@ -1986,10 +2005,10 @@ elif menu_clean == "광고 현황":
             st.markdown(f"""
             <style>
                 .campaign-detail-header {{
-                    background: white;
-                    border: 1px solid rgba(0, 0, 0, 0.06);
-                    border-radius: 8px;
-                    padding: 24px;
+                    background: transparent;
+                    border: none;
+                    border-radius: 0;
+                    padding: 24px 0;
                     margin-bottom: 20px;
                 }}
                 .breadcrumb {{
@@ -2146,12 +2165,7 @@ elif menu_clean == "광고 현황":
                         st.info("조회 기간에 성과 데이터가 없습니다.")
                 else:
                     # 조회 전 안내
-                    st.markdown(f"""
-                    <div style="background: white; border: 1px solid rgba(0, 0, 0, 0.06); border-radius: 8px; padding: 48px; text-align: center; color: rgba(26, 26, 26, 0.6);">
-                        <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📊</div>
-                        <div style="font-size: 14px;">'성과 조회' 버튼을 클릭하여 데이터를 불러오세요</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    st.info("'성과 조회' 버튼을 클릭하여 데이터를 불러오세요")
 
             with col_info:
                 # 캠페인 정보 패널
@@ -2298,7 +2312,7 @@ elif menu_clean == "광고 현황":
 
     # ===== 캠페인 목록 뷰 (기본) =====
     else:
-        st.markdown("### 📊 네이버 광고 운영 현황")
+        st.markdown("### 네이버 광고 운영 현황")
         st.markdown("네이버 검색광고 계정의 캠페인, 광고그룹, 키워드 현황을 확인합니다.")
 
         # 데이터 불러오기 버튼
@@ -2330,7 +2344,7 @@ elif menu_clean == "광고 현황":
             campaigns = st.session_state.campaigns
 
             st.markdown("---")
-            st.markdown("#### 📁 캠페인 목록")
+            st.markdown("#### 캠페인 목록")
             st.caption("캠페인명을 클릭하면 상세 정보를 확인할 수 있습니다.")
 
             # 캠페인 상태별 분류
@@ -2437,14 +2451,12 @@ elif menu_clean == "광고 현황":
                     st.markdown(bid_strategy)
 
         else:
-            st.markdown('<div class="result-box">', unsafe_allow_html=True)
-            st.info("👆 '데이터 불러오기' 버튼을 클릭하여 캠페인 목록을 조회하세요.")
+            st.info("'데이터 불러오기' 버튼을 클릭하여 캠페인 목록을 조회하세요.")
             st.markdown("")
             st.markdown("**조회 가능 정보:**")
             st.markdown("""
-            - 💰 비즈머니 잔액
-            - 📁 캠페인 목록 및 상태
-            - 📂 광고그룹 상세
-            - 🔑 키워드별 입찰가 및 품질지수
+            - 비즈머니 잔액
+            - 캠페인 목록 및 상태
+            - 광고그룹 상세
+            - 키워드별 입찰가 및 품질지수
             """)
-            st.markdown('</div>', unsafe_allow_html=True)

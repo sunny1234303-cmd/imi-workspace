@@ -47,6 +47,28 @@ COLORS = {
     'accent_hover': '#4F46E5',  # Accent hover
 }
 
+# 사용자 데이터 파일 경로
+USER_DATA_PATH = Path(__file__).parent / 'user_data.json'
+
+def load_user_data():
+    """저장된 사용자 정보 로드"""
+    if USER_DATA_PATH.exists():
+        try:
+            with open(USER_DATA_PATH, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return None
+    return None
+
+def save_user_data(user_profile):
+    """사용자 정보 저장"""
+    try:
+        with open(USER_DATA_PATH, 'w', encoding='utf-8') as f:
+            json.dump(user_profile, f, ensure_ascii=False, indent=2)
+        return True
+    except:
+        return False
+
 # 차트 컬러
 CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444']
 
@@ -394,15 +416,21 @@ st.set_page_config(
 )
 
 # ===== 온보딩 및 사이드바 상태 관리 =====
+# 저장된 사용자 정보 확인 (영구 저장)
+saved_user = load_user_data()
 if 'onboarding_complete' not in st.session_state:
-    st.session_state.onboarding_complete = False
+    # 저장된 사용자 정보가 있으면 온보딩 완료 상태로
+    st.session_state.onboarding_complete = saved_user is not None
 if 'user_profile' not in st.session_state:
-    st.session_state.user_profile = {
-        'name': '',
-        'occupation': '',
-        'role': '',
-        'age_group': ''
-    }
+    if saved_user:
+        st.session_state.user_profile = saved_user
+    else:
+        st.session_state.user_profile = {
+            'name': '',
+            'occupation': '',
+            'role': '',
+            'age_group': ''
+        }
 if 'sidebar_expanded' not in st.session_state:
     st.session_state.sidebar_expanded = True
 
@@ -543,14 +571,14 @@ st.markdown(f"""
 
     /* === Cards === */
     .header-box {{
-        background: white;
+        background: transparent;
         border: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 8px;
         padding: 24px;
         margin-bottom: 20px;
     }}
     .result-box {{
-        background: white;
+        background: transparent;
         border: 1px solid rgba(0, 0, 0, 0.06);
         border-radius: 8px;
         padding: 24px;
@@ -565,7 +593,7 @@ st.markdown(f"""
 
     /* Card hover effect */
     .stat-card {{
-        background: white;
+        background: transparent;
         padding: 24px;
         border-radius: 8px;
         border: 1px solid rgba(0, 0, 0, 0.06);
@@ -583,7 +611,7 @@ st.markdown(f"""
         margin-bottom: 8px;
     }}
     .header-table th {{
-        background: white;
+        background: {COLORS['bg']};
         border: 1px solid rgba(0, 0, 0, 0.06);
         padding: 12px;
         text-align: center;
@@ -594,7 +622,7 @@ st.markdown(f"""
         letter-spacing: 0.5px;
     }}
     .header-table .group-header {{
-        background: rgba(99, 102, 241, 0.05);
+        background: rgba(99, 102, 241, 0.08);
     }}
 
     /* DataFrame */
@@ -692,6 +720,32 @@ if not st.session_state.onboarding_complete:
             animation: fadeInUp 1s ease-out 0.6s both;
         }}
 
+        /* 스크롤 인터랙션 - 폼 영역 (CSS scroll-driven animation) */
+        @keyframes growOnScroll {{
+            from {{
+                transform: scale(0.7) translateY(80px);
+                opacity: 0;
+            }}
+            to {{
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }}
+        }}
+
+        .scroll-grow-container {{
+            animation: growOnScroll linear both;
+            animation-timeline: view();
+            animation-range: entry 0% cover 40%;
+            transform-origin: center top;
+        }}
+
+        /* 폴백 - scroll-timeline 미지원 브라우저 */
+        @supports not (animation-timeline: view()) {{
+            .scroll-grow-container {{
+                animation: fadeInUp 0.8s ease-out 0.5s both;
+            }}
+        }}
+
         .setup-title {{
             font-size: 24px;
             font-weight: 500;
@@ -712,6 +766,18 @@ if not st.session_state.onboarding_complete:
             padding: 0;
             border: none;
             box-shadow: none;
+            /* 스크롤 인터랙션 */
+            animation: growOnScroll linear both;
+            animation-timeline: view();
+            animation-range: entry 0% cover 50%;
+            transform-origin: center top;
+        }}
+
+        /* 폴백 - scroll-timeline 미지원 브라우저 */
+        @supports not (animation-timeline: view()) {{
+            .setup-form {{
+                animation: fadeInUp 0.8s ease-out 0.8s both;
+            }}
         }}
 
         /* 모던 입력 필드 스타일 */
@@ -858,9 +924,9 @@ if not st.session_state.onboarding_complete:
     </div>
     """, unsafe_allow_html=True)
 
-    # 설정 섹션 (스크롤 후)
+    # 설정 섹션 (스크롤 후) - CSS scroll-driven animation 적용
     st.markdown("""
-    <div style="padding-top: 80px; padding-bottom: 40px;">
+    <div id="setup-grow-section" class="scroll-grow-container" style="padding-top: 80px; padding-bottom: 40px;">
         <div class="setup-title">몇 가지 설정이 필요해요</div>
         <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
     </div>
@@ -906,20 +972,27 @@ if not st.session_state.onboarding_complete:
             # 시작하기 버튼
             if st.button("시작하기", type="primary", use_container_width=True, key="start_btn"):
                 if user_name.strip():
-                    st.session_state.user_profile = {
+                    user_profile = {
                         'name': user_name,
                         'occupation': user_occupation,
                         'role': user_role,
                         'age_group': user_age
                     }
+                    st.session_state.user_profile = user_profile
                     st.session_state.onboarding_complete = True
+                    # 파일에 영구 저장
+                    save_user_data(user_profile)
                     st.rerun()
                 else:
                     st.warning("이름을 입력해주세요")
 
             # 건너뛰기
             if st.button("건너뛰기", use_container_width=True, key="skip_btn"):
+                # 건너뛰기도 기본 프로필로 저장
+                default_profile = {'name': 'Guest', 'occupation': '', 'role': '', 'age_group': ''}
+                st.session_state.user_profile = default_profile
                 st.session_state.onboarding_complete = True
+                save_user_data(default_profile)
                 st.rerun()
 
             st.markdown('</div>', unsafe_allow_html=True)
@@ -1637,7 +1710,7 @@ if menu_clean == "연관키워드":
         """, unsafe_allow_html=True)
 
         for idx, row in df.iterrows():
-            cols = st.columns([0.5, 3.5, 0.7, 0.7, 0.7, 0.7, 0.6, 0.6, 0.6, 0.5])
+            cols = st.columns([0.5, 2.5, 1.0, 1.0, 0.8, 0.8, 0.7, 0.7, 0.7, 0.5])
             kw = row['연관키워드']
             is_selected = kw in st.session_state.selected
 
@@ -1652,22 +1725,22 @@ if menu_clean == "연관키워드":
                         st.rerun()
 
             cols[1].markdown(f"{'**' + kw + '**' if is_selected else kw}")
-            cols[2].write(f"{row['PC']:,}")
-            cols[3].write(f"{row['모바일']:,}")
-            cols[4].write(f"{row['PC_클릭']}")
-            cols[5].write(f"{row['모바일_클릭']}")
-            cols[6].write(f"{row['PC_CTR']}%")
-            cols[7].write(f"{row['모바일_CTR']}%")
+            cols[2].markdown(f"<div style='text-align:center'>{row['PC']:,}</div>", unsafe_allow_html=True)
+            cols[3].markdown(f"<div style='text-align:center'>{row['모바일']:,}</div>", unsafe_allow_html=True)
+            cols[4].markdown(f"<div style='text-align:center'>{row['PC_클릭']}</div>", unsafe_allow_html=True)
+            cols[5].markdown(f"<div style='text-align:center'>{row['모바일_클릭']}</div>", unsafe_allow_html=True)
+            cols[6].markdown(f"<div style='text-align:center'>{row['PC_CTR']}%</div>", unsafe_allow_html=True)
+            cols[7].markdown(f"<div style='text-align:center'>{row['모바일_CTR']}%</div>", unsafe_allow_html=True)
 
             comp = row['경쟁정도']
             if comp == '높음':
-                cols[8].markdown("🔴 높음")
+                cols[8].markdown("<div style='text-align:center'>🔴 높음</div>", unsafe_allow_html=True)
             elif comp == '중간':
-                cols[8].markdown("🟡 중간")
+                cols[8].markdown("<div style='text-align:center'>🟡 중간</div>", unsafe_allow_html=True)
             else:
-                cols[8].markdown("🟢 낮음")
+                cols[8].markdown("<div style='text-align:center'>🟢 낮음</div>", unsafe_allow_html=True)
 
-            cols[9].write(row['광고수'])
+            cols[9].markdown(f"<div style='text-align:center'>{row['광고수']}</div>", unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 

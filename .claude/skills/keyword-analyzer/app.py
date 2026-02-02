@@ -375,7 +375,12 @@ def format_trend_results(api_result):
 
 
 # ===== 페이지 설정 =====
-st.set_page_config(page_title="키워드 분석 도구", page_icon="🔍", layout="wide")
+st.set_page_config(
+    page_title="키워드 분석 도구",
+    page_icon="🔍",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # ===== 온보딩 상태 관리 =====
 if 'onboarding_complete' not in st.session_state:
@@ -784,12 +789,15 @@ if not st.session_state.onboarding_complete:
             60% {{ transform: translateX(-50%) translateY(-5px); }}
         }}
 
-        /* 사이드바 숨기기 (온보딩 시) */
+        /* 온보딩 시 사이드바 최소화 */
         [data-testid="stSidebar"] {{
-            display: none !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            transform: translateX(-100%) !important;
         }}
         [data-testid="collapsedControl"] {{
-            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }}
     </style>
     """, unsafe_allow_html=True)
@@ -905,14 +913,40 @@ if not st.session_state.onboarding_complete:
 
     st.stop()
 
+# ===== 사이드바 표시 (온보딩 완료 후) =====
+st.markdown(f"""
+<style>
+    /* 사이드바 강제 표시 - 온보딩 CSS 오버라이드 */
+    [data-testid="stSidebar"] {{
+        width: 280px !important;
+        min-width: 280px !important;
+        transform: translateX(0) !important;
+        display: block !important;
+        visibility: visible !important;
+    }}
+
+    /* 사이드바 토글 버튼 표시 */
+    [data-testid="collapsedControl"] {{
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        display: flex !important;
+        visibility: visible !important;
+    }}
+</style>
+""", unsafe_allow_html=True)
+
 # ===== 사이드바 =====
 with st.sidebar:
-    # 사이드바 스타일 (DESIGN_GUIDE.md 기반)
+    # 사이드바 스타일
     st.markdown(f"""
     <style>
+        /* 사이드바 기본 스타일 */
         [data-testid="stSidebar"] {{
-            background-color: {COLORS['primary']};
-            padding-top: 2rem;
+            background-color: {COLORS['primary']} !important;
+            padding-top: 1.5rem;
+        }}
+        [data-testid="stSidebar"] > div:first-child {{
+            background-color: {COLORS['primary']} !important;
         }}
         [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {{
             color: rgba(255, 255, 255, 0.7) !important;
@@ -926,264 +960,70 @@ with st.sidebar:
             color: rgba(255,255,255,0.7) !important;
             font-size: 13px !important;
         }}
-        .sidebar-title {{
-            font-size: 20px;
-            font-weight: 600;
-            color: white !important;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-        }}
-        .sidebar-subtitle {{
-            font-size: 13px;
-            color: rgba(255,255,255,0.5) !important;
-            margin-bottom: 24px;
-        }}
         .menu-header {{
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            color: rgba(255,255,255,0.5) !important;
+            color: rgba(255,255,255,0.4) !important;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 16px;
+            letter-spacing: 1px;
+            padding: 0 8px;
             margin-bottom: 8px;
         }}
         .menu-divider {{
             border-top: 1px solid rgba(255,255,255,0.1);
             margin: 16px 0;
         }}
-        /* 커스텀 메뉴 버튼 스타일 */
-        .nav-menu {{
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }}
-        .nav-btn {{
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px 12px 24px;
-            background: transparent;
-            border: none;
-            border-left: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            text-align: left;
-        }}
-        .nav-btn:hover {{
-            background: rgba(255, 255, 255, 0.05);
-            border-left-color: rgba(255, 255, 255, 0.3);
-        }}
-        .nav-btn.active {{
-            background: rgba(99, 102, 241, 0.15);
-            border-left-color: {COLORS['accent']};
-        }}
-        .nav-btn .nav-icon {{
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }}
-        .nav-btn .nav-icon svg {{
-            width: 20px;
-            height: 20px;
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.6);
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }}
-        .nav-btn:hover .nav-icon svg {{
-            stroke: rgba(255, 255, 255, 0.9);
-        }}
-        .nav-btn.active .nav-icon svg {{
-            stroke: white;
-        }}
-        .nav-btn .nav-label {{
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-            font-weight: 400;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }}
-        .nav-btn:hover .nav-label {{
-            color: rgba(255, 255, 255, 0.9);
-        }}
-        .nav-btn.active .nav-label {{
-            color: white;
-            font-weight: 500;
-        }}
 
-        /* 사이드바 접혔을 때 아이콘만 표시 */
-        [data-testid="stSidebar"][aria-expanded="false"] .sidebar-title,
-        [data-testid="stSidebar"][aria-expanded="false"] .sidebar-subtitle,
-        [data-testid="stSidebar"][aria-expanded="false"] .menu-header,
-        [data-testid="stSidebar"][aria-expanded="false"] .menu-divider {{
-            display: none !important;
+        /* 사이드바 네비게이션 버튼 스타일 */
+        [data-testid="stSidebar"] div[data-testid="stButton"] button {{
+            background: transparent !important;
+            border: none !important;
+            border-radius: 8px !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            text-align: left !important;
+            padding: 12px 16px !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            transition: all 0.2s ease !important;
+            justify-content: flex-start !important;
         }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn {{
-            padding: 14px 0;
-            justify-content: center;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-label {{
-            display: none;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-icon {{
-            width: 24px;
-            height: 24px;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-btn .nav-icon svg {{
-            width: 24px;
-            height: 24px;
-        }}
-    </style>
-    """, unsafe_allow_html=True)
-
-    # 로고 (클릭 시 온보딩으로)
-    st.markdown("""
-    <style>
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 0;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .sidebar-logo:hover {
-            opacity: 0.7;
-        }
-        .sidebar-logo-text {
-            font-size: 18px;
-            font-weight: 600;
+        [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {{
+            background: rgba(255, 255, 255, 0.08) !important;
             color: white !important;
-            letter-spacing: -0.5px;
-        }
-        /* 홈 버튼 스타일 숨기기 */
-        div[data-testid="stButton"]:has(button[key="home_btn"]) button {
-            position: absolute;
-            width: 150px;
-            height: 40px;
-            opacity: 0;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-        }
-        .logo-container {
-            position: relative;
-        }
+        }}
+        [data-testid="stSidebar"] div[data-testid="stButton"] button:focus {{
+            box-shadow: none !important;
+        }}
+        /* 활성 메뉴 버튼 */
+        [data-testid="stSidebar"] div[data-testid="stButton"] button[data-active="true"] {{
+            background: rgba(99, 102, 241, 0.2) !important;
+            color: white !important;
+            font-weight: 500 !important;
+        }}
     </style>
-    <div class="logo-container">
-        <div class="sidebar-logo">
-            <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="20" r="18" fill="white"/>
-                <path d="M12 20C12 15.5817 15.5817 12 20 12C24.4183 12 28 15.5817 28 20" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="20" cy="20" r="4" fill="#1a1a1a"/>
-                <path d="M20 24V28" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-            <span class="sidebar-logo-text">Aha AI</span>
-        </div>
-    </div>
     """, unsafe_allow_html=True)
-
-    if st.button("홈", key="home_btn", type="secondary"):
-        st.session_state.onboarding_complete = False
-        st.rerun()
-
-    st.markdown('<p class="sidebar-subtitle">마케터를 위한 올인원 AI</p>', unsafe_allow_html=True)
-
-    st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
     # 메뉴 선택 (session_state로 관리)
     st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
         st.session_state.menu = "연관키워드"
 
-    # SVG 아이콘 정의 (Feather Icons 스타일)
-    MENU_ICONS = {
-        "연관키워드": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-        "트렌드 분석": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
-        "광고 현황": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'
-    }
+    # 메뉴 아이템과 아이콘
+    menu_items = [
+        ("연관키워드", "🔗"),
+        ("트렌드 분석", "📈"),
+        ("광고 현황", "📊")
+    ]
 
-    menu_items = ["연관키워드", "트렌드 분석", "광고 현황"]
-
-    # 각 메뉴 항목을 개별 버튼으로 생성
-    for item in menu_items:
+    # 네비게이션 버튼 생성
+    for item, icon in menu_items:
         is_active = st.session_state.menu == item
-        icon = MENU_ICONS[item]
+        btn_label = f"{icon}  {item}"
 
-        # 버튼 컨테이너에 스타일 적용
-        btn_style = f"""
-        <style>
-            div[data-testid="stButton"]:has(button[kind="secondary"]:contains("{item}")) button {{
-                background: {'rgba(99, 102, 241, 0.15)' if is_active else 'transparent'} !important;
-                border-left: 2px solid {COLORS['accent'] if is_active else 'transparent'} !important;
-                border-right: none !important;
-                border-top: none !important;
-                border-bottom: none !important;
-                border-radius: 0 !important;
-                color: {'white' if is_active else 'rgba(255,255,255,0.6)'} !important;
-                font-weight: {'500' if is_active else '400'} !important;
-            }}
-        </style>
-        """
-
-        # 아이콘 + 텍스트 표시
-        st.markdown(f'''
-        <div class="nav-item {'active' if is_active else ''}" style="
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px 12px 24px;
-            background: {'rgba(99, 102, 241, 0.15)' if is_active else 'transparent'};
-            border-left: 2px solid {'#6366F1' if is_active else 'transparent'};
-            cursor: pointer;
-            color: {'white' if is_active else 'rgba(255,255,255,0.6)'};
-            font-size: 13px;
-            font-weight: {'500' if is_active else '400'};
-            transition: all 0.2s;
-        ">
-            <span style="display: flex; align-items: center;">{icon}</span>
-            <span class="nav-label">{item}</span>
-        </div>
-        ''', unsafe_allow_html=True)
-
-        # 실제 클릭 처리를 위한 투명 버튼
-        if st.button(item, key=f"nav_{item}", use_container_width=True):
+        # 활성 상태에 따라 다른 타입 사용
+        if st.button(btn_label, key=f"nav_{item}", use_container_width=True, type="primary" if is_active else "secondary"):
             st.session_state.menu = item
             st.rerun()
-
-    # 버튼 스타일 오버라이드 (투명하게)
-    st.markdown(f'''
-    <style>
-        [data-testid="stSidebar"] div[data-testid="stButton"] button {{
-            background: transparent !important;
-            border: none !important;
-            color: transparent !important;
-            height: 0 !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            margin-top: -48px !important;
-            position: relative !important;
-            z-index: 10 !important;
-        }}
-        [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {{
-            background: transparent !important;
-        }}
-        /* 사이드바 접혔을 때 아이콘만 표시 */
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-label {{
-            display: none !important;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-item {{
-            padding: 14px 0 !important;
-            justify-content: center !important;
-        }}
-        [data-testid="stSidebar"][aria-expanded="false"] .nav-item svg {{
-            width: 24px !important;
-            height: 24px !important;
-        }}
-    </style>
-    ''', unsafe_allow_html=True)
 
     menu_clean = st.session_state.menu
 

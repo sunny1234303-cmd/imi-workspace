@@ -2439,25 +2439,43 @@ elif menu_clean == "광고 현황":
                     padding: 16px 0;
                     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
                 }}
-                /* 캠페인명 버튼을 링크 스타일로 변경 */
-                .campaign-link-btn button {{
-                    background: transparent !important;
+                /* 캠페인명 버튼을 링크 스타일로 완전히 변경 */
+                .campaign-link-btn [data-testid="stButton"] button,
+                .campaign-link-btn [data-testid="baseButton-secondary"],
+                .campaign-link-btn button[kind="secondary"] {{
+                    background: none !important;
+                    background-color: transparent !important;
                     border: none !important;
+                    border-radius: 0 !important;
                     color: {COLORS['accent']} !important;
                     padding: 0 !important;
+                    margin: 0 !important;
                     font-weight: 500 !important;
                     text-align: left !important;
                     box-shadow: none !important;
+                    min-height: auto !important;
+                    height: auto !important;
+                    line-height: 1.5 !important;
                 }}
-                .campaign-link-btn button:hover {{
-                    text-decoration: underline;
-                    background: transparent !important;
+                .campaign-link-btn [data-testid="stButton"] button:hover,
+                .campaign-link-btn [data-testid="baseButton-secondary"]:hover,
+                .campaign-link-btn button[kind="secondary"]:hover {{
+                    text-decoration: underline !important;
+                    background: none !important;
+                    background-color: transparent !important;
                     border: none !important;
                     box-shadow: none !important;
                 }}
-                .campaign-link-btn button:focus {{
+                .campaign-link-btn [data-testid="stButton"] button:focus,
+                .campaign-link-btn [data-testid="baseButton-secondary"]:focus,
+                .campaign-link-btn button[kind="secondary"]:focus {{
                     box-shadow: none !important;
                     outline: none !important;
+                }}
+                .campaign-link-btn [data-testid="stButton"] button:active,
+                .campaign-link-btn [data-testid="baseButton-secondary"]:active {{
+                    background: none !important;
+                    background-color: transparent !important;
                 }}
             </style>
             """, unsafe_allow_html=True)

@@ -416,6 +416,80 @@ def format_trend_results(api_result):
     return df
 
 
+def analyze_trend_seasons(trend_df):
+    """트렌드 데이터에서 성수기/비수기 분석"""
+    if trend_df is None or len(trend_df) == 0:
+        return None
+
+    analysis = {}
+
+    for kw in trend_df['키워드'].unique():
+        kw_data = trend_df[trend_df['키워드'] == kw].copy()
+        kw_data['월'] = kw_data['날짜'].dt.month
+        kw_data['월이름'] = kw_data['날짜'].dt.strftime('%m월')
+
+        # 전체 평균
+        overall_avg = kw_data['검색지수'].mean()
+
+        # 월별 평균 계산
+        monthly_avg = kw_data.groupby(['월', '월이름'])['검색지수'].mean().reset_index()
+        monthly_avg = monthly_avg.sort_values('월')
+
+        # 성수기/비수기 판단 (평균 대비 20% 이상/이하)
+        high_threshold = overall_avg * 1.2
+        low_threshold = overall_avg * 0.8
+
+        peak_months = monthly_avg[monthly_avg['검색지수'] >= high_threshold]['월이름'].tolist()
+        off_months = monthly_avg[monthly_avg['검색지수'] <= low_threshold]['월이름'].tolist()
+
+        # 최고/최저 시점
+        max_idx = kw_data['검색지수'].idxmax()
+        min_idx = kw_data['검색지수'].idxmin()
+        max_date = kw_data.loc[max_idx, '날짜'].strftime('%Y. %m. %d.')
+        min_date = kw_data.loc[min_idx, '날짜'].strftime('%Y. %m. %d.')
+        max_value = round(kw_data.loc[max_idx, '검색지수'], 1)
+        min_value = round(kw_data.loc[min_idx, '검색지수'], 1)
+
+        # 추세 분석 (선형회귀 기울기)
+        if len(kw_data) >= 2:
+            x = range(len(kw_data))
+            y = kw_data['검색지수'].values
+            slope = (y[-1] - y[0]) / len(y) if len(y) > 0 else 0
+            if slope > 1:
+                trend = "상승"
+            elif slope < -1:
+                trend = "하락"
+            else:
+                trend = "유지"
+        else:
+            trend = "데이터 부족"
+
+        # 변동성 (표준편차 / 평균)
+        std = kw_data['검색지수'].std()
+        volatility = (std / overall_avg * 100) if overall_avg > 0 else 0
+        if volatility > 30:
+            volatility_desc = "높음 (계절성 뚜렷)"
+        elif volatility > 15:
+            volatility_desc = "보통"
+        else:
+            volatility_desc = "낮음 (안정적)"
+
+        analysis[kw] = {
+            'overall_avg': round(overall_avg, 1),
+            'peak_months': peak_months if peak_months else ['없음'],
+            'off_months': off_months if off_months else ['없음'],
+            'max_date': max_date,
+            'max_value': max_value,
+            'min_date': min_date,
+            'min_value': min_value,
+            'trend': trend,
+            'volatility': volatility_desc,
+            'monthly_data': monthly_avg.to_dict('records')
+        }
+
+    return analysis
+
+
 # ===== 페이지 설정 =====
 st.set_page_config(
     page_title="키워드 분석 도구",
@@ -1619,6 +1693,186 @@ if 'auto_show_trend' not in st.session_state:
     st.session_state.auto_show_trend = False
 
 
+# ===== AI 트렌드 요약 팝업 =====
+@st.dialog("AI 트렌드 분석", width="large")
+def show_ai_summary_dialog(analysis):
+    """AI가 분석한 트렌드 성수기/비수기 요약 팝업"""
+    if not analysis:
+        st.warning("분석할 데이터가 없습니다.")
+        return
+
+    # 팝업 스타일
+    st.markdown("""
+    <style>
+        .section-title { font-size: 22px; font-weight: 700; color: #212529; margin: 0 0 20px 0; }
+        .insight-box { font-size: 16px; color: #343a40; line-height: 1.8; margin-bottom: 24px; }
+        .season-row { display: flex; gap: 40px; margin: 20px 0; }
+        .season-item { flex: 1; }
+        .season-label { font-size: 12px; color: #868e96; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .season-value { font-size: 22px; font-weight: 600; color: #212529; padding-bottom: 10px; }
+        .season-peak { border-bottom: 3px solid #ff6b6b; }
+        .season-off { border-bottom: 3px solid #4dabf7; }
+        .stat-grid { display: flex; gap: 24px; margin: 16px 0 24px 0; }
+        .stat-item { }
+        .stat-label { font-size: 12px; color: #868e96; margin-bottom: 4px; }
+        .stat-value { font-size: 15px; font-weight: 500; color: #495057; }
+        .keyword-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid #dee2e6; }
+        .keyword-title { font-size: 18px; font-weight: 600; color: #212529; margin-bottom: 16px; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== 데이터 집계 =====
+    all_peak_months = {}
+    all_off_months = {}
+    trends = []
+    total_avg = 0
+
+    for kw, data in analysis.items():
+        for month in data['peak_months']:
+            if month != '없음':
+                all_peak_months[month] = all_peak_months.get(month, 0) + 1
+        for month in data['off_months']:
+            if month != '없음':
+                all_off_months[month] = all_off_months.get(month, 0) + 1
+        trends.append(data['trend'])
+        total_avg += data['overall_avg']
+
+    keyword_count = len(analysis)
+    if keyword_count > 1:
+        common_peak = [m for m, c in sorted(all_peak_months.items(), key=lambda x: -x[1]) if c >= 2][:3]
+        common_off = [m for m, c in sorted(all_off_months.items(), key=lambda x: -x[1]) if c >= 2][:3]
+    else:
+        common_peak = list(all_peak_months.keys())[:3]
+        common_off = list(all_off_months.keys())[:3]
+
+    if not common_peak:
+        common_peak = list(all_peak_months.keys())[:3] if all_peak_months else ['없음']
+    if not common_off:
+        common_off = list(all_off_months.keys())[:3] if all_off_months else ['없음']
+
+    trend_counts = {'상승': trends.count('상승'), '하락': trends.count('하락'), '유지': trends.count('유지')}
+    overall_trend = max(trend_counts, key=trend_counts.get)
+
+    # ===== 전체 요약 =====
+    st.markdown('<div class="section-title">전체 요약</div>', unsafe_allow_html=True)
+
+    # 전략 제안 (먼저 표시)
+    strategy_parts = []
+    if common_peak != ['없음']:
+        strategy_parts.append(f"<strong>{', '.join(common_peak)}</strong>에 광고 예산을 집중하세요.")
+    if common_off != ['없음']:
+        strategy_parts.append(f"<strong>{', '.join(common_off)}</strong>에는 브랜딩 위주로 전환하세요.")
+    if overall_trend == '상승':
+        strategy_parts.append("전반적으로 <strong>상승 추세</strong>입니다. 시장 선점을 위한 적극적인 투자를 권장합니다.")
+    elif overall_trend == '하락':
+        strategy_parts.append("<strong>하락 추세</strong>입니다. 신규 키워드 발굴과 타겟 다변화를 검토하세요.")
+    else:
+        strategy_parts.append("안정적인 검색량을 유지하고 있습니다.")
+
+    st.markdown(f'<div class="insight-box">{" ".join(strategy_parts)}</div>', unsafe_allow_html=True)
+
+    # 성수기/비수기 표시
+    st.markdown(f"""
+    <div class="season-row">
+        <div class="season-item">
+            <div class="season-label">성수기</div>
+            <div class="season-value season-peak">{", ".join(common_peak)}</div>
+        </div>
+        <div class="season-item">
+            <div class="season-label">비수기</div>
+            <div class="season-value season-off">{", ".join(common_off)}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 통계 요약
+    st.markdown(f"""
+    <div class="stat-grid">
+        <div class="stat-item">
+            <div class="stat-label">분석 키워드</div>
+            <div class="stat-value">{keyword_count}개</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">전체 추세</div>
+            <div class="stat-value">{overall_trend}</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">평균 검색지수</div>
+            <div class="stat-value">{round(total_avg / keyword_count, 1)}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ===== 키워드별 상세 =====
+    st.markdown('<div class="section-title" style="margin-top: 32px;">키워드별 분석</div>', unsafe_allow_html=True)
+
+    for idx, (kw, data) in enumerate(analysis.items()):
+        # 키워드 섹션
+        if idx == 0:
+            st.markdown(f'<div class="keyword-title">{kw}</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="keyword-section"><div class="keyword-title">{kw}</div></div>', unsafe_allow_html=True)
+
+        # 인사이트 먼저
+        insights = []
+        if data['peak_months'] != ['없음']:
+            insights.append(f"<strong>{', '.join(data['peak_months'])}</strong>에 광고 집중")
+        if data['off_months'] != ['없음']:
+            insights.append(f"<strong>{', '.join(data['off_months'])}</strong>에 브랜딩 전환")
+        if data['trend'] == '상승':
+            insights.append("상승 추세로 점유율 확보 기회")
+        elif data['trend'] == '하락':
+            insights.append("하락 추세, 타겟 확장 검토 필요")
+        if '높음' in data['volatility']:
+            insights.append("변동성이 높아 시즌별 전략 필요")
+
+        if insights:
+            st.markdown(f'<div class="insight-box">{" · ".join(insights)}</div>', unsafe_allow_html=True)
+
+        # 성수기/비수기
+        st.markdown(f"""
+        <div class="season-row">
+            <div class="season-item">
+                <div class="season-label">성수기</div>
+                <div class="season-value season-peak">{", ".join(data['peak_months'])}</div>
+            </div>
+            <div class="season-item">
+                <div class="season-label">비수기</div>
+                <div class="season-value season-off">{", ".join(data['off_months'])}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 통계
+        st.markdown(f"""
+        <div class="stat-grid">
+            <div class="stat-item">
+                <div class="stat-label">추세</div>
+                <div class="stat-value">{data['trend']}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">변동성</div>
+                <div class="stat-value">{data['volatility']}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">평균</div>
+                <div class="stat-value">{data['overall_avg']}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">최고</div>
+                <div class="stat-value">{data['max_date']}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">최저</div>
+                <div class="stat-value">{data['min_date']}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("")
+    st.caption("네이버 데이터랩 검색 트렌드 기준, 실제 판매 데이터와 다를 수 있습니다.")
+
+
 # ===== 분석 팝업 (st.dialog 사용) =====
 @st.dialog("📊 트렌드 분석 설정")
 def show_analysis_dialog():
@@ -1750,8 +2004,8 @@ def show_analysis_dialog():
                 'analyzed': True
             })
             st.session_state.selected = set()
-            # 메뉴를 데이터랩으로 전환
-            st.session_state.menu = "📈  트렌드 분석"
+            # 메뉴를 트렌드 분석으로 전환
+            st.session_state.menu = "트렌드 분석"
             st.rerun()
 
 # ===== 메인 컨텐츠 영역 =====
@@ -1957,10 +2211,17 @@ if menu_clean == "연관키워드":
         chart = alt.layer(line, points).properties(height=350).interactive()
         st.altair_chart(chart, use_container_width=True)
 
-        # 결과 닫기 버튼
-        if st.button("결과 닫기", key="close_trend"):
-            st.session_state.auto_show_trend = False
-            st.rerun()
+        # AI 요약 & 결과 닫기 버튼
+        btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 3])
+        with btn_col1:
+            if st.button("AI 요약", key="ai_summary_home", use_container_width=True):
+                analysis = analyze_trend_seasons(trend_df)
+                if analysis:
+                    show_ai_summary_dialog(analysis)
+        with btn_col2:
+            if st.button("결과 닫기", key="close_trend", use_container_width=True):
+                st.session_state.auto_show_trend = False
+                st.rerun()
 
     # ===== 키워드 히스토리 =====
     if st.session_state.keyword_history:
@@ -2165,6 +2426,14 @@ elif menu_clean == "트렌드 분석":
         chart = alt.layer(line, points, selectors).properties(height=400).interactive()
 
         st.altair_chart(chart, use_container_width=True)
+
+        # AI 요약 버튼
+        ai_col1, ai_col2 = st.columns([1, 4])
+        with ai_col1:
+            if st.button("AI 요약 보기", type="secondary", use_container_width=True):
+                analysis = analyze_trend_seasons(trend_df)
+                if analysis:
+                    show_ai_summary_dialog(analysis)
 
         st.markdown("---")
 

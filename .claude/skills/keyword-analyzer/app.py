@@ -74,6 +74,7 @@ CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444']
 
 # SVG 아이콘 (흰색)
 ICONS = {
+    'home': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>''',
     'link': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>''',
     'trend': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>''',
     'chart': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>''',
@@ -418,9 +419,13 @@ st.set_page_config(
 # ===== 온보딩 및 사이드바 상태 관리 =====
 # 저장된 사용자 정보 확인 (영구 저장)
 saved_user = load_user_data()
+is_returning_user = saved_user is not None  # 기존 가입자 여부
+
 if 'onboarding_complete' not in st.session_state:
     # 저장된 사용자 정보가 있으면 온보딩 완료 상태로
     st.session_state.onboarding_complete = saved_user is not None
+if 'show_onboarding' not in st.session_state:
+    st.session_state.show_onboarding = False
 if 'user_profile' not in st.session_state:
     if saved_user:
         st.session_state.user_profile = saved_user
@@ -657,7 +662,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ===== 온보딩 페이지 =====
-if not st.session_state.onboarding_complete:
+# 처음 방문자이거나, 홈 메뉴에서 온보딩 페이지를 열었을 때
+if not st.session_state.onboarding_complete or st.session_state.show_onboarding:
     # 온보딩 CSS
     st.markdown(f"""
     <style>
@@ -924,80 +930,113 @@ if not st.session_state.onboarding_complete:
     </div>
     """, unsafe_allow_html=True)
 
-    # 설정 섹션 (스크롤 후) - CSS scroll-driven animation 적용
-    st.markdown("""
-    <div id="setup-grow-section" class="scroll-grow-container" style="padding-top: 80px; padding-bottom: 40px;">
-        <div class="setup-title">몇 가지 설정이 필요해요</div>
-        <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # 기존 사용자: 시작하기 버튼만 표시
+    if is_returning_user:
+        with st.container():
+            col_left, col_center, col_right = st.columns([1, 2, 1])
+            with col_center:
+                st.markdown('<div class="setup-form" style="margin-top: 40px;">', unsafe_allow_html=True)
 
-    # 입력 폼
-    with st.container():
-        col_left, col_center, col_right = st.columns([1, 2, 1])
+                # 환영 메시지
+                user_name_display = st.session_state.user_profile.get('name', '')
+                if user_name_display and user_name_display != 'Guest':
+                    st.markdown(f"<p style='text-align:center; font-size:18px; color:#1a1a1a; margin-bottom:24px;'>다시 만나서 반가워요, <strong>{user_name_display}</strong>님!</p>", unsafe_allow_html=True)
 
-        with col_center:
-            st.markdown('<div class="setup-form">', unsafe_allow_html=True)
+                st.markdown("")
 
-            # 이름
-            user_name = st.text_input(
-                "이름",
-                placeholder="홍길동",
-                key="onboard_name"
-            )
-
-            # 직업
-            user_occupation = st.selectbox(
-                "직업",
-                options=['', '마케터', '기획자', '개발자', '디자이너', '사업가', '학생', '프리랜서', '기타'],
-                key="onboard_occupation"
-            )
-
-            # 직무
-            user_role = st.text_input(
-                "직무 / 담당 업무",
-                placeholder="퍼포먼스 마케팅, 브랜드 마케팅 등",
-                key="onboard_role"
-            )
-
-            # 연령대
-            user_age = st.selectbox(
-                "연령대",
-                options=['', '20대', '30대', '40대', '50대 이상'],
-                key="onboard_age"
-            )
-
-            st.markdown("")
-
-            # 시작하기 버튼
-            if st.button("시작하기", type="primary", use_container_width=True, key="start_btn"):
-                if user_name.strip():
-                    user_profile = {
-                        'name': user_name,
-                        'occupation': user_occupation,
-                        'role': user_role,
-                        'age_group': user_age
-                    }
-                    st.session_state.user_profile = user_profile
-                    st.session_state.onboarding_complete = True
-                    # 파일에 영구 저장
-                    save_user_data(user_profile)
+                # 시작하기 버튼
+                if st.button("시작하기", type="primary", use_container_width=True, key="start_btn"):
+                    st.session_state.show_onboarding = False
+                    st.session_state.menu = "연관키워드"
                     st.rerun()
-                else:
-                    st.warning("이름을 입력해주세요")
 
-            # 건너뛰기
-            if st.button("건너뛰기", use_container_width=True, key="skip_btn"):
-                # 건너뛰기도 기본 프로필로 저장
-                default_profile = {'name': 'Guest', 'occupation': '', 'role': '', 'age_group': ''}
-                st.session_state.user_profile = default_profile
-                st.session_state.onboarding_complete = True
-                save_user_data(default_profile)
-                st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-            st.markdown('</div>', unsafe_allow_html=True)
+    # 신규 사용자: 설정 폼 + 시작하기/건너뛰기 버튼
+    else:
+        # 설정 섹션 (스크롤 후) - CSS scroll-driven animation 적용
+        st.markdown("""
+        <div id="setup-grow-section" class="scroll-grow-container" style="padding-top: 80px; padding-bottom: 40px;">
+            <div class="setup-title">몇 가지 설정이 필요해요</div>
+            <div class="setup-subtitle">더 나은 서비스를 위해 간단한 정보를 입력해주세요</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.stop()
+        # 입력 폼
+        with st.container():
+            col_left, col_center, col_right = st.columns([1, 2, 1])
+
+            with col_center:
+                st.markdown('<div class="setup-form">', unsafe_allow_html=True)
+
+                # 이름
+                user_name = st.text_input(
+                    "이름",
+                    placeholder="홍길동",
+                    key="onboard_name"
+                )
+
+                # 직업
+                user_occupation = st.selectbox(
+                    "직업",
+                    options=['', '마케터', '기획자', '개발자', '디자이너', '사업가', '학생', '프리랜서', '기타'],
+                    key="onboard_occupation"
+                )
+
+                # 직무
+                user_role = st.text_input(
+                    "직무 / 담당 업무",
+                    placeholder="퍼포먼스 마케팅, 브랜드 마케팅 등",
+                    key="onboard_role"
+                )
+
+                # 연령대
+                user_age = st.selectbox(
+                    "연령대",
+                    options=['', '20대', '30대', '40대', '50대 이상'],
+                    key="onboard_age"
+                )
+
+                st.markdown("")
+
+                # 시작하기 버튼
+                if st.button("시작하기", type="primary", use_container_width=True, key="start_btn_new"):
+                    if user_name.strip():
+                        user_profile = {
+                            'name': user_name,
+                            'occupation': user_occupation,
+                            'role': user_role,
+                            'age_group': user_age
+                        }
+                        st.session_state.user_profile = user_profile
+                        st.session_state.onboarding_complete = True
+                        st.session_state.show_onboarding = False
+                        st.session_state.menu = "연관키워드"
+                        # 파일에 영구 저장
+                        save_user_data(user_profile)
+                        st.rerun()
+                    else:
+                        st.warning("이름을 입력해주세요")
+
+                # 건너뛰기
+                if st.button("건너뛰기", use_container_width=True, key="skip_btn"):
+                    # 건너뛰기도 기본 프로필로 저장
+                    default_profile = {'name': 'Guest', 'occupation': '', 'role': '', 'age_group': ''}
+                    st.session_state.user_profile = default_profile
+                    st.session_state.onboarding_complete = True
+                    st.session_state.show_onboarding = False
+                    st.session_state.menu = "연관키워드"
+                    save_user_data(default_profile)
+                    st.rerun()
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
+    # 첫 방문자는 여기서 멈춤 (사이드바 없이)
+    if not st.session_state.onboarding_complete:
+        st.stop()
+    # 홈 메뉴에서 온 경우: 사이드바는 표시되지만 온보딩 이후 다른 콘텐츠는 표시 안함
+    elif st.session_state.show_onboarding:
+        pass  # 사이드바 표시를 위해 계속 진행, 이후 메인 컨텐츠에서 처리
 
 # ===== 사이드바 표시 (온보딩 완료 후) =====
 sidebar_width = "280px" if st.session_state.sidebar_expanded else "72px"
@@ -1264,10 +1303,40 @@ with st.sidebar:
     st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
 
     # 메뉴 선택 (session_state로 관리)
-    if is_expanded:
-        st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
     if 'menu' not in st.session_state:
         st.session_state.menu = "연관키워드"
+
+    # 홈 메뉴 (독립적으로 배치)
+    home_icon = ICONS['home']
+    is_home_active = st.session_state.menu == "홈"
+    home_btn_type = "primary" if is_home_active else "secondary"
+
+    if is_expanded:
+        col_icon, col_text = st.columns([1, 5])
+        with col_icon:
+            st.markdown(f'<div style="padding:8px 0; text-align:center;">{home_icon}</div>', unsafe_allow_html=True)
+        with col_text:
+            if st.button("홈", key="nav_홈", use_container_width=True, type=home_btn_type):
+                st.session_state.menu = "홈"
+                st.session_state.show_onboarding = True
+                st.rerun()
+    else:
+        st.markdown(f'''
+        <div class="nav-wrapper">
+            <div class="icon-btn" data-active="{str(is_home_active).lower()}">
+                {home_icon}
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button(" ", key="nav_홈", use_container_width=True):
+            st.session_state.menu = "홈"
+            st.session_state.show_onboarding = True
+            st.rerun()
+
+    st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
+
+    if is_expanded:
+        st.markdown('<p class="menu-header">NAVER</p>', unsafe_allow_html=True)
 
     # 메뉴 아이템 (SVG 아이콘 사용)
     menu_items = [
@@ -1569,6 +1638,11 @@ def show_analysis_dialog():
             # 메뉴를 데이터랩으로 전환
             st.session_state.menu = "📈  트렌드 분석"
             st.rerun()
+
+# ===== 메인 컨텐츠 영역 =====
+# 홈(온보딩) 페이지일 때는 여기서 멈춤
+if st.session_state.show_onboarding:
+    st.stop()
 
 # ===== 키워드 분석 페이지 =====
 if menu_clean == "연관키워드":

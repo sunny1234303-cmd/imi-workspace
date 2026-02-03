@@ -2,3 +2,9 @@
 streamlit>=1.30.0
 pandas>=2.0.0
 python-dotenv>=1.0.0
+altair>=5.0.0
+
+# Google Analytics 4 연동
+google-analytics-data>=0.18.0
+google-auth-oauthlib>=1.0.0
+google-analytics-admin>=0.22.0

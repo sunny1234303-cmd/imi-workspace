@@ -22,6 +22,20 @@ import altair as alt
 from datetime import datetime, timedelta
 from pathlib import Path
 
+# Google Analytics 4 관련 import (lazy import로 처리)
+GA4_AVAILABLE = False
+try:
+    from google.analytics.data_v1beta import BetaAnalyticsDataClient
+    from google.analytics.data_v1beta.types import (
+        RunReportRequest, DateRange, Dimension, Metric, OrderBy
+    )
+    from google.analytics.admin import AnalyticsAdminServiceClient
+    from google_auth_oauthlib.flow import Flow
+    from google.oauth2.credentials import Credentials
+    GA4_AVAILABLE = True
+except ImportError:
+    pass
+
 # .env 로드
 from dotenv import load_dotenv
 env_path = Path(__file__).parent.parent / 'gsheet-handler' / 'scripts' / '.env'
@@ -37,6 +51,15 @@ NAVER_AD_SECRET_KEY = os.getenv('NAVER_AD_SECRET_KEY')
 NAVER_AD_CUSTOMER_ID = os.getenv('NAVER_AD_CUSTOMER_ID')
 NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
 NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET')
+
+# GA4 OAuth 설정
+GA4_CLIENT_ID = os.getenv('GA4_CLIENT_ID')
+GA4_CLIENT_SECRET = os.getenv('GA4_CLIENT_SECRET')
+GA4_SCOPES = [
+    'https://www.googleapis.com/auth/analytics.readonly',
+    'https://www.googleapis.com/auth/analytics.manage.users.readonly'
+]
+GA4_TOKEN_PATH = Path(__file__).parent / 'ga4_token.json'
 
 # 디자인 시스템 컬러 (DESIGN_GUIDE.md)
 COLORS = {
@@ -90,6 +113,16 @@ ICONS = {
     'close': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>''',
     'panel_left': '''<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>''',
     'panel_left_close': '''<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="16 8 12 12 16 16"/></svg>''',
+    'mixboard': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+</svg>''',
+    'analytics': '''<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M3 3v18h18"></path>
+    <path d="M18 9l-5 5-4-4-3 3"></path>
+</svg>''',
 }
 
 # ===== 검색광고 API =====
@@ -339,12 +372,256 @@ def get_trend(keywords, days=30, time_unit='date', device='', gender='', ages=[]
         # 디버깅: 최고점 날짜 확인
         if result and 'results' in result:
             for group in result['results']:
-                max_point = max(group['data'], key=lambda x: x['ratio'])
-                st.caption(f"🔍 {group['title']}: 최고점 {max_point['period']} (지수: {max_point['ratio']})")
+                if group.get('data'):  # 데이터가 있을 때만
+                    max_point = max(group['data'], key=lambda x: x['ratio'])
+                    st.caption(f"🔍 {group['title']}: 최고점 {max_point['period']} (지수: {max_point['ratio']})")
         return result
     except urllib.error.HTTPError as e:
         st.error(f"API 오류: {e.code}")
         return None
+
+
+# ===== Google Analytics 4 API =====
+def ga4_get_credentials():
+    """저장된 GA4 OAuth 토큰 로드"""
+    if not GA4_AVAILABLE:
+        return None
+    if GA4_TOKEN_PATH.exists():
+        try:
+            with open(GA4_TOKEN_PATH, 'r') as f:
+                token_data = json.load(f)
+            creds = Credentials(
+                token=token_data.get('token'),
+                refresh_token=token_data.get('refresh_token'),
+                token_uri='https://oauth2.googleapis.com/token',
+                client_id=GA4_CLIENT_ID,
+                client_secret=GA4_CLIENT_SECRET,
+                scopes=GA4_SCOPES
+            )
+            # 토큰 만료 확인 및 갱신
+            if creds.expired and creds.refresh_token:
+                from google.auth.transport.requests import Request
+                creds.refresh(Request())
+                ga4_save_credentials(creds)
+            return creds
+        except Exception:
+            return None
+    return None
+
+
+def ga4_save_credentials(creds):
+    """GA4 OAuth 토큰 저장"""
+    token_data = {
+        'token': creds.token,
+        'refresh_token': creds.refresh_token,
+        'token_uri': creds.token_uri,
+        'client_id': creds.client_id,
+        'client_secret': creds.client_secret,
+        'scopes': creds.scopes
+    }
+    with open(GA4_TOKEN_PATH, 'w') as f:
+        json.dump(token_data, f)
+
+
+def ga4_create_auth_url():
+    """GA4 OAuth 인증 URL 생성"""
+    if not GA4_AVAILABLE or not GA4_CLIENT_ID or not GA4_CLIENT_SECRET:
+        return None
+
+    client_config = {
+        "web": {
+            "client_id": GA4_CLIENT_ID,
+            "client_secret": GA4_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": ["http://localhost:8501"]
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=GA4_SCOPES,
+        redirect_uri="http://localhost:8501"
+    )
+
+    auth_url, _ = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    return auth_url
+
+
+def ga4_handle_callback(auth_code):
+    """OAuth 콜백 처리 및 토큰 발급"""
+    if not GA4_AVAILABLE or not GA4_CLIENT_ID or not GA4_CLIENT_SECRET:
+        return None
+
+    client_config = {
+        "web": {
+            "client_id": GA4_CLIENT_ID,
+            "client_secret": GA4_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": ["http://localhost:8501"]
+        }
+    }
+
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=GA4_SCOPES,
+        redirect_uri="http://localhost:8501"
+    )
+
+    try:
+        flow.fetch_token(code=auth_code)
+        creds = flow.credentials
+        ga4_save_credentials(creds)
+        return creds
+    except Exception as e:
+        st.error(f"토큰 발급 실패: {e}")
+        return None
+
+
+def ga4_get_properties():
+    """GA4 속성 목록 조회"""
+    creds = ga4_get_credentials()
+    if not creds:
+        return []
+
+    try:
+        client = AnalyticsAdminServiceClient(credentials=creds)
+        accounts = client.list_account_summaries()
+
+        properties = []
+        for account in accounts:
+            for prop in account.property_summaries:
+                properties.append({
+                    'property_id': prop.property.split('/')[-1],
+                    'display_name': prop.display_name,
+                    'account_name': account.display_name
+                })
+        return properties
+    except Exception as e:
+        st.error(f"속성 조회 실패: {e}")
+        return []
+
+
+def ga4_run_report(property_id, dimensions, metrics, start_date='30daysAgo', end_date='today', limit=10):
+    """GA4 리포트 조회"""
+    creds = ga4_get_credentials()
+    if not creds:
+        return None
+
+    try:
+        client = BetaAnalyticsDataClient(credentials=creds)
+
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            dimensions=[Dimension(name=d) for d in dimensions],
+            metrics=[Metric(name=m) for m in metrics],
+            date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
+            limit=limit,
+            order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name=metrics[0]), desc=True)] if metrics else []
+        )
+
+        response = client.run_report(request)
+
+        # 결과를 DataFrame으로 변환
+        rows = []
+        for row in response.rows:
+            row_data = {}
+            for i, dim in enumerate(dimensions):
+                row_data[dim] = row.dimension_values[i].value
+            for i, met in enumerate(metrics):
+                row_data[met] = row.metric_values[i].value
+            rows.append(row_data)
+
+        return pd.DataFrame(rows)
+    except Exception as e:
+        st.error(f"리포트 조회 실패: {e}")
+        return None
+
+
+def ga4_get_overview(property_id, start_date='30daysAgo', end_date='today'):
+    """GA4 개요 데이터 조회 (세션, 사용자, 전환)"""
+    creds = ga4_get_credentials()
+    if not creds:
+        return None
+
+    try:
+        client = BetaAnalyticsDataClient(credentials=creds)
+
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            dimensions=[Dimension(name='date')],
+            metrics=[
+                Metric(name='sessions'),
+                Metric(name='totalUsers'),
+                Metric(name='newUsers'),
+                Metric(name='screenPageViews'),
+                Metric(name='averageSessionDuration'),
+                Metric(name='bounceRate'),
+                Metric(name='conversions'),
+            ],
+            date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
+            order_bys=[OrderBy(dimension=OrderBy.DimensionOrderBy(dimension_name='date'))]
+        )
+
+        response = client.run_report(request)
+
+        rows = []
+        for row in response.rows:
+            rows.append({
+                '날짜': row.dimension_values[0].value,
+                '세션': int(row.metric_values[0].value),
+                '사용자': int(row.metric_values[1].value),
+                '신규 사용자': int(row.metric_values[2].value),
+                '페이지뷰': int(row.metric_values[3].value),
+                '평균 세션 시간': float(row.metric_values[4].value),
+                '이탈률': float(row.metric_values[5].value),
+                '전환': int(float(row.metric_values[6].value)),
+            })
+
+        df = pd.DataFrame(rows)
+        if len(df) > 0:
+            df['날짜'] = pd.to_datetime(df['날짜'], format='%Y%m%d')
+            df = df.sort_values('날짜')
+        return df
+    except Exception as e:
+        st.error(f"개요 조회 실패: {e}")
+        return None
+
+
+def ga4_get_pages(property_id, start_date='30daysAgo', end_date='today', limit=20):
+    """GA4 페이지별 분석 데이터"""
+    return ga4_run_report(
+        property_id,
+        dimensions=['pagePath', 'pageTitle'],
+        metrics=['screenPageViews', 'averageSessionDuration', 'bounceRate'],
+        start_date=start_date,
+        end_date=end_date,
+        limit=limit
+    )
+
+
+def ga4_get_traffic_sources(property_id, start_date='30daysAgo', end_date='today', limit=20):
+    """GA4 트래픽 소스별 분석"""
+    return ga4_run_report(
+        property_id,
+        dimensions=['sessionSource', 'sessionMedium', 'sessionCampaignName'],
+        metrics=['sessions', 'totalUsers', 'conversions'],
+        start_date=start_date,
+        end_date=end_date,
+        limit=limit
+    )
+
+
+def ga4_logout():
+    """GA4 로그아웃 (토큰 삭제)"""
+    if GA4_TOKEN_PATH.exists():
+        GA4_TOKEN_PATH.unlink()
+    return True
 
 
 # ===== 유틸리티 =====
@@ -1667,6 +1944,56 @@ with st.sidebar:
             if st.button(" ", key=f"nav_{item}", use_container_width=True):
                 st.session_state.menu = item
                 st.rerun()
+
+    # GOOGLE 그룹
+    st.markdown('<div class="menu-divider"></div>', unsafe_allow_html=True)
+    if is_expanded:
+        st.markdown('<p class="menu-header">GOOGLE</p>', unsafe_allow_html=True)
+
+    # Mixboard 외부 링크
+    mixboard_svg = ICONS['mixboard']
+    if is_expanded:
+        col_icon, col_text = st.columns([1, 5])
+        with col_icon:
+            st.markdown(f'<div style="padding:8px 0; text-align:center;">{mixboard_svg}</div>', unsafe_allow_html=True)
+        with col_text:
+            st.link_button("Mixboard", "https://mixboard.google.com/projects", use_container_width=True, type="secondary")
+    else:
+        # 축소 시: 아이콘만 표시 (nav-wrapper로 감싸기)
+        st.markdown(f'''
+        <div class="nav-wrapper">
+            <div class="icon-btn" data-active="false">
+                {mixboard_svg}
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        # 외부 링크 버튼 오버레이
+        st.link_button(" ", "https://mixboard.google.com/projects", use_container_width=True)
+
+    # Analytics 메뉴 버튼
+    analytics_svg = ICONS['analytics']
+    is_analytics_active = st.session_state.menu == "Analytics"
+    analytics_btn_type = "primary" if is_analytics_active else "secondary"
+
+    if is_expanded:
+        col_icon, col_text = st.columns([1, 5])
+        with col_icon:
+            st.markdown(f'<div style="padding:8px 0; text-align:center;">{analytics_svg}</div>', unsafe_allow_html=True)
+        with col_text:
+            if st.button("Analytics", key="nav_Analytics", use_container_width=True, type=analytics_btn_type):
+                st.session_state.menu = "Analytics"
+                st.rerun()
+    else:
+        st.markdown(f'''
+        <div class="nav-wrapper">
+            <div class="icon-btn" data-active="{str(is_analytics_active).lower()}">
+                {analytics_svg}
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+        if st.button(" ", key="nav_Analytics", use_container_width=True):
+            st.session_state.menu = "Analytics"
+            st.rerun()
 
     menu_clean = st.session_state.menu
 
@@ -3103,3 +3430,367 @@ elif menu_clean == "광고 현황":
 
         else:
             st.warning("캠페인 데이터를 불러올 수 없습니다. API 설정을 확인해주세요.")
+
+
+# ===== Google Analytics 페이지 =====
+elif menu_clean == "Analytics":
+    st.markdown("### Google Analytics 4")
+
+    # GA4 라이브러리 설치 확인
+    if not GA4_AVAILABLE:
+        st.error("GA4 라이브러리가 설치되지 않았습니다.")
+        st.code("pip install google-analytics-data google-auth-oauthlib google-analytics-admin", language="bash")
+        st.stop()
+
+    # GA4 Client ID/Secret 설정 확인
+    if not GA4_CLIENT_ID or not GA4_CLIENT_SECRET:
+        st.warning("GA4 OAuth 설정이 필요합니다.")
+        st.markdown("""
+        **설정 방법:**
+        1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
+        2. Google Analytics Data API, Google Analytics Admin API 활성화
+        3. OAuth 2.0 클라이언트 ID 생성 (웹 애플리케이션)
+        4. 승인된 리디렉션 URI에 `http://localhost:8501` 추가
+        5. `.env` 파일에 Client ID와 Client Secret 추가:
+        """)
+        st.code("""GA4_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GA4_CLIENT_SECRET=your-client-secret""", language="bash")
+        st.stop()
+
+    # 세션 상태 초기화
+    if 'ga4_authenticated' not in st.session_state:
+        st.session_state.ga4_authenticated = False
+    if 'ga4_properties' not in st.session_state:
+        st.session_state.ga4_properties = []
+    if 'ga4_selected_property' not in st.session_state:
+        st.session_state.ga4_selected_property = None
+
+    # OAuth 콜백 처리 (URL에 code 파라미터가 있는 경우)
+    query_params = st.query_params
+    if 'code' in query_params and not st.session_state.ga4_authenticated:
+        auth_code = query_params['code']
+        with st.spinner("Google 계정 연결 중..."):
+            creds = ga4_handle_callback(auth_code)
+            if creds:
+                st.session_state.ga4_authenticated = True
+                st.session_state.ga4_properties = ga4_get_properties()
+                # URL에서 code 파라미터 제거
+                st.query_params.clear()
+                st.rerun()
+
+    # 기존 토큰 확인
+    if not st.session_state.ga4_authenticated:
+        creds = ga4_get_credentials()
+        if creds:
+            st.session_state.ga4_authenticated = True
+            if not st.session_state.ga4_properties:
+                st.session_state.ga4_properties = ga4_get_properties()
+
+    # 미인증 상태: 로그인 버튼 표시
+    if not st.session_state.ga4_authenticated:
+        st.markdown("GA4 데이터를 조회하려면 Google 계정으로 로그인하세요.")
+
+        auth_url = ga4_create_auth_url()
+        if auth_url:
+            st.markdown(f"""
+            <a href="{auth_url}" target="_self" style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: #4285F4;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 14px;
+            ">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Google 계정으로 로그인
+            </a>
+            """, unsafe_allow_html=True)
+
+            st.markdown("")
+            st.caption("로그인 시 Google Analytics 데이터 읽기 권한을 요청합니다.")
+
+    # 인증 완료: 대시보드 표시
+    else:
+        # 상단 정보 바
+        info_col1, info_col2 = st.columns([3, 1])
+        with info_col2:
+            if st.button("로그아웃", key="ga4_logout"):
+                ga4_logout()
+                st.session_state.ga4_authenticated = False
+                st.session_state.ga4_properties = []
+                st.session_state.ga4_selected_property = None
+                st.rerun()
+
+        # GA4 속성 선택
+        if st.session_state.ga4_properties:
+            property_options = {
+                f"{p['display_name']} ({p['account_name']})": p['property_id']
+                for p in st.session_state.ga4_properties
+            }
+
+            if not st.session_state.ga4_selected_property and property_options:
+                st.session_state.ga4_selected_property = list(property_options.values())[0]
+
+            col_select, col_refresh = st.columns([3, 1])
+            with col_select:
+                selected_label = st.selectbox(
+                    "GA4 속성 선택",
+                    options=list(property_options.keys()),
+                    index=list(property_options.values()).index(st.session_state.ga4_selected_property) if st.session_state.ga4_selected_property in property_options.values() else 0,
+                    key="ga4_property_select"
+                )
+                st.session_state.ga4_selected_property = property_options[selected_label]
+            with col_refresh:
+                st.markdown("")
+                if st.button("새로고침", key="ga4_refresh_props"):
+                    st.session_state.ga4_properties = ga4_get_properties()
+                    st.rerun()
+
+            property_id = st.session_state.ga4_selected_property
+
+            # 기간 선택
+            period_col1, period_col2 = st.columns([2, 2])
+            with period_col1:
+                ga4_period = st.selectbox(
+                    "기간",
+                    options=['7일', '14일', '30일', '90일'],
+                    index=2,
+                    key="ga4_period",
+                    label_visibility="collapsed"
+                )
+            period_map = {'7일': '7daysAgo', '14일': '14daysAgo', '30일': '30daysAgo', '90일': '90daysAgo'}
+            start_date = period_map[ga4_period]
+
+            st.markdown("---")
+
+            # 탭: 개요 | 사용자 행동 | 페이지 분석 | 광고 효율
+            tab1, tab2, tab3, tab4 = st.tabs(["개요", "사용자 행동", "페이지 분석", "광고 효율"])
+
+            # ===== 개요 탭 =====
+            with tab1:
+                if st.button("데이터 조회", key="ga4_overview_btn", type="primary"):
+                    with st.spinner("GA4 데이터 조회 중..."):
+                        overview_df = ga4_get_overview(property_id, start_date=start_date)
+
+                    if overview_df is not None and len(overview_df) > 0:
+                        st.session_state.ga4_overview_df = overview_df
+
+                if 'ga4_overview_df' in st.session_state and st.session_state.ga4_overview_df is not None:
+                    overview_df = st.session_state.ga4_overview_df
+
+                    # 요약 지표
+                    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+                    with metric_col1:
+                        total_sessions = overview_df['세션'].sum()
+                        st.metric("총 세션", f"{total_sessions:,}")
+                    with metric_col2:
+                        total_users = overview_df['사용자'].sum()
+                        st.metric("총 사용자", f"{total_users:,}")
+                    with metric_col3:
+                        total_pageviews = overview_df['페이지뷰'].sum()
+                        st.metric("총 페이지뷰", f"{total_pageviews:,}")
+                    with metric_col4:
+                        total_conversions = overview_df['전환'].sum()
+                        st.metric("총 전환", f"{total_conversions:,}")
+
+                    st.markdown("")
+
+                    # 세션 추이 차트
+                    st.markdown("#### 세션 추이")
+                    chart_df = overview_df.copy()
+                    chart_df['날짜_표시'] = chart_df['날짜'].dt.strftime('%m/%d')
+
+                    nearest = alt.selection_point(nearest=True, on='mouseover', fields=['날짜'], empty=False)
+
+                    line = alt.Chart(chart_df).mark_line(color=COLORS['accent'], strokeWidth=2).encode(
+                        x=alt.X('날짜:T', title='날짜', axis=alt.Axis(format='%m/%d')),
+                        y=alt.Y('세션:Q', title='세션')
+                    )
+                    points = line.mark_point(size=80, color=COLORS['accent']).encode(
+                        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+                    ).add_params(nearest)
+
+                    chart = alt.layer(line, points).properties(height=300).interactive()
+                    st.altair_chart(chart, use_container_width=True)
+
+                    # 사용자 추이
+                    st.markdown("#### 사용자 추이")
+                    line2 = alt.Chart(chart_df).mark_line(color=COLORS['success'], strokeWidth=2).encode(
+                        x=alt.X('날짜:T', title='날짜', axis=alt.Axis(format='%m/%d')),
+                        y=alt.Y('사용자:Q', title='사용자')
+                    )
+                    points2 = line2.mark_point(size=80, color=COLORS['success']).encode(
+                        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+                    ).add_params(nearest)
+                    chart2 = alt.layer(line2, points2).properties(height=250).interactive()
+                    st.altair_chart(chart2, use_container_width=True)
+
+                    # 데이터 테이블
+                    with st.expander("상세 데이터"):
+                        display_df = overview_df.copy()
+                        display_df['날짜'] = display_df['날짜'].dt.strftime('%Y-%m-%d')
+                        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+                else:
+                    st.info("'데이터 조회' 버튼을 클릭하여 GA4 데이터를 불러오세요.")
+
+            # ===== 사용자 행동 탭 =====
+            with tab2:
+                if st.button("이벤트 데이터 조회", key="ga4_events_btn", type="primary"):
+                    with st.spinner("이벤트 데이터 조회 중..."):
+                        events_df = ga4_run_report(
+                            property_id,
+                            dimensions=['eventName'],
+                            metrics=['eventCount', 'totalUsers'],
+                            start_date=start_date,
+                            limit=20
+                        )
+                    if events_df is not None:
+                        st.session_state.ga4_events_df = events_df
+
+                if 'ga4_events_df' in st.session_state and st.session_state.ga4_events_df is not None:
+                    events_df = st.session_state.ga4_events_df
+
+                    st.markdown("#### 이벤트 현황")
+
+                    # 이벤트 수 변환
+                    events_df['eventCount'] = events_df['eventCount'].astype(int)
+                    events_df['totalUsers'] = events_df['totalUsers'].astype(int)
+                    events_df = events_df.rename(columns={
+                        'eventName': '이벤트명',
+                        'eventCount': '이벤트 수',
+                        'totalUsers': '사용자 수'
+                    })
+
+                    # 차트
+                    chart = alt.Chart(events_df.head(10)).mark_bar(color=COLORS['accent']).encode(
+                        x=alt.X('이벤트 수:Q', title='이벤트 수'),
+                        y=alt.Y('이벤트명:N', sort='-x', title=''),
+                        tooltip=['이벤트명', '이벤트 수', '사용자 수']
+                    ).properties(height=350)
+                    st.altair_chart(chart, use_container_width=True)
+
+                    # 테이블
+                    st.dataframe(events_df, use_container_width=True, hide_index=True)
+
+                else:
+                    st.info("'이벤트 데이터 조회' 버튼을 클릭하세요.")
+
+            # ===== 페이지 분석 탭 =====
+            with tab3:
+                if st.button("페이지 데이터 조회", key="ga4_pages_btn", type="primary"):
+                    with st.spinner("페이지 데이터 조회 중..."):
+                        pages_df = ga4_get_pages(property_id, start_date=start_date)
+                    if pages_df is not None:
+                        st.session_state.ga4_pages_df = pages_df
+
+                if 'ga4_pages_df' in st.session_state and st.session_state.ga4_pages_df is not None:
+                    pages_df = st.session_state.ga4_pages_df
+
+                    st.markdown("#### 페이지별 성과")
+
+                    # 컬럼 변환
+                    pages_df['screenPageViews'] = pages_df['screenPageViews'].astype(int)
+                    pages_df['averageSessionDuration'] = pages_df['averageSessionDuration'].astype(float).round(1)
+                    pages_df['bounceRate'] = (pages_df['bounceRate'].astype(float) * 100).round(1)
+
+                    pages_df = pages_df.rename(columns={
+                        'pagePath': '페이지 경로',
+                        'pageTitle': '페이지 제목',
+                        'screenPageViews': '페이지뷰',
+                        'averageSessionDuration': '평균 체류시간(초)',
+                        'bounceRate': '이탈률(%)'
+                    })
+
+                    st.dataframe(pages_df, use_container_width=True, hide_index=True)
+
+                    # 페이지뷰 Top 10 차트
+                    st.markdown("#### Top 10 페이지")
+                    chart = alt.Chart(pages_df.head(10)).mark_bar(color=COLORS['accent']).encode(
+                        x=alt.X('페이지뷰:Q', title='페이지뷰'),
+                        y=alt.Y('페이지 경로:N', sort='-x', title=''),
+                        tooltip=['페이지 경로', '페이지 제목', '페이지뷰', '이탈률(%)']
+                    ).properties(height=350)
+                    st.altair_chart(chart, use_container_width=True)
+
+                else:
+                    st.info("'페이지 데이터 조회' 버튼을 클릭하세요.")
+
+            # ===== 광고 효율 탭 =====
+            with tab4:
+                if st.button("트래픽 소스 조회", key="ga4_traffic_btn", type="primary"):
+                    with st.spinner("트래픽 소스 데이터 조회 중..."):
+                        traffic_df = ga4_get_traffic_sources(property_id, start_date=start_date)
+                    if traffic_df is not None:
+                        st.session_state.ga4_traffic_df = traffic_df
+
+                if 'ga4_traffic_df' in st.session_state and st.session_state.ga4_traffic_df is not None:
+                    traffic_df = st.session_state.ga4_traffic_df
+
+                    st.markdown("#### UTM 캠페인별 성과")
+
+                    # 컬럼 변환
+                    traffic_df['sessions'] = traffic_df['sessions'].astype(int)
+                    traffic_df['totalUsers'] = traffic_df['totalUsers'].astype(int)
+                    traffic_df['conversions'] = traffic_df['conversions'].astype(float).round(0).astype(int)
+
+                    traffic_df = traffic_df.rename(columns={
+                        'sessionSource': '소스',
+                        'sessionMedium': '매체',
+                        'sessionCampaignName': '캠페인',
+                        'sessions': '세션',
+                        'totalUsers': '사용자',
+                        'conversions': '전환'
+                    })
+
+                    # 요약 카드
+                    sum_col1, sum_col2, sum_col3 = st.columns(3)
+                    with sum_col1:
+                        st.metric("총 세션", f"{traffic_df['세션'].sum():,}")
+                    with sum_col2:
+                        st.metric("총 사용자", f"{traffic_df['사용자'].sum():,}")
+                    with sum_col3:
+                        st.metric("총 전환", f"{traffic_df['전환'].sum():,}")
+
+                    st.markdown("")
+
+                    # 소스/매체별 차트
+                    st.markdown("#### 소스/매체별 세션")
+                    traffic_df['소스/매체'] = traffic_df['소스'] + ' / ' + traffic_df['매체']
+
+                    chart = alt.Chart(traffic_df.head(10)).mark_bar(color=COLORS['accent']).encode(
+                        x=alt.X('세션:Q', title='세션'),
+                        y=alt.Y('소스/매체:N', sort='-x', title=''),
+                        tooltip=['소스', '매체', '캠페인', '세션', '전환']
+                    ).properties(height=350)
+                    st.altair_chart(chart, use_container_width=True)
+
+                    # 테이블
+                    st.dataframe(traffic_df, use_container_width=True, hide_index=True)
+
+                    # CSV 다운로드
+                    csv = traffic_df.to_csv(index=False, encoding='utf-8-sig')
+                    st.download_button(
+                        "CSV 다운로드",
+                        csv,
+                        f"ga4_traffic_{datetime.now().strftime('%Y%m%d')}.csv",
+                        "text/csv"
+                    )
+
+                else:
+                    st.info("'트래픽 소스 조회' 버튼을 클릭하세요.")
+
+        else:
+            st.warning("연결된 GA4 속성이 없습니다.")
+            if st.button("속성 목록 새로고침"):
+                st.session_state.ga4_properties = ga4_get_properties()
+                st.rerun()

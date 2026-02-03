@@ -743,7 +743,120 @@ st.markdown(f"""
         background: rgba(99, 102, 241, 0.1);
         color: {COLORS['accent']};
     }}
+
+    /* === Custom Cursor === */
+    @media (hover: hover) {{
+        .cursor-outer {{
+            width: 24px;
+            height: 24px;
+            border: 2px solid {COLORS['accent']};
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }}
+        .cursor-dot {{
+            width: 6px;
+            height: 6px;
+            background: {COLORS['primary']};
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 100000;
+            transform: translate(-50%, -50%);
+            transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }}
+        .cursor-outer.active {{
+            opacity: 1;
+        }}
+        .cursor-dot.active {{
+            opacity: 1;
+        }}
+        .cursor-outer.hover {{
+            width: 12px;
+            height: 12px;
+            background: {COLORS['accent']};
+            border-color: {COLORS['accent']};
+        }}
+        .cursor-dot.hover {{
+            opacity: 0;
+        }}
+        .cursor-outer.click {{
+            transform: translate(-50%, -50%) scale(0.8);
+        }}
+    }}
+    @media (hover: none) {{
+        .cursor-outer, .cursor-dot {{ display: none !important; }}
+    }}
 </style>
+
+<!-- Custom Cursor Elements -->
+<div class="cursor-outer"></div>
+<div class="cursor-dot"></div>
+
+<script>
+(function() {{
+    const outer = document.querySelector('.cursor-outer');
+    const dot = document.querySelector('.cursor-dot');
+    if (!outer || !dot) return;
+
+    let mouseX = 0, mouseY = 0;
+    let outerX = 0, outerY = 0;
+    let isHovering = false;
+
+    document.addEventListener('mousemove', (e) => {{
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        // Dot follows immediately
+        dot.style.left = mouseX + 'px';
+        dot.style.top = mouseY + 'px';
+
+        // Show cursors
+        outer.classList.add('active');
+        dot.classList.add('active');
+    }});
+
+    // Smooth outer cursor animation
+    function animateOuter() {{
+        outerX += (mouseX - outerX) * 0.15;
+        outerY += (mouseY - outerY) * 0.15;
+        outer.style.left = outerX + 'px';
+        outer.style.top = outerY + 'px';
+        requestAnimationFrame(animateOuter);
+    }}
+    animateOuter();
+
+    // Hover effect on interactive elements
+    const hoverTargets = 'button, a, input, select, textarea, [role="button"], .stButton, tr, .stat-card';
+    document.addEventListener('mouseover', (e) => {{
+        if (e.target.closest(hoverTargets)) {{
+            outer.classList.add('hover');
+            dot.classList.add('hover');
+        }}
+    }});
+    document.addEventListener('mouseout', (e) => {{
+        if (e.target.closest(hoverTargets)) {{
+            outer.classList.remove('hover');
+            dot.classList.remove('hover');
+        }}
+    }});
+
+    // Click effect
+    document.addEventListener('mousedown', () => outer.classList.add('click'));
+    document.addEventListener('mouseup', () => outer.classList.remove('click'));
+
+    // Hide when leaving window
+    document.addEventListener('mouseleave', () => {{
+        outer.classList.remove('active');
+        dot.classList.remove('active');
+    }});
+}})();
+</script>
 """, unsafe_allow_html=True)
 
 # ===== 온보딩 페이지 =====
@@ -1704,6 +1817,11 @@ def show_ai_summary_dialog(analysis):
     # 팝업 스타일
     st.markdown("""
     <style>
+        /* 팝업창 자체 투명도 */
+        [data-testid="stModal"] > div:first-child > div:first-child {
+            background: rgba(255, 255, 255, 0.92) !important;
+            backdrop-filter: blur(10px);
+        }
         .section-title { font-size: 22px; font-weight: 700; color: #212529; margin: 0 0 20px 0; }
         .insight-box { font-size: 16px; color: #343a40; line-height: 1.8; margin-bottom: 24px; }
         .season-row { display: flex; gap: 40px; margin: 20px 0; }
@@ -1809,9 +1927,9 @@ def show_ai_summary_dialog(analysis):
     for idx, (kw, data) in enumerate(analysis.items()):
         # 키워드 섹션
         if idx == 0:
-            st.markdown(f'<div class="keyword-title">{kw}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="keyword-title">#{kw}</div>', unsafe_allow_html=True)
         else:
-            st.markdown(f'<div class="keyword-section"><div class="keyword-title">{kw}</div></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="keyword-section"><div class="keyword-title">#{kw}</div></div>', unsafe_allow_html=True)
 
         # 인사이트 먼저
         insights = []
@@ -2090,8 +2208,9 @@ if menu_clean == "연관키워드":
     with col1:
         keywords_input = st.text_input(
             "키워드",
-            placeholder="검색할 키워드 입력",
-            label_visibility="collapsed"
+            placeholder="검색할 키워드 입력 (띄어쓰기 없이)",
+            label_visibility="collapsed",
+            help="띄어쓰기가 포함된 키워드는 검색되지 않습니다"
         )
     with col2:
         include_related = st.checkbox("연관 키워드 포함", value=True)
@@ -2186,9 +2305,22 @@ if menu_clean == "연관키워드":
     # ===== 트렌드 결과 표시 (분석 후 같은 페이지에서 표시) =====
     if st.session_state.get('auto_show_trend', False) and st.session_state.trend_df is not None:
         st.markdown("---")
-        st.markdown("### 📈 트렌드 분석 결과")
 
         trend_df = st.session_state.trend_df
+
+        # 트렌드 제목 + AI 요약 버튼 + 결과 닫기
+        title_col, ai_col, close_col, spacer = st.columns([3, 1, 1, 2])
+        with title_col:
+            st.markdown("### 📈 트렌드 분석 결과")
+        with ai_col:
+            if st.button("AI 요약", key="ai_summary_home", use_container_width=True):
+                analysis = analyze_trend_seasons(trend_df)
+                if analysis:
+                    show_ai_summary_dialog(analysis)
+        with close_col:
+            if st.button("닫기", key="close_trend", use_container_width=True):
+                st.session_state.auto_show_trend = False
+                st.rerun()
 
         # 그래프
         chart_df = trend_df.copy()
@@ -2210,18 +2342,6 @@ if menu_clean == "연관키워드":
 
         chart = alt.layer(line, points).properties(height=350).interactive()
         st.altair_chart(chart, use_container_width=True)
-
-        # AI 요약 & 결과 닫기 버튼
-        btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 3])
-        with btn_col1:
-            if st.button("AI 요약", key="ai_summary_home", use_container_width=True):
-                analysis = analyze_trend_seasons(trend_df)
-                if analysis:
-                    show_ai_summary_dialog(analysis)
-        with btn_col2:
-            if st.button("결과 닫기", key="close_trend", use_container_width=True):
-                st.session_state.auto_show_trend = False
-                st.rerun()
 
     # ===== 키워드 히스토리 =====
     if st.session_state.keyword_history:
@@ -2287,7 +2407,6 @@ elif menu_clean == "트렌드 분석":
             .analysis-info-bar {{
                 background: transparent;
                 border: none;
-                border-left: 4px solid {COLORS['accent']};
                 border-radius: 0;
                 padding: 16px 20px;
                 margin-bottom: 20px;
@@ -2386,8 +2505,15 @@ elif menu_clean == "트렌드 분석":
 
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
 
-        # 그래프
-        st.markdown("#### 검색 트렌드 그래프")
+        # 그래프 제목 + AI 요약 버튼
+        title_col, btn_col = st.columns([4, 1])
+        with title_col:
+            st.markdown("#### 검색 트렌드 그래프")
+        with btn_col:
+            if st.button("AI 요약 보기", key="ai_summary_trend", type="secondary", use_container_width=True):
+                analysis = analyze_trend_seasons(trend_df)
+                if analysis:
+                    show_ai_summary_dialog(analysis)
 
         # 검색지수를 정수로 변환
         chart_df = trend_df.copy()
@@ -2426,14 +2552,6 @@ elif menu_clean == "트렌드 분석":
         chart = alt.layer(line, points, selectors).properties(height=400).interactive()
 
         st.altair_chart(chart, use_container_width=True)
-
-        # AI 요약 버튼
-        ai_col1, ai_col2 = st.columns([1, 4])
-        with ai_col1:
-            if st.button("AI 요약 보기", type="secondary", use_container_width=True):
-                analysis = analyze_trend_seasons(trend_df)
-                if analysis:
-                    show_ai_summary_dialog(analysis)
 
         st.markdown("---")
 
@@ -2890,53 +3008,28 @@ elif menu_clean == "광고 현황":
 
             st.markdown("")
 
-            # 캠페인 테이블 (클릭 가능)
+            # 캠페인 테이블 스타일
             st.markdown(f"""
             <style>
-                .campaign-row {{
-                    padding: 16px 0;
-                    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-                }}
-                /* 캠페인명 버튼을 링크 스타일로 완전히 변경 */
-                .campaign-link-btn [data-testid="stButton"] button,
-                .campaign-link-btn [data-testid="baseButton-secondary"],
-                .campaign-link-btn button[kind="secondary"] {{
-                    background: none !important;
-                    background-color: transparent !important;
-                    border: none !important;
-                    border-radius: 0 !important;
-                    color: {COLORS['accent']} !important;
-                    padding: 0 !important;
+                /* 캠페인 테이블 내 버튼을 텍스트로 표시 */
+                .campaign-table [data-testid="stButton"] {{
                     margin: 0 !important;
-                    font-weight: 500 !important;
-                    text-align: left !important;
-                    box-shadow: none !important;
-                    min-height: auto !important;
-                    height: auto !important;
-                    line-height: 1.5 !important;
+                    padding: 0 !important;
                 }}
-                .campaign-link-btn [data-testid="stButton"] button:hover,
-                .campaign-link-btn [data-testid="baseButton-secondary"]:hover,
-                .campaign-link-btn button[kind="secondary"]:hover {{
+                .campaign-table [data-testid="stButton"] > button {{
+                    all: unset !important;
+                    color: {COLORS['primary']} !important;
+                    font-size: 14px !important;
+                    line-height: 1.6 !important;
+                    cursor: pointer !important;
+                }}
+                .campaign-table [data-testid="stButton"] > button:hover {{
                     text-decoration: underline !important;
-                    background: none !important;
-                    background-color: transparent !important;
-                    border: none !important;
-                    box-shadow: none !important;
-                }}
-                .campaign-link-btn [data-testid="stButton"] button:focus,
-                .campaign-link-btn [data-testid="baseButton-secondary"]:focus,
-                .campaign-link-btn button[kind="secondary"]:focus {{
-                    box-shadow: none !important;
-                    outline: none !important;
-                }}
-                .campaign-link-btn [data-testid="stButton"] button:active,
-                .campaign-link-btn [data-testid="baseButton-secondary"]:active {{
-                    background: none !important;
-                    background-color: transparent !important;
                 }}
             </style>
             """, unsafe_allow_html=True)
+
+            st.markdown('<div class="campaign-table">', unsafe_allow_html=True)
 
             # 테이블 헤더
             header_cols = st.columns([0.5, 0.8, 2.5, 1, 1, 1])
@@ -2989,15 +3082,14 @@ elif menu_clean == "광고 현황":
                 with cols[1]:
                     st.markdown(status)
                 with cols[2]:
-                    # 캠페인명 클릭 시 상세 페이지로 이동 (링크 스타일)
-                    st.markdown('<div class="campaign-link-btn">', unsafe_allow_html=True)
-                    if st.button(campaign_name, key=f"camp_{idx}"):
+                    # 캠페인명 클릭 시 상세 페이지로 이동
+                    clicked = st.button(campaign_name, key=f"camp_{idx}")
+                    if clicked:
                         st.session_state.selected_campaign_id = campaign_id
                         st.session_state.adgroups = None
                         st.session_state.selected_adgroup_id = None
                         st.session_state.ad_keywords = None
                         st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
                 with cols[3]:
                     st.markdown(campaign_type)
                 with cols[4]:
@@ -3006,6 +3098,8 @@ elif menu_clean == "광고 현황":
                 with cols[5]:
                     bid_strategy = c.get('bidStrategy', {}).get('type', '-') if c.get('bidStrategy') else '-'
                     st.markdown(bid_strategy)
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
         else:
             st.warning("캠페인 데이터를 불러올 수 없습니다. API 설정을 확인해주세요.")

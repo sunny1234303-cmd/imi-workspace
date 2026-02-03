@@ -69,6 +69,14 @@ def save_user_data(user_profile):
     except:
         return False
 
+def hash_password(password):
+    """비밀번호 해시화 (SHA256)"""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def verify_password(password, hashed):
+    """비밀번호 검증"""
+    return hash_password(password) == hashed
+
 # 차트 컬러
 CHART_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444']
 
@@ -419,11 +427,14 @@ st.set_page_config(
 # ===== 온보딩 및 사이드바 상태 관리 =====
 # 저장된 사용자 정보 확인 (영구 저장)
 saved_user = load_user_data()
-is_returning_user = saved_user is not None  # 기존 가입자 여부
+is_returning_user = saved_user is not None and saved_user.get('password_hash')  # 비밀번호가 있는 기존 가입자
+needs_password_setup = saved_user is not None and not saved_user.get('password_hash')  # 비밀번호 설정 필요한 기존 사용자
 
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
 if 'onboarding_complete' not in st.session_state:
-    # 저장된 사용자 정보가 있으면 온보딩 완료 상태로
-    st.session_state.onboarding_complete = saved_user is not None
+    # 저장된 사용자가 있어도 로그인 전까지는 온보딩 미완료
+    st.session_state.onboarding_complete = False
 if 'show_onboarding' not in st.session_state:
     st.session_state.show_onboarding = False
 if 'user_profile' not in st.session_state:
@@ -930,7 +941,7 @@ if not st.session_state.onboarding_complete or st.session_state.show_onboarding:
     </div>
     """, unsafe_allow_html=True)
 
-    # 기존 사용자: 시작하기 버튼만 표시
+    # 기존 사용자: 비밀번호로 로그인
     if is_returning_user:
         with st.container():
             col_left, col_center, col_right = st.columns([1, 2, 1])
@@ -944,15 +955,85 @@ if not st.session_state.onboarding_complete or st.session_state.show_onboarding:
 
                 st.markdown("")
 
-                # 시작하기 버튼
-                if st.button("시작하기", type="primary", use_container_width=True, key="start_btn"):
-                    st.session_state.show_onboarding = False
-                    st.session_state.menu = "연관키워드"
-                    st.rerun()
+                # 비밀번호 입력
+                login_password = st.text_input(
+                    "비밀번호",
+                    type="password",
+                    placeholder="비밀번호를 입력하세요",
+                    key="login_password"
+                )
+
+                st.markdown("")
+
+                # 로그인 버튼
+                if st.button("로그인", type="primary", use_container_width=True, key="login_btn"):
+                    if login_password:
+                        stored_hash = saved_user.get('password_hash', '')
+                        if verify_password(login_password, stored_hash):
+                            st.session_state.logged_in = True
+                            st.session_state.onboarding_complete = True
+                            st.session_state.show_onboarding = False
+                            st.session_state.menu = "연관키워드"
+                            st.rerun()
+                        else:
+                            st.error("비밀번호가 일치하지 않습니다")
+                    else:
+                        st.warning("비밀번호를 입력해주세요")
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
-    # 신규 사용자: 설정 폼 + 시작하기/건너뛰기 버튼
+    # 기존 사용자 중 비밀번호 설정이 필요한 경우
+    elif needs_password_setup:
+        with st.container():
+            col_left, col_center, col_right = st.columns([1, 2, 1])
+            with col_center:
+                st.markdown('<div class="setup-form" style="margin-top: 40px;">', unsafe_allow_html=True)
+
+                # 환영 메시지
+                user_name_display = saved_user.get('name', '')
+                if user_name_display and user_name_display != 'Guest':
+                    st.markdown(f"<p style='text-align:center; font-size:18px; color:#1a1a1a; margin-bottom:16px;'>안녕하세요, <strong>{user_name_display}</strong>님!</p>", unsafe_allow_html=True)
+
+                st.markdown("<p style='text-align:center; font-size:14px; color:#666; margin-bottom:24px;'>보안을 위해 비밀번호를 설정해주세요</p>", unsafe_allow_html=True)
+
+                # 비밀번호 설정
+                setup_password = st.text_input(
+                    "비밀번호",
+                    type="password",
+                    placeholder="4자 이상 입력",
+                    key="setup_password"
+                )
+
+                setup_password_confirm = st.text_input(
+                    "비밀번호 확인",
+                    type="password",
+                    placeholder="비밀번호 재입력",
+                    key="setup_password_confirm"
+                )
+
+                st.markdown("")
+
+                # 비밀번호 설정 버튼
+                if st.button("설정 완료", type="primary", use_container_width=True, key="setup_pw_btn"):
+                    if not setup_password or len(setup_password) < 4:
+                        st.warning("비밀번호는 4자 이상 입력해주세요")
+                    elif setup_password != setup_password_confirm:
+                        st.error("비밀번호가 일치하지 않습니다")
+                    else:
+                        # 기존 프로필에 비밀번호 추가
+                        updated_profile = saved_user.copy()
+                        updated_profile['password_hash'] = hash_password(setup_password)
+                        st.session_state.user_profile = updated_profile
+                        st.session_state.logged_in = True
+                        st.session_state.onboarding_complete = True
+                        st.session_state.show_onboarding = False
+                        st.session_state.menu = "연관키워드"
+                        save_user_data(updated_profile)
+                        st.rerun()
+
+                st.markdown('</div>', unsafe_allow_html=True)
+
+    # 완전 신규 사용자: 설정 폼 + 시작하기/건너뛰기 버튼
     else:
         # 설정 섹션 (스크롤 후) - CSS scroll-driven animation 적용
         st.markdown("""
@@ -997,32 +1078,58 @@ if not st.session_state.onboarding_complete or st.session_state.show_onboarding:
                     key="onboard_age"
                 )
 
+                st.markdown("---")
+
+                # 비밀번호 설정
+                st.markdown("<p style='font-size: 14px; color: #666; margin-bottom: 8px;'>🔐 다음 로그인을 위한 비밀번호를 설정하세요</p>", unsafe_allow_html=True)
+
+                user_password = st.text_input(
+                    "비밀번호",
+                    type="password",
+                    placeholder="4자 이상 입력",
+                    key="onboard_password"
+                )
+
+                user_password_confirm = st.text_input(
+                    "비밀번호 확인",
+                    type="password",
+                    placeholder="비밀번호 재입력",
+                    key="onboard_password_confirm"
+                )
+
                 st.markdown("")
 
                 # 시작하기 버튼
                 if st.button("시작하기", type="primary", use_container_width=True, key="start_btn_new"):
-                    if user_name.strip():
+                    if not user_name.strip():
+                        st.warning("이름을 입력해주세요")
+                    elif not user_password or len(user_password) < 4:
+                        st.warning("비밀번호는 4자 이상 입력해주세요")
+                    elif user_password != user_password_confirm:
+                        st.error("비밀번호가 일치하지 않습니다")
+                    else:
                         user_profile = {
                             'name': user_name,
                             'occupation': user_occupation,
                             'role': user_role,
-                            'age_group': user_age
+                            'age_group': user_age,
+                            'password_hash': hash_password(user_password)
                         }
                         st.session_state.user_profile = user_profile
+                        st.session_state.logged_in = True
                         st.session_state.onboarding_complete = True
                         st.session_state.show_onboarding = False
                         st.session_state.menu = "연관키워드"
                         # 파일에 영구 저장
                         save_user_data(user_profile)
                         st.rerun()
-                    else:
-                        st.warning("이름을 입력해주세요")
 
                 # 건너뛰기
                 if st.button("건너뛰기", use_container_width=True, key="skip_btn"):
-                    # 건너뛰기도 기본 프로필로 저장
+                    # 건너뛰기도 기본 프로필로 저장 (비밀번호 없이)
                     default_profile = {'name': 'Guest', 'occupation': '', 'role': '', 'age_group': ''}
                     st.session_state.user_profile = default_profile
+                    st.session_state.logged_in = True
                     st.session_state.onboarding_complete = True
                     st.session_state.show_onboarding = False
                     st.session_state.menu = "연관키워드"
@@ -1487,6 +1594,14 @@ with st.sidebar:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
+            # 로그아웃 버튼
+            if st.button("로그아웃", key="logout_btn", use_container_width=True):
+                st.session_state.logged_in = False
+                st.session_state.onboarding_complete = False
+                st.session_state.show_onboarding = False
+                st.session_state.menu = "홈"
+                st.rerun()
 
 # ===== 메인 콘텐츠 =====
 

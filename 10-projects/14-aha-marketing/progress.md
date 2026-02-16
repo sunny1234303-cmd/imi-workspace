@@ -130,3 +130,76 @@
 - 트래픽 소스 + 디바이스 분포 2컬럼 레이아웃
 - 인기 페이지 테이블 추가
 - GA4 미연결 시 설정 페이지 링크 버튼
+
+## Phase 5: 통합 + 세팅 (2026-02-15)
+
+### v3.26 — 설정 프로필 연동
+
+- `api/settings/profile/route.ts` — GET/PATCH 프로필 API (requireApiAuth)
+- 설정 페이지 client 컴포넌트 전환, DB에서 이름/이메일 로드
+- 이메일 read-only (Clerk 관리), 이름 수정 + 저장 피드백
+
+### v3.27 — API 키 상태 페이지
+
+- `api/settings/api-keys/route.ts` — 4개 서비스 그룹 연결 상태 API
+- api-keys 페이지: 하드코딩 5개 키 제거 → DB 기반 상태 대시보드 + "설정" 링크
+- integrations 페이지: Google Sheets/Notion → "준비 중" 배지 + 버튼 비활성화
+
+### v3.28 — 알림 설정
+
+- Prisma schema: User.notificationPrefs (Json, default 3개 true)
+- shadcn Switch 컴포넌트 설치
+- `api/settings/notifications/route.ts` — GET/PATCH 알림 선호도
+- 설정 페이지: 3개 토글 (콘텐츠 생성/워크플로우 완료/주간 리포트), 즉시 PATCH
+- "알림 발송 기능은 추후 업데이트에서 지원됩니다" 안내
+
+### v3.29 — 리포트 자동 생성 + 상세 보기
+
+- `lib/reports.ts`: generateContentSummaryReport, generateKeywordAnalysisReport, getReport 추가
+- `api/reports/generate/route.ts` — POST 자동 생성 (content_summary, keyword_analysis)
+- CreateReportDialog: 자동 타입 선택 시 제목 자동 채움, "자동 생성" 버튼
+- ReportTable: 제목 클릭 → 상세 페이지 Link
+- `analytics/reports/[id]/page.tsx` — 서버 컴포넌트, 타입별 상세 뷰
+  - content_summary: 통계 카드 + 상태 분포 + 30일 트렌드 바 + 최근 콘텐츠 테이블
+  - keyword_analysis: 세트 수/키워드 수 카드 + 세트별 목록 테이블
+  - custom: JSON 원문 표시
+
+### v3.30 — 워크플로우 조건 노드
+
+- NodeConfigPanel.ConditionConfig: 조건 타입 Select (텍스트 포함/정확히 일치/비어있지 않음/글자수 초과) + 조건 값 Input
+- 실행 엔진: evaluateCondition() 함수로 4가지 조건 실제 평가
+- 실행 엔진: DFS walk → BFS 동적 walk로 리팩터링, sourceHandle 기반 T/F 분기
+- ConditionNode: T/F 라벨 표시 (좌30% green, 우70% red)
+
+### 기술 참고
+- 신규 파일 5개, 수정 파일 10개, 설치 1개 (shadcn switch)
+- Prisma migration: `add_notification_prefs`
+- `pnpm build` 성공 확인
+
+## Phase 6: 트렌드 분석 확장 + UX 개선 (2026-02-16)
+
+### 트렌드 분석 기간 확장 및 키워드 연결
+
+**naver.ts** — `getNaverTrend()`, `getNaverTrendMulti()`에 `timeUnit` 파라미터 추가 (date/week/month)
+
+**naver-trend API** — `startDate/endDate/timeUnit` 옵션 필드 추가, `autoSelectTimeUnit` 자동 선택 (90일→일별, 365일→주별, 초과→월별)
+
+**트렌드 비교 UI** — 기간 선택 [7일, 30일, 90일, 1년, 직접입력] 확장, 직접입력 시 날짜 피커 2개, `initialKeywords` prop으로 URL에서 키워드 전달 + 자동 검색
+
+**트렌드 페이지** — `searchParams`에서 `keywords` 쿼리 파라미터 파싱 → `NaverTrendCompare`에 전달
+
+**키워드 검색 패널** — "트렌드 분석" 버튼 추가, 선택 키워드(최대 5개) → `/analytics/trends?keywords=...`로 이동
+
+### 성수기/비수기 분석 팝업
+
+**analyzeSeasons()** — 월별 평균 대비 120%↑ 성수기, 80%↓ 비수기 판정, 추세/변동성/최고점/최저점 분석
+
+**AI 요약 다이얼로그** — 차트 영역에 "AI 요약" 버튼, 종합 분석 (전체 추세/공통 성수기·비수기/전략 제안) + 키워드별 상세 (평균/추세/변동성/성수기·비수기/최고·최저점)
+
+### 테이블 UX 개선
+
+**keyword-search-panel.tsx + keyword-set-table.tsx** — PC(검색량, CTR), 모바일(검색량, CTR) 그룹 헤더(colSpan/rowSpan) 적용, CSV 다운로드 컬럼 순서 동기화
+
+### 드래그 가능 다이얼로그
+
+**dialog.tsx** — `useDraggable` 훅 추가, `DialogHeader`를 드래그 핸들로 사용 (cursor: grab/grabbing), 열릴 때 위치 자동 리셋, 모든 다이얼로그에 자동 적용

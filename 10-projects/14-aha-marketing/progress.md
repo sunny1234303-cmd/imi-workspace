@@ -203,3 +203,19 @@
 ### 드래그 가능 다이얼로그
 
 **dialog.tsx** — `useDraggable` 훅 추가, `DialogHeader`를 드래그 핸들로 사용 (cursor: grab/grabbing), 열릴 때 위치 자동 리셋, 모든 다이얼로그에 자동 적용
+
+## Phase 7: 시즈널 SEO/GEO 인사이트 (보류)
+
+### 구현 완료 (코드 작성됨, 동작 검증 보류)
+
+**trend-insight API** (`api/analytics/trend-insight/route.ts`) — SeasonAnalysis[] 받아 LLM으로 SEO/GEO 인사이트 생성, `generateContent()` 호출
+
+**naver-trend-compare.tsx 수정** — `SeasonAnalysis` 타입 export, `onSeasonAnalysis` 콜백 prop 추가, seasonAnalysis 계산 후 부모에 전달
+
+**SeoGeoInsight 컴포넌트** (`components/analytics/seo-geo-insight.tsx`) — 마크다운 인사이트 표시, 로딩/결과/빈상태 처리
+
+**page.tsx → TrendsContent 클라이언트 래퍼 도입** — 서버 컴포넌트에서 데이터 fetch 후 TrendsContent에 전달, NaverTrendCompare ↔ SeoGeoInsight 간 상태 공유
+
+### 보류 사유
+- `.env`에 `ANTHROPIC_API_KEY`가 비어있어 LLM 호출 시 500 에러 발생
+- API 키 설정 후 동작 검증 + `tsc --noEmit` 확인 필요

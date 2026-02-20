@@ -7,7 +7,8 @@
 ## 링크
 
 - **프로젝트 디렉토리**: `~/aha_marketing/`
-- **배포 URL**: (Vercel 배포 후 추가)
+- **배포 URL**: https://aha-marketing-c5pdbrjho-jinseonis-projects.vercel.app
+- **GitHub**: https://github.com/sunny1234303-cmd/aha-marketing
 - **기술 스택**: Next.js 16, TypeScript, shadcn/ui, Tailwind v4, Prisma, Supabase, Clerk
 
 ## 핵심 기능
@@ -29,7 +30,7 @@
 - [x] Phase 3: 워크플로우 빌더 MVP
 - [x] Phase 4: 3D/물리 폴리싱
 - [x] Phase 5: 통합 + 세팅
-- [ ] Phase 6: QA + 런치
+- [x] Phase 6: QA + 런치
 
 ## 관련 파일
 

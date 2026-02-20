@@ -71,10 +71,20 @@ def parse_properties_schema(properties: Dict[str, Any]) -> Dict[str, Any]:
         elif isinstance(prop, dict):
             # Complex type with options
             if "select" in prop:
-                options = [{"name": opt} for opt in prop["select"]]
+                options = []
+                for opt in prop["select"]:
+                    if isinstance(opt, str):
+                        options.append({"name": opt})
+                    elif isinstance(opt, dict):
+                        options.append(opt)  # Already in correct format with name/color
                 result[name] = {"select": {"options": options}}
             elif "multi_select" in prop:
-                options = [{"name": opt} for opt in prop["multi_select"]]
+                options = []
+                for opt in prop["multi_select"]:
+                    if isinstance(opt, str):
+                        options.append({"name": opt})
+                    elif isinstance(opt, dict):
+                        options.append(opt)
                 result[name] = {"multi_select": {"options": options}}
             else:
                 result[name] = prop
@@ -95,7 +105,7 @@ def parse_page_properties(properties: Dict[str, Any], schema: Optional[Dict] = N
     """
     result = {}
     for name, value in properties.items():
-        if name == "이름" or (schema and schema.get(name, {}).get("type") == "title"):
+        if name in ["이름", "할 일", "Name", "Title", "제목"] or (schema and schema.get(name, {}).get("type") == "title"):
             # Title property
             result[name] = {
                 "title": [{"text": {"content": str(value)}}]
@@ -113,7 +123,7 @@ def parse_page_properties(properties: Dict[str, Any], schema: Optional[Dict] = N
             }
         elif isinstance(value, str):
             # Try to detect type
-            if value in ["입문", "초급", "중급", "고급"] or (schema and "select" in schema.get(name, {})):
+            if value in ["입문", "초급", "중급", "고급", "대기", "진행중", "완료", "높음", "중간", "낮음"] or name in ["상태", "우선순위", "Status", "Priority"] or (schema and "select" in schema.get(name, {})):
                 # Select
                 result[name] = {"select": {"name": value}}
             elif "@" in value and "." in value:

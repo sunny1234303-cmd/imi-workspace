@@ -31,6 +31,13 @@
 - [x] Phase 4: 3D/물리 폴리싱
 - [x] Phase 5: 통합 + 세팅
 - [x] Phase 6: QA + 런치
+- [ ] Phase 7: 시즈널 SEO/GEO 인사이트 (코드 완성, 검증 보류)
+- [x] Phase 8: 마케팅 자동화 강화
+  - Google Sheets 1클릭 내보내기 (키워드셋, 리포트)
+  - 주간 리포트 자동 이메일 발송 (월요일 UTC 0시)
+  - 키워드 랭크 변동 알림 이메일 (±3위 or 10위 진입/이탈)
+  - 워크플로우 스케줄러 (매시간 체크, cron expression 기반)
+  - 신규 env: `RESEND_API_KEY`, `EMAIL_FROM`(선택)
 
 ## 관련 파일
 

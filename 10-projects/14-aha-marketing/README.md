@@ -7,7 +7,8 @@
 ## 링크
 
 - **프로젝트 디렉토리**: `~/aha_marketing/`
-- **배포 URL**: https://aha-marketing-c5pdbrjho-jinseonis-projects.vercel.app
+- **배포 URL (v1)**: https://aha-marketing-c5pdbrjho-jinseonis-projects.vercel.app
+- **배포 URL (v2)**: https://aha-marketing-v2.vercel.app
 - **GitHub**: https://github.com/sunny1234303-cmd/aha-marketing
 - **기술 스택**: Next.js 16, TypeScript, shadcn/ui, Tailwind v4, Prisma, Supabase, Clerk
 
@@ -38,6 +39,32 @@
   - 키워드 랭크 변동 알림 이메일 (±3위 or 10위 진입/이탈)
   - 워크플로우 스케줄러 (매시간 체크, cron expression 기반)
   - 신규 env: `RESEND_API_KEY`, `EMAIL_FROM`(선택)
+
+### v2 추가 기능 (2026-02-25)
+
+- [x] v2 Phase 1+2: AI 파일 정리
+  - 파일 업로드(최대 500개) → Claude Vision/Text 분석 → 폴더 트리 제안 → ZIP 다운로드
+  - 10개씩 배치 처리 + 진행률 + 실패 재시도 + 파일명 규칙 템플릿
+- [x] v2 Phase 3: AI 마케팅 리포팅 MVP
+  - Naver API 연동 + CSV 업로드(한글 컬럼 자동 매핑)
+  - KPI 카드 + 일별 성과 차트(Recharts) + Claude AI 인사이트
+  - PDF 내보내기 (html2canvas + jsPDF)
+- [x] v2 Phase 4: 리포팅 고도화
+  - GA4 웹 트래픽 데이터 소스 추가
+  - 외부용 브랜딩 패널 (클라이언트명 + 브랜드 컬러)
+  - PPT 내보내기 (pptxgenjs, 4슬라이드)
+- [x] v2 Vercel 배포: https://aha-marketing-v2.vercel.app
+- [x] v2 버그픽스 (2026-02-25)
+  - 마케팅 리포트 `Unexpected end of JSON input` 오류 수정
+  - `report-generate` route: `req.json()` 파싱 실패 및 `generateNaverInsights` 미처리 예외 try-catch 처리
+  - `new/page.tsx`: 비JSON 서버 응답 시 사용자 친화적 에러 메시지 표시
+- [x] v2 Phase 5: 트렌드 분석 결과 리포트 저장 (2026-02-26)
+  - 키워드 트렌드 / 경쟁사 USP 분석 / 블로그 현황 3종 분석 완료 후 "저장" 버튼으로 DB 저장
+  - 저장 후 리포트 목록 이동 링크 + 상세 페이지에서 결과 재현
+  - `keyword_trend`: AreaChart 재현 + 계절성 카드 + SEO 인사이트 패널
+  - `competitor_usp`: 브랜드별 USP 괴리 카드 정적 렌더링
+  - `blog_trend`: 키워드별 블로그 포스트 테이블
+  - 리포트 목록 탭 3종 추가 (키워드 트렌드 / 경쟁사 USP / 블로그 현황)
 
 ## 관련 파일
 

@@ -204,18 +204,60 @@
 
 **dialog.tsx** — `useDraggable` 훅 추가, `DialogHeader`를 드래그 핸들로 사용 (cursor: grab/grabbing), 열릴 때 위치 자동 리셋, 모든 다이얼로그에 자동 적용
 
-## Phase 7: 시즈널 SEO/GEO 인사이트 (보류)
-
-### 구현 완료 (코드 작성됨, 동작 검증 보류)
+## Phase 7: 시즈널 SEO/GEO 인사이트 (2026-02-26 완료)
 
 **trend-insight API** (`api/analytics/trend-insight/route.ts`) — SeasonAnalysis[] 받아 LLM으로 SEO/GEO 인사이트 생성, `generateContent()` 호출
 
-**naver-trend-compare.tsx 수정** — `SeasonAnalysis` 타입 export, `onSeasonAnalysis` 콜백 prop 추가, seasonAnalysis 계산 후 부모에 전달
+**naver-trend-compare.tsx** — `SeasonAnalysis` 타입 export, `onSeasonAnalysis` 콜백 prop 추가, seasonAnalysis 계산 후 부모에 전달. 중복 NaverBlogTrendSection 제거 (별도 탭으로 분리됨)
 
-**SeoGeoInsight 컴포넌트** (`components/analytics/seo-geo-insight.tsx`) — 마크다운 인사이트 표시, 로딩/결과/빈상태 처리
+**SeoGeoInsight 컴포넌트** (`components/analytics/seo-geo-insight.tsx`) — 마크다운 인사이트 표시, 로딩/결과/빈상태 처리. Card 스타일로 standalone 렌더링 지원
 
-**page.tsx → TrendsContent 클라이언트 래퍼 도입** — 서버 컴포넌트에서 데이터 fetch 후 TrendsContent에 전달, NaverTrendCompare ↔ SeoGeoInsight 간 상태 공유
+**TrendsContent** — SeoGeoInsight를 "콘텐츠 타입별 트렌드" 카드 내부에서 분리, NaverTrendCompare 아래 독립 카드로 배치
 
-### 보류 사유
-- `.env`에 `ANTHROPIC_API_KEY`가 비어있어 LLM 호출 시 500 에러 발생
-- API 키 설정 후 동작 검증 + `tsc --noEmit` 확인 필요
+**`tsc --noEmit` 오류 없음 확인**
+
+## Phase 8: 마켓 인텔리전스 UX/기능 개선 (2026-02-27)
+
+### 마켓 인텔리전스 탭 개선
+
+**경쟁사 USP 입력 순서 변경** (`competitor-usp-section.tsx`)
+- "자동 탐지" 버튼 위치를 경쟁사 입력 상단 → 하단으로 이동
+- 직접 입력 → 브랜드 태그 → 자동 탐지 → 분석 시작 순서로 재배치
+
+**경쟁사 USP 결과 UI 확장** (`usp-positioning-tab.tsx`)
+- 전체 레이아웃: `lg:grid-cols-3` → 자사+시장 2열 상단 + 경쟁사 전체 너비 하단
+- BrandCard 내부: `grid-cols-2` → 세로 스택, `text-xs` → `text-sm`, 패딩 확대
+
+**마켓 인텔리전스 자동 저장** (`trends-content.tsx`)
+- 분석 결과(USP+시장니즈+트렌드인사이트) 변경 시 2초 debounce → `/api/reports` POST/PUT
+- 우측 상단 AutoSaveIndicator: idle/saving/saved/error 4상태 표시
+- `saveDataRef` 패턴으로 debounce 내 최신 state 안전 참조
+
+**자사 USP 콘텐츠 없이 분석 가능** (`own-usp-analyze/route.ts`)
+- 신규 분석 모드: `consumer_only` — 콘텐츠 없어도 브랜드명+소비자 블로그로 포지셔닝 분석
+- `OwnUspResult.analysisMode`: `"dual" | "official_only" | "consumer_only"` 추가
+- consumer_only 시 인디고 스타일 + "시장 조사 기반" 배지 + 추론 포지셔닝 UI
+
+**consumer_only 괴리도 표시**
+- consumer_only 모드에서도 discrepancyScore 1-5 허용 (추론 포지셔닝 vs 소비자 인식)
+- `OwnDiscrepancyMeter`에 `consumerOnly` prop 추가 → "추론 vs 인식 일치도" 레이블
+
+**USP 탭 배열 undefined 방어** (`usp-positioning-tab.tsx`)
+- `topKeywords/mainMessages/uniqueFactors/unmetNeeds/opportunities` 등 6곳 `?.length ?? 0` 처리
+
+### Gemini AI 모델 설정 기능 추가
+
+**공통 헬퍼** (`src/lib/gemini.ts`)
+- `GEMINI_MODELS` 상수 (Gemini 3 Flash, Gemini 2.5 Flash)
+- `getUserGeminiModel(clerkUserId)`: DB에서 유저 설정 모델 조회, 없으면 기본값 반환
+
+**설정 API** (`/api/settings/integrations/gemini`)
+- GET: 현재 저장된 모델 조회
+- POST: 선택 모델 `UserApiKey(service: "gemini_model")` 저장
+
+**설정 UI** (`settings/integrations/page.tsx`)
+- Gemini AI 카드 추가: shadcn Select 드롭다운 + 저장 버튼 + 결과 피드백
+
+**analytics 라우트 6개 모델 동적화**
+- `own-usp-analyze`, `competitor-usp-analyze`, `market-usp-analyze`, `trend-insight`, `competitor-brand-detect`, `report-generate`
+- 모두 하드코딩 `gemini-3-flash-preview` → `getUserGeminiModel()` 호출로 교체

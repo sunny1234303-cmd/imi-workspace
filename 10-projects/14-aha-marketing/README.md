@@ -32,7 +32,7 @@
 - [x] Phase 4: 3D/물리 폴리싱
 - [x] Phase 5: 통합 + 세팅
 - [x] Phase 6: QA + 런치
-- [ ] Phase 7: 시즈널 SEO/GEO 인사이트 (코드 완성, 검증 보류)
+- [x] Phase 7: 시즈널 SEO/GEO 인사이트
 - [x] Phase 8: 마케팅 자동화 강화
   - Google Sheets 1클릭 내보내기 (키워드셋, 리포트)
   - 주간 리포트 자동 이메일 발송 (월요일 UTC 0시)

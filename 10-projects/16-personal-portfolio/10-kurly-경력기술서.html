@@ -24,6 +24,65 @@
   .submit-block { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px 24px; margin: 16px 0; }
   .submit-block p { margin: 0 0 14px; }
   .submit-block p:last-child { margin-bottom: 0; }
+
+  @media print {
+    @page { size: A4; margin: 20mm 22mm; }
+
+    body {
+      font-size: 10px;
+      line-height: 1.55;
+      padding: 0;
+      max-width: 100%;
+      color: #1a1a1a;
+    }
+
+    h1 { font-size: 15px; margin-bottom: 2px; }
+    h2 { font-size: 11.5px; margin-top: 12px; margin-bottom: 6px; padding-bottom: 3px; }
+    h3 { font-size: 11px; margin-top: 10px; margin-bottom: 3px; }
+    h4 { font-size: 10.5px; margin-top: 8px; margin-bottom: 2px; }
+
+    hr { margin: 8px 0; }
+
+    p { margin: 3px 0; orphans: 2; widows: 2; }
+
+    table { font-size: 10px; }
+    th { padding: 4px 8px; }
+    td { padding: 3px 8px; }
+
+    ul { padding-left: 14px; margin: 3px 0; }
+    li { margin-bottom: 2px; page-break-inside: avoid; }
+
+    blockquote { padding: 5px 10px; margin: 5px 0; font-size: 9.5px; }
+
+    .meta { font-size: 9.5px; margin-bottom: 4px; }
+
+    h3, h4 { page-break-after: avoid; }
+    tr { page-break-inside: avoid; }
+
+    /* 자기소개 인라인 폰트 오버라이드 */
+    p[style*="font-size: 14px"] { font-size: 10px !important; line-height: 1.5 !important; }
+    p[style*="font-size: 16px"] { font-size: 13px !important; }
+
+    /* 자기소개 영역 여백 */
+    div[style*="margin-bottom: 32px"] { margin-bottom: 10px !important; }
+    p[style*="margin: 16px 0 8px"] { margin: 8px 0 4px !important; }
+    p[style*="margin: 0 0 8px"] { margin: 0 0 4px !important; }
+
+    /* 프로젝트·구간 간 여백 */
+    h4 { margin-top: 20px !important; margin-bottom: 5px !important; }
+    h3 { margin-top: 22px !important; margin-bottom: 6px !important; }
+    h2 { margin-top: 28px !important; margin-bottom: 10px !important; padding-bottom: 4px !important; }
+    #detail-career { page-break-before: always; margin-top: 0 !important; }
+
+    /* 자기소개 영역 여백 확대 */
+    div[style*="margin-bottom: 32px"] { margin-bottom: 20px !important; }
+    p[style*="margin: 16px 0 8px"] { margin: 14px 0 8px !important; }
+    p[style*="margin: 0 0 8px"] { margin: 0 0 8px !important; }
+    p[style*="margin: 0;"] { margin-bottom: 6px !important; }
+    hr { margin: 16px 0 !important; }
+    ul { margin: 6px 0 !important; }
+    p { margin: 5px 0 !important; }
+  }
 </style>
 </head>
 <body>
@@ -75,7 +134,7 @@
 
 <hr>
 
-<h2>상세 경력</h2>
+<h2 id="detail-career">상세 경력</h2>
 
 <h3>1. YBM 퍼블위즈 — 온라인 마케터</h3>
 <p class="meta"><strong>2024.07 ~ 2025.11 (1년 5개월)</strong> | 내셔널지오그래픽 브랜드 E-commerce 전담</p>
@@ -138,7 +197,7 @@
   <li>인스타그램 관련 키워드 검색 시 인플루언서 11인 체험 콘텐츠 상위 노출</li>
   <li>조직 최초 인플루언서 마케팅 채널 구축 및 디지털 콘텐츠 자산 확보</li>
 </ul>
-<p><strong>캠페인 인사이트 → 다음 전략 반영</strong></p>
+<p id="next-strategy"><strong>캠페인 인사이트 → 다음 전략 반영</strong></p>
 <table>
   <tr><th>발견한 문제</th><th>다음 캠페인 반영</th></tr>
   <tr><td>신제품 전환율 저하 (기존 제품과 가격 유사로 기존 제품 구매율 상승)</td><td>가격 구조 차별화 전략으로 조정</td></tr>

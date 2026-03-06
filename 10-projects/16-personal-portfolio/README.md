@@ -50,4 +50,34 @@
 
 ---
 
+## HTML 제출용 에세이 작성 시 고려사항
+
+> `13-coloso-에세이.html` 작업 경험 기반 (2026-03-06)
+
+### 폰트
+- `@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/...')` — Pretendard CDN 사용
+- 본문 폰트 기준: **12px** (16px 기본값은 PDF 1페이지 초과됨)
+- `html { font-size: 12px; }` 로 root 설정 후 나머지 em 기반 조정
+
+### PDF 출력 레이아웃
+- `@media print` + `@page { size: A4; margin: 20mm 22mm; }` 필수
+- 에세이 페이지 분리: `.essay + .essay { page-break-before: always; }` 사용
+- `page-break-inside: avoid` — p 태그에 적용해 단락이 페이지 경계에서 잘리지 않도록
+
+### 배경색·배경 그래픽 출력
+- 브라우저 PDF 저장 시 배경색이 기본 제거됨
+- 검정 박스, 번호 원형 등 배경이 있는 요소에 반드시 아래 속성 추가:
+  ```css
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  ```
+- 적용 대상: `.sub-section-label`, `.rule-list li::before`, `.lead` 등
+
+### 구조 패턴
+- 에세이 구분: `essay-number` (ESSAY 01) + `essay-title` + `lead` (강조 인용구) + `essay-body`
+- 소챕터 구분: `.sub-section-label` — 검정 배경 흰 글씨 인라인 태그
+- 번호 목록: CSS counter 기반 (`counter-reset` / `counter-increment`) — 검정 배경 숫자
+
+---
+
 *생성일: 2026-03-01*

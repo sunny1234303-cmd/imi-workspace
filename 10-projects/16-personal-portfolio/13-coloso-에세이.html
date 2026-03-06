@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>콜로소 지원 에세이 — 진서니</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --black: #111111;
+      --gray-dark: #444444;
+      --gray-mid: #888888;
+      --gray-light: #d4d4d4;
+      --gray-bg: #f7f7f7;
+      --accent: #1a1a1a;
+      --white: #ffffff;
+      --line: #e8e8e8;
+    }
+
+    html {
+      font-size: 12px;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--white);
+      color: var(--black);
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 80px 40px 120px;
+    }
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 64px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-meta {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+      margin-bottom: 20px;
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--black);
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .header-sub {
+      font-size: 14px;
+      color: var(--gray-dark);
+      font-weight: 400;
+    }
+
+    /* ── Essay ── */
+    .essay {
+      margin-bottom: 72px;
+    }
+
+    .essay + .essay {
+      padding-top: 64px;
+      border-top: 1px solid var(--line);
+    }
+
+    .essay-number {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray-mid);
+      margin-bottom: 12px;
+    }
+
+    .essay-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--black);
+      margin-bottom: 28px;
+      line-height: 1.4;
+    }
+
+    /* ── Lead (강조 문구) ── */
+    .lead {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--black);
+      background-color: var(--gray-bg);
+      border-left: 3px solid var(--black);
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      line-height: 1.7;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Body text ── */
+    .essay-body p {
+      font-size: 12px;
+      color: var(--gray-dark);
+      line-height: 1.9;
+      margin-bottom: 22px;
+      letter-spacing: -0.005em;
+    }
+
+    .essay-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      color: var(--black);
+      font-weight: 600;
+    }
+
+    /* ── Sub-section (에세이 2 챕터) ── */
+    .sub-section {
+      margin-top: 36px;
+      margin-bottom: 8px;
+    }
+
+    .sub-section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      background-color: var(--black);
+      padding: 4px 10px;
+      margin-bottom: 14px;
+    }
+
+    /* ── Rule list (에세이 1 두 가지 기준) ── */
+    .rule-list {
+      margin: 20px 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .rule-list li {
+      position: relative;
+      font-size: 12px;
+      color: var(--gray-dark);
+      line-height: 1.9;
+      padding-left: 28px;
+      margin-bottom: 14px;
+      letter-spacing: -0.005em;
+    }
+
+    .rule-list li::before {
+      content: counter(rule-counter);
+      counter-increment: rule-counter;
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--white);
+      background-color: var(--black);
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 3px;
+    }
+
+    .rule-list {
+      counter-reset: rule-counter;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 80px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--black);
+    }
+
+    .footer-date {
+      font-size: 12px;
+      color: var(--gray-mid);
+    }
+
+    /* ── Print color preserve ── */
+    .sub-section-label,
+    .rule-list li::before,
+    .lead {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Print ── */
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm 22mm;
+      }
+
+      body { background: white; }
+
+      .page {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .header {
+        margin-bottom: 36px;
+        padding-bottom: 20px;
+      }
+
+      .essay {
+        margin-bottom: 0;
+      }
+
+      .essay + .essay {
+        page-break-before: always;
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .footer {
+        margin-top: 40px;
+      }
+
+      .sub-section {
+        page-break-after: avoid;
+      }
+
+      p {
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page { padding: 48px 24px 80px; }
+      .header-title { font-size: 22px; }
+      .essay-title { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <header class="header">
+      <p class="header-meta">지원 에세이 &nbsp;·&nbsp; 콜로소 전략기획 마케터</p>
+      <h1 class="header-title">자유 형식 에세이</h1>
+      <p class="header-sub">데이원컴퍼니 &nbsp;|&nbsp; 신입/경력 지원</p>
+    </header>
+
+    <!-- Essay 1 -->
+    <section class="essay">
+      <p class="essay-number">Essay 01</p>
+      <h2 class="essay-title">AI가 나를 대체할 수 없는 이유</h2>
+
+      <div class="lead">
+        누구나 AI를 씁니다. 하지만, AI에게 정확한 방향을 줄 수 있는 사람은 많지 않습니다.
+      </div>
+
+      <div class="essay-body">
+        <p>
+          YBM 퍼블위즈 재직 중 비수기 매출이 하락했을 때, 검색 트래픽이 급작스럽게 줄어든 이슈를 AI는 단순한 계절성으로 분류했습니다. 저는 그 안에서 단일로 운영되던 <strong>"광고 채널 의존"</strong>이라는 원인을 발굴했고, 2022년부터 2년간 휴면 상태로 방치된 카카오 채널 DB 7,300명을 재발굴해 재활성화하는 전략과 함께 재고를 활용한 신상품 기획을 병행했습니다. 매출이 없던 상황에서 일 평균 대비 매출 <strong>+203%</strong>, 네이버 검색 유입률 <strong>+143%</strong>라는 지표를 얻었습니다. 단순히 데이터의 흐름을 읽는 게 아닌, 동일한 데이터가 어디까지 파고들어 있는지 분석하고 결정하는 판단은 사람만이 할 수 있습니다.
+        </p>
+
+        <p>
+          또 하나는 <strong>'없는 길을 만드는 결정'</strong>입니다. 어린이날 캠페인에서 인플루언서 마케팅을 도입하기로 한 건 분석의 결과가 아니라, 현재 필요한 게 무엇인지 먼저 정의한 뒤 역방향으로 설계한 전략이었습니다. 인스타그램에 브랜드 키워드 검색 시 상업적 '공구' 포스팅이 상위 노출되는 것을 문제로 인식하고, 실 체험 콘텐츠로 교체하기로 결정한 것은 단순히 숫자로 접근한 것이 아닌 브랜드에 대한 맥락 이해와 타깃 고객의 니즈 이해에서 나왔습니다.
+        </p>
+
+        <p>
+          AI를 활용한 업무 자동화는 단순하게 접근하면 문제가 발생합니다. 무작정 AI에게 시키면 사람이 고려해야 하는 중요한 사항을 놓치게 됩니다. 저는 AI를 활용한 실무 및 업무 자동화를 진행할 때 두 가지 기준을 가지고 진행합니다.
+        </p>
+
+        <ul class="rule-list">
+          <li>
+            <strong>보안을 고려합니다.</strong> 고객의 정보가 담긴 개인정보를 활용한 업무 자동화가 필요한 경우에는 '더미데이터'를 활용하거나, 직접적인 LLM 코딩을 통해 엑셀 및 구글 시트를 활용한 RPA 시스템을 구현합니다.
+          </li>
+          <li>
+            <strong>사용자를 고려합니다.</strong> 회사, 회사 안에서도 팀, 팀 안에서도 개개인의 업무 스타일에 따라 중요하게 생각하는 우선순위와 업무 방향성이 다르기 때문에 이해관계자와의 커뮤니케이션을 통하여 실무자가 원하는 분석 방향성을 AI에게 이해시킵니다.
+          </li>
+        </ul>
+
+        <p>
+          이처럼 실무에서 활용하는 AI는 무엇보다도 사용자가 원하는 정확성 인지도를 가진 결과를 받을 수 있어야 합니다. AI의 분석 결과를 바로 믿는 것이 아닌, 어떤 산정 근거를 기반으로 분석하여 결과를 낸 것인지를 검증해야 합니다. 저는 데이터를 분석하고 개선안을 도출하는 과정에서 할루시네이션 현상이 있었는지, raw 데이터를 잘못 파악하진 않았는지를 테스트하며 결과를 결정하는 구조와 전략을 판단하는 사람이 필요합니다.
+        </p>
+
+        <p>
+          사람도 맥락을 모르면 정확한 이해가 어렵듯이, AI 역시 실무의 구조와 방향성을 먼저 설계해줄 사람이 필요합니다. 저는 그 역할을 하기 때문에, AI는 저를 대체할 수 없습니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- Essay 2 -->
+    <section class="essay">
+      <p class="essay-number">Essay 02</p>
+      <h2 class="essay-title">워크플로우 / 시스템 개선 등 효율화 경험</h2>
+
+      <div class="essay-body">
+
+        <!-- Sub 1 -->
+        <div class="sub-section">
+          <span class="sub-section-label">월 4시간 → 클릭 1번</span>
+        </div>
+        <p>
+          매월 회계팀에 전달하는 광고비 정산 데이터 처리는 마케터로서 가장 기피하고 싶었던 작업이었습니다. 네이버 검색광고, 카카오 채널 등 플랫폼마다 형식이 달랐고, 회계팀의 요구 형식으로 수작업 변환하는 데 매달 <strong>4시간 이상</strong>이 소요됐습니다. 오류가 나면 정산 전체가 틀어지는 구조라 집중력을 많이 요구했습니다.
+        </p>
+        <p>
+          '어떻게 하면 이 작업을 정확하고 빠르게 끝낼 수 있는가'를 고민했습니다. 고객의 주문 정보 및 개인정보가 포함되어 있어 <strong>Excel VBA와 LLM AI</strong>를 활용해 로우 데이터 변환·정리·보고서 생성까지의 흐름을 자동화했습니다. 4시간 작업이 클릭 한 번으로 단축됐고, 확보된 시간은 지표 분석과 다음 캠페인 전략 수립에 재투자했습니다.
+        </p>
+
+        <!-- Sub 2 -->
+        <div class="sub-section">
+          <span class="sub-section-label">2일 → 10분 &nbsp;: 이미지 에셋 생성</span>
+        </div>
+        <p>
+          광고 소재 및 상세페이지를 제작할 때 필요한 이미지가 생기면 유관부서에 요청 시 <strong>2일이 걸리는 업무</strong>를 AI 이미지 생성 도구로 <strong>10분</strong>으로 단축했습니다. 또한 브랜드 아이덴티티가 유지되는 프롬프트를 설계하여 다른 제품의 같은 느낌을 가진 사진이 필요할 때 즉각 활용할 수 있도록 효율화했습니다.
+        </p>
+
+        <!-- Sub 3 -->
+        <div class="sub-section">
+          <span class="sub-section-label">KPIs 대시보드 통합 구축</span>
+        </div>
+        <p>
+          기존에는 성과 지표가 플랫폼별로 분산돼 있어 전체 그림을 파악하는 데 시간이 걸렸습니다. 관련 데이터를 단일 엑셀 대시보드로 통합하고, 전년도·전월 비교 뷰를 자동 생성하도록 설계했습니다.
+        </p>
+        <p>
+          이후, 반복적으로 수작업하던 성과 데이터 취합·분석 프로세스를 직접 구조화하여 워크플로우를 개선했습니다. 마케터가 반복 수행하는 업무인 클릭수·전환수·ROAS·CPC 등 핵심 지표 자동 수집, 검색 트렌드 시계열 분석 알고리즘으로 시즌별 프로모션 타이밍 근거 수치화, 키워드·소재·캠페인별 성과를 네이버 광고 API 연동으로 자동 분석해 리포트를 발행하도록 워크플로우를 자동화하였습니다.
+        </p>
+        <p>
+          단순 업무 효율화가 아닌 데이터 해석과 전략 반영을 빠르게 돌리기 위한 목적으로 설계했습니다. 보안 리스크 없이 AI를 업무에 도입할 수 있는 실용적인 시스템으로, 대기업 AX 도입 자문 시 시연을 진행한 경험이 있습니다.
+        </p>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span class="footer-name">진선이</span>
+      <span class="footer-date">2026</span>
+    </footer>
+
+  </div>
+</body>
+</html>

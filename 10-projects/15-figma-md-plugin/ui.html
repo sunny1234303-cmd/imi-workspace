@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, -apple-system, sans-serif;
+    font-size: 13px;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 16px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  h2 { font-size: 15px; font-weight: 600; }
+
+  /* 드롭존 */
+  #drop-zone {
+    border: 2px dashed #d0d0d0;
+    border-radius: 10px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  #drop-zone:hover, #drop-zone.over {
+    border-color: #7c5cfc;
+    background: #f5f2ff;
+  }
+  #drop-zone .icon { font-size: 28px; margin-bottom: 8px; }
+  #drop-zone p { color: #555; font-size: 12px; margin-top: 4px; }
+  #drop-zone .btn-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #7c5cfc;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 12px;
+  }
+  #file-input { display: none; }
+
+  /* 파일명 표시 */
+  #file-info {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  #file-info .name { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #file-info .remove {
+    cursor: pointer;
+    color: #888;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  #file-info .remove:hover { color: #e00; }
+
+  /* 미리보기 */
+  #preview-box {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: none;
+    background: #fafafa;
+    min-height: 0;
+  }
+  #preview-box .preview-block { margin-bottom: 8px; }
+  #preview-box .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .tag-h1 { background: #e8e0ff; color: #5b21b6; }
+  .tag-h2 { background: #dbeafe; color: #1d4ed8; }
+  .tag-h3 { background: #dcfce7; color: #15803d; }
+  .tag-p  { background: #f3f4f6; color: #374151; }
+  .tag-list { background: #fef3c7; color: #92400e; }
+  .tag-table { background: #ffe4e6; color: #9f1239; }
+  .tag-divider { background: #f1f5f9; color: #64748b; }
+  #preview-box .text { display: inline; font-size: 12px; color: #333; }
+
+  /* 버튼 영역 */
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #btn-insert {
+    background: #7c5cfc;
+    color: #fff;
+  }
+  #btn-insert:not(:disabled):hover { background: #6748e8; }
+  #btn-cancel {
+    background: #f0f0f0;
+    color: #333;
+  }
+  #btn-cancel:hover { background: #e0e0e0; }
+
+  #status { font-size: 12px; color: #888; text-align: center; min-height: 16px; }
+  #status.error { color: #e00; }
+</style>
+</head>
+<body>
+
+<h2>Markdown → Figma</h2>
+
+<div id="drop-zone">
+  <div class="icon">📄</div>
+  <p>마크다운 파일을 드래그하거나</p>
+  <span class="btn-link" onclick="document.getElementById('file-input').click()">파일 선택</span>
+  <input type="file" id="file-input" accept=".md,.markdown" />
+</div>
+
+<div id="file-info">
+  <span>📄</span>
+  <span class="name" id="file-name"></span>
+  <span class="remove" id="btn-remove" title="제거">✕</span>
+</div>
+
+<div id="preview-box"></div>
+
+<div id="status"></div>
+
+<div class="actions">
+  <button id="btn-cancel">취소</button>
+  <button id="btn-insert" disabled>Figma에 삽입</button>
+</div>
+
+<script>
+  let parsedBlocks = [];
+  let currentFilename = '';
+
+  // ─── 파일 선택 ─────────────────────────────────────────────────────────────
+  document.getElementById('file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) loadFile(file);
+  });
+
+  // ─── 드래그 앤 드롭 ────────────────────────────────────────────────────────
+  const dropZone = document.getElementById('drop-zone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.md') || file.name.endsWith('.markdown'))) {
+      loadFile(file);
+    } else {
+      setStatus('.md 파일만 지원합니다.', true);
+    }
+  });
+
+  // ─── 파일 제거 ─────────────────────────────────────────────────────────────
+  document.getElementById('btn-remove').addEventListener('click', reset);
+
+  function reset() {
+    parsedBlocks = [];
+    currentFilename = '';
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-info').style.display = 'none';
+    document.getElementById('preview-box').style.display = 'none';
+    document.getElementById('preview-box').innerHTML = '';
+    document.getElementById('btn-insert').disabled = true;
+    setStatus('');
+  }
+
+  // ─── 파일 읽기 & 파싱 ──────────────────────────────────────────────────────
+  function loadFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const md = e.target.result;
+      currentFilename = file.name.replace(/\.(md|markdown)$/i, '');
+      parsedBlocks = parseMarkdown(md);
+      showFileInfo(file.name);
+      renderPreview(parsedBlocks);
+      document.getElementById('btn-insert').disabled = false;
+      setStatus(`${parsedBlocks.length}개 블록 파싱 완료`);
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function showFileInfo(name) {
+    document.getElementById('file-name').textContent = name;
+    document.getElementById('file-info').style.display = 'flex';
+  }
+
+  // ─── 마크다운 파서 ─────────────────────────────────────────────────────────
+  function parseMarkdown(md) {
+    const lines = md.split('\n');
+    const blocks = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // 빈 줄
+      if (!trimmed) { i++; continue; }
+
+      // 제목
+      const hMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
+      if (hMatch) {
+        const level = hMatch[1].length;
+        blocks.push({ type: `h${level}`, text: stripInline(hMatch[2]) });
+        i++; continue;
+      }
+
+      // 구분선
+      if (/^[-*_]{3,}$/.test(trimmed)) {
+        blocks.push({ type: 'divider' });
+        i++; continue;
+      }
+
+      // 표
+      if (trimmed.startsWith('|')) {
+        const tableLines = [];
+        while (i < lines.length && lines[i].trim().startsWith('|')) {
+          tableLines.push(lines[i].trim());
+          i++;
+        }
+        const table = parseTable(tableLines);
+        if (table) blocks.push(table);
+        continue;
+      }
+
+      // 순서 없는 목록
+      if (/^[-*+]\s/.test(trimmed)) {
+        const items = [];
+        while (i < lines.length && /^[-*+]\s/.test(lines[i].trim())) {
+          items.push(stripInline(lines[i].trim().replace(/^[-*+]\s+/, '')));
+          i++;
+        }
+        blocks.push({ type: 'list', ordered: false, items });
+        continue;
+      }
+
+      // 순서 있는 목록
+      if (/^\d+\.\s/.test(trimmed)) {
+        const items = [];
+        while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) {
+          items.push(stripInline(lines[i].trim().replace(/^\d+\.\s+/, '')));
+          i++;
+        }
+        blocks.push({ type: 'list', ordered: true, items });
+        continue;
+      }
+
+      // 일반 문단
+      const paraLines = [];
+      while (i < lines.length && lines[i].trim() && !lines[i].trim().startsWith('#') && !lines[i].trim().startsWith('|') && !/^[-*_]{3,}$/.test(lines[i].trim())) {
+        paraLines.push(lines[i].trim());
+        i++;
+      }
+      if (paraLines.length) {
+        blocks.push({ type: 'paragraph', text: stripInline(paraLines.join(' ')) });
+      }
+    }
+
+    return blocks;
+  }
+
+  function parseTable(lines) {
+    const dataLines = lines.filter(l => !l.replace(/\|/g, '').trim().match(/^[-:\s]+$/));
+    if (dataLines.length < 1) return null;
+    const parse = l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+    const [headerLine, ...rowLines] = dataLines;
+    return {
+      type: 'table',
+      headers: parse(headerLine),
+      rows: rowLines.map(parse),
+    };
+  }
+
+  function stripInline(text) {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '$1')   // bold
+      .replace(/\*(.+?)\*/g, '$1')        // italic
+      .replace(/__(.+?)__/g, '$1')
+      .replace(/_(.+?)_/g, '$1')
+      .replace(/`(.+?)`/g, '$1')
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+      .replace(/\\/g, '')
+      .trim();
+  }
+
+  // ─── 미리보기 렌더링 ────────────────────────────────────────────────────────
+  function renderPreview(blocks) {
+    const box = document.getElementById('preview-box');
+    box.innerHTML = '';
+    box.style.display = 'block';
+
+    const labels = {
+      h1: ['H1', 'tag-h1'], h2: ['H2', 'tag-h2'], h3: ['H3', 'tag-h3'],
+      paragraph: ['P', 'tag-p'], list: ['LIST', 'tag-list'],
+      table: ['TABLE', 'tag-table'], divider: ['---', 'tag-divider'],
+    };
+
+    blocks.forEach(block => {
+      const div = document.createElement('div');
+      div.className = 'preview-block';
+
+      const [label, cls] = labels[block.type] || ['?', 'tag-p'];
+      const tag = `<span class="tag ${cls}">${label}</span>`;
+
+      let content = '';
+      if (block.text) content = block.text.slice(0, 60) + (block.text.length > 60 ? '…' : '');
+      else if (block.items) content = block.items.slice(0, 2).join(', ') + (block.items.length > 2 ? '…' : '');
+      else if (block.headers) content = block.headers.join(' | ') + ` (${block.rows.length}행)`;
+
+      div.innerHTML = `${tag}<span class="text">${content}</span>`;
+      box.appendChild(div);
+    });
+  }
+
+  // ─── 삽입 버튼 ─────────────────────────────────────────────────────────────
+  document.getElementById('btn-insert').addEventListener('click', () => {
+    document.getElementById('btn-insert').disabled = true;
+    setStatus('삽입 중...');
+    parent.postMessage({
+      pluginMessage: { type: 'insert', blocks: parsedBlocks, filename: currentFilename }
+    }, '*');
+  });
+
+  document.getElementById('btn-cancel').addEventListener('click', () => {
+    parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+  });
+
+  // ─── code.js 메시지 수신 ────────────────────────────────────────────────────
+  window.onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === 'done') setStatus('완료!');
+    if (msg.type === 'error') setStatus('오류: ' + msg.message, true);
+  };
+
+  function setStatus(text, isError = false) {
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.className = isError ? 'error' : '';
+  }
+</script>
+</body>
+</html>

@@ -6,84 +6,166 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: Inter, -apple-system, sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     color: #1a1a1a;
     background: #fff;
-    padding: 16px;
+    padding: 14px;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    overflow: hidden;
   }
 
-  h2 { font-size: 15px; font-weight: 600; }
+  h2 { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
 
-  /* 드롭존 */
+  /* ── 드롭존 ── */
   #drop-zone {
     border: 2px dashed #d0d0d0;
     border-radius: 10px;
-    padding: 28px 16px;
+    padding: 18px 12px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color .15s, background .15s;
     flex-shrink: 0;
   }
-  #drop-zone:hover, #drop-zone.over {
-    border-color: #7c5cfc;
-    background: #f5f2ff;
-  }
-  #drop-zone .icon { font-size: 28px; margin-bottom: 8px; }
-  #drop-zone p { color: #555; font-size: 12px; margin-top: 4px; }
+  #drop-zone:hover, #drop-zone.over { border-color: #7c5cfc; background: #f5f2ff; }
+  #drop-zone .icon { font-size: 22px; margin-bottom: 4px; }
+  #drop-zone p { color: #666; font-size: 11px; }
   #drop-zone .btn-link {
     display: inline-block;
-    margin-top: 10px;
+    margin-top: 6px;
     color: #7c5cfc;
     font-weight: 600;
     cursor: pointer;
     text-decoration: underline;
-    font-size: 12px;
+    font-size: 11px;
   }
   #file-input { display: none; }
 
-  /* 파일명 표시 */
-  #file-info {
+  /* ── 파일 큐 ── */
+  #file-queue {
     display: none;
-    align-items: center;
-    gap: 8px;
-    background: #f0f0f0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-  #file-info .name { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #file-info .remove {
-    cursor: pointer;
-    color: #888;
-    font-size: 14px;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 90px;
+    overflow-y: auto;
     flex-shrink: 0;
   }
-  #file-info .remove:hover { color: #e00; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f5f2ff;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .file-item .num {
+    font-size: 10px;
+    font-weight: 700;
+    color: #7c5cfc;
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .file-item .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .file-item .blocks { color: #888; flex-shrink: 0; }
+  .file-item .rm { cursor: pointer; color: #aaa; flex-shrink: 0; }
+  .file-item .rm:hover { color: #e00; }
 
-  /* 미리보기 */
+  /* ── 설정 패널 ── */
+  .settings {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .setting-row label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .setting-row input[type="text"],
+  .setting-row input[type="number"] {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 4px 7px;
+    font-size: 11px;
+    outline: none;
+    font-family: inherit;
+  }
+  .setting-row input[type="text"]:focus,
+  .setting-row input[type="number"]:focus { border-color: #7c5cfc; }
+  .setting-row input[type="number"] { width: 52px; flex: none; }
+  .setting-row .unit { font-size: 11px; color: #888; }
+
+  /* ── 버튼 그룹 (테마 / 타입) ── */
+  .btn-group {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+  .opt-btn {
+    flex: 1;
+    padding: 4px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .12s;
+    color: #555;
+  }
+  .opt-btn:hover { border-color: #7c5cfc; color: #7c5cfc; }
+  .opt-btn.active {
+    background: #7c5cfc;
+    border-color: #7c5cfc;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* ── 미리보기 ── */
   #preview-box {
     flex: 1;
     overflow-y: auto;
-    border: 1px solid #e8e8e8;
+    border: 1px solid #eee;
     border-radius: 8px;
-    padding: 12px 14px;
+    padding: 10px 12px;
     display: none;
     background: #fafafa;
     min-height: 0;
   }
-  #preview-box .preview-block { margin-bottom: 8px; }
-  #preview-box .tag {
-    display: inline-block;
-    font-size: 10px;
+  .preview-file-title {
+    font-size: 11px;
     font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-right: 6px;
-    vertical-align: middle;
+    color: #7c5cfc;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e8e0ff;
+  }
+  .preview-file-title:not(:first-child) { margin-top: 10px; }
+  .preview-block { margin-bottom: 5px; display: flex; align-items: baseline; gap: 6px; }
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
   }
   .tag-h1 { background: #e8e0ff; color: #5b21b6; }
   .tag-h2 { background: #dbeafe; color: #1d4ed8; }
@@ -92,9 +174,9 @@
   .tag-list { background: #fef3c7; color: #92400e; }
   .tag-table { background: #ffe4e6; color: #9f1239; }
   .tag-divider { background: #f1f5f9; color: #64748b; }
-  #preview-box .text { display: inline; font-size: 12px; color: #333; }
+  .preview-text { font-size: 11px; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* 버튼 영역 */
+  /* ── 버튼 ── */
   .actions {
     display: flex;
     gap: 8px;
@@ -102,27 +184,22 @@
   }
   button {
     flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    font-size: 13px;
+    padding: 9px;
+    border-radius: 7px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: opacity 0.15s;
+    transition: opacity .15s;
+    font-family: inherit;
   }
   button:disabled { opacity: 0.4; cursor: default; }
-  #btn-insert {
-    background: #7c5cfc;
-    color: #fff;
-  }
+  #btn-insert { background: #7c5cfc; color: #fff; }
   #btn-insert:not(:disabled):hover { background: #6748e8; }
-  #btn-cancel {
-    background: #f0f0f0;
-    color: #333;
-  }
+  #btn-cancel { background: #f0f0f0; color: #333; }
   #btn-cancel:hover { background: #e0e0e0; }
 
-  #status { font-size: 12px; color: #888; text-align: center; min-height: 16px; }
+  #status { font-size: 11px; color: #888; text-align: center; min-height: 15px; flex-shrink: 0; }
   #status.error { color: #e00; }
 </style>
 </head>
@@ -130,19 +207,48 @@
 
 <h2>Markdown → Figma</h2>
 
+<!-- 드롭존 -->
 <div id="drop-zone">
   <div class="icon">📄</div>
-  <p>마크다운 파일을 드래그하거나</p>
+  <p>마크다운 파일을 드래그 (여러 개 가능)</p>
   <span class="btn-link" onclick="document.getElementById('file-input').click()">파일 선택</span>
-  <input type="file" id="file-input" accept=".md,.markdown" />
+  <input type="file" id="file-input" accept=".md,.markdown" multiple />
 </div>
 
-<div id="file-info">
-  <span>📄</span>
-  <span class="name" id="file-name"></span>
-  <span class="remove" id="btn-remove" title="제거">✕</span>
+<!-- 파일 큐 -->
+<div id="file-queue"></div>
+
+<!-- 설정 -->
+<div class="settings">
+  <div class="setting-row">
+    <label>폰트</label>
+    <input type="text" id="font-family" value="Inter" placeholder="Inter, Noto Sans KR …" />
+  </div>
+  <div class="setting-row">
+    <label>크기</label>
+    <input type="number" id="font-size" value="16" min="10" max="32" />
+    <span class="unit">px &nbsp; 기준 (H1은 2.25배 자동 적용)</span>
+  </div>
+  <div class="setting-row">
+    <label>테마</label>
+    <div class="btn-group" id="theme-group">
+      <button class="opt-btn active" data-value="light">Light</button>
+      <button class="opt-btn" data-value="dark">Dark</button>
+      <button class="opt-btn" data-value="brand">Brand</button>
+    </div>
+  </div>
+  <div class="setting-row">
+    <label>타입</label>
+    <div class="btn-group" id="type-group">
+      <button class="opt-btn active" data-value="document">Doc<br><span style="font-size:9px;font-weight:400">800px</span></button>
+      <button class="opt-btn" data-value="sns">SNS<br><span style="font-size:9px;font-weight:400">1080px</span></button>
+      <button class="opt-btn" data-value="ad">Ad<br><span style="font-size:9px;font-weight:400">1200px</span></button>
+      <button class="opt-btn" data-value="report">Report<br><span style="font-size:9px;font-weight:400">1440px</span></button>
+    </div>
+  </div>
 </div>
 
+<!-- 미리보기 -->
 <div id="preview-box"></div>
 
 <div id="status"></div>
@@ -153,67 +259,132 @@
 </div>
 
 <script>
-  let parsedBlocks = [];
-  let currentFilename = '';
+  // ─── 상태 ────────────────────────────────────────────────────────────────
+  let fileQueue = []; // [{ name, blocks }]
 
-  // ─── 파일 선택 ─────────────────────────────────────────────────────────────
+  let selectedTheme = 'light';
+  let selectedType  = 'document';
+
+  // ─── 옵션 버튼 ───────────────────────────────────────────────────────────
+  function setupBtnGroup(groupId, onSelect) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        onSelect(btn.dataset.value);
+      });
+    });
+  }
+  setupBtnGroup('theme-group', v => selectedTheme = v);
+  setupBtnGroup('type-group',  v => selectedType  = v);
+
+  // ─── 파일 선택 ───────────────────────────────────────────────────────────
   document.getElementById('file-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) loadFile(file);
+    [...e.target.files].forEach(f => loadFile(f));
+    e.target.value = '';
   });
 
-  // ─── 드래그 앤 드롭 ────────────────────────────────────────────────────────
+  // ─── 드래그 앤 드롭 ──────────────────────────────────────────────────────
   const dropZone = document.getElementById('drop-zone');
   dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('over');
-    const file = e.dataTransfer.files[0];
-    if (file && (file.name.endsWith('.md') || file.name.endsWith('.markdown'))) {
-      loadFile(file);
-    } else {
-      setStatus('.md 파일만 지원합니다.', true);
-    }
+    const files = [...e.dataTransfer.files].filter(f => /\.(md|markdown)$/i.test(f.name));
+    if (!files.length) { setStatus('.md 파일만 지원합니다.', true); return; }
+    files.forEach(f => loadFile(f));
   });
 
-  // ─── 파일 제거 ─────────────────────────────────────────────────────────────
-  document.getElementById('btn-remove').addEventListener('click', reset);
-
-  function reset() {
-    parsedBlocks = [];
-    currentFilename = '';
-    document.getElementById('file-input').value = '';
-    document.getElementById('file-info').style.display = 'none';
-    document.getElementById('preview-box').style.display = 'none';
-    document.getElementById('preview-box').innerHTML = '';
-    document.getElementById('btn-insert').disabled = true;
-    setStatus('');
-  }
-
-  // ─── 파일 읽기 & 파싱 ──────────────────────────────────────────────────────
+  // ─── 파일 읽기 & 파싱 ───────────────────────────────────────────────────
   function loadFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
       const md = e.target.result;
-      currentFilename = file.name.replace(/\.(md|markdown)$/i, '');
-      parsedBlocks = parseMarkdown(md);
-      showFileInfo(file.name);
-      renderPreview(parsedBlocks);
+      const name = file.name.replace(/\.(md|markdown)$/i, '');
+      const blocks = parseMarkdown(md);
+      fileQueue.push({ name, blocks });
+      renderQueue();
+      renderPreview();
       document.getElementById('btn-insert').disabled = false;
-      setStatus(`${parsedBlocks.length}개 블록 파싱 완료`);
+      setStatus(`총 ${fileQueue.length}개 파일 준비됨`);
     };
     reader.readAsText(file, 'UTF-8');
   }
 
-  function showFileInfo(name) {
-    document.getElementById('file-name').textContent = name;
-    document.getElementById('file-info').style.display = 'flex';
+  // ─── 큐 렌더링 ───────────────────────────────────────────────────────────
+  function renderQueue() {
+    const qEl = document.getElementById('file-queue');
+    if (!fileQueue.length) { qEl.style.display = 'none'; return; }
+    qEl.style.display = 'flex';
+    qEl.innerHTML = '';
+    fileQueue.forEach((f, i) => {
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      div.innerHTML = `
+        <span class="num">${i + 1}</span>
+        <span class="fname">${f.name}.md</span>
+        <span class="blocks">${f.blocks.length}블록</span>
+        <span class="rm" data-idx="${i}" title="제거">✕</span>
+      `;
+      div.querySelector('.rm').addEventListener('click', (e) => {
+        fileQueue.splice(Number(e.target.dataset.idx), 1);
+        renderQueue();
+        renderPreview();
+        if (!fileQueue.length) {
+          document.getElementById('btn-insert').disabled = true;
+          setStatus('');
+        }
+      });
+      qEl.appendChild(div);
+    });
   }
 
-  // ─── 마크다운 파서 ─────────────────────────────────────────────────────────
+  // ─── 미리보기 ────────────────────────────────────────────────────────────
+  const tagMap = {
+    h1: ['H1', 'tag-h1'], h2: ['H2', 'tag-h2'], h3: ['H3', 'tag-h3'],
+    paragraph: ['P', 'tag-p'], list: ['LIST', 'tag-list'],
+    table: ['TABLE', 'tag-table'], divider: ['—', 'tag-divider'],
+  };
+
+  function renderPreview() {
+    const box = document.getElementById('preview-box');
+    if (!fileQueue.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = 'block';
+    box.innerHTML = '';
+
+    fileQueue.forEach((file, fi) => {
+      const titleEl = document.createElement('div');
+      titleEl.className = 'preview-file-title';
+      titleEl.textContent = `${fi + 1}. ${file.name}.md`;
+      box.appendChild(titleEl);
+
+      file.blocks.slice(0, 8).forEach(block => {
+        const div = document.createElement('div');
+        div.className = 'preview-block';
+        const [label, cls] = tagMap[block.type] || ['?', 'tag-p'];
+        let content = '';
+        if (block.text)    content = block.text.slice(0, 55) + (block.text.length > 55 ? '…' : '');
+        else if (block.items)   content = block.items.slice(0, 2).join(', ') + (block.items.length > 2 ? ' …' : '');
+        else if (block.headers) content = block.headers.join(' | ') + ` (${block.rows.length}행)`;
+        div.innerHTML = `<span class="tag ${cls}">${label}</span><span class="preview-text">${content}</span>`;
+        box.appendChild(div);
+      });
+      if (file.blocks.length > 8) {
+        const more = document.createElement('div');
+        more.style.cssText = 'font-size:10px;color:#aaa;padding:2px 0 0 4px';
+        more.textContent = `… 외 ${file.blocks.length - 8}개 블록`;
+        box.appendChild(more);
+      }
+    });
+  }
+
+  // ─── 마크다운 파서 ───────────────────────────────────────────────────────
   function parseMarkdown(md) {
-    const lines = md.split('\n');
+    // frontmatter 제거
+    const cleaned = md.replace(/^---[\s\S]*?---\n?/, '').trim();
+    const lines = cleaned.split('\n');
     const blocks = [];
     let i = 0;
 
@@ -221,14 +392,12 @@
       const line = lines[i];
       const trimmed = line.trim();
 
-      // 빈 줄
       if (!trimmed) { i++; continue; }
 
       // 제목
       const hMatch = trimmed.match(/^(#{1,3})\s+(.+)/);
       if (hMatch) {
-        const level = hMatch[1].length;
-        blocks.push({ type: `h${level}`, text: stripInline(hMatch[2]) });
+        blocks.push({ type: `h${hMatch[1].length}`, text: stripInline(hMatch[2]) });
         i++; continue;
       }
 
@@ -245,8 +414,8 @@
           tableLines.push(lines[i].trim());
           i++;
         }
-        const table = parseTable(tableLines);
-        if (table) blocks.push(table);
+        const t = parseTable(tableLines);
+        if (t) blocks.push(t);
         continue;
       }
 
@@ -272,9 +441,17 @@
         continue;
       }
 
-      // 일반 문단
+      // 일반 문단 (연속된 줄 합침)
       const paraLines = [];
-      while (i < lines.length && lines[i].trim() && !lines[i].trim().startsWith('#') && !lines[i].trim().startsWith('|') && !/^[-*_]{3,}$/.test(lines[i].trim())) {
+      while (
+        i < lines.length &&
+        lines[i].trim() &&
+        !lines[i].trim().match(/^#{1,3}\s/) &&
+        !lines[i].trim().startsWith('|') &&
+        !/^[-*_]{3,}$/.test(lines[i].trim()) &&
+        !/^[-*+]\s/.test(lines[i].trim()) &&
+        !/^\d+\.\s/.test(lines[i].trim())
+      ) {
         paraLines.push(lines[i].trim());
         i++;
       }
@@ -287,21 +464,17 @@
   }
 
   function parseTable(lines) {
-    const dataLines = lines.filter(l => !l.replace(/\|/g, '').trim().match(/^[-:\s]+$/));
-    if (dataLines.length < 1) return null;
+    const data = lines.filter(l => !l.replace(/\|/g, '').trim().match(/^[-:\s]+$/));
+    if (!data.length) return null;
     const parse = l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
-    const [headerLine, ...rowLines] = dataLines;
-    return {
-      type: 'table',
-      headers: parse(headerLine),
-      rows: rowLines.map(parse),
-    };
+    const [header, ...rest] = data;
+    return { type: 'table', headers: parse(header), rows: rest.map(parse) };
   }
 
   function stripInline(text) {
     return text
-      .replace(/\*\*(.+?)\*\*/g, '$1')   // bold
-      .replace(/\*(.+?)\*/g, '$1')        // italic
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
       .replace(/__(.+?)__/g, '$1')
       .replace(/_(.+?)_/g, '$1')
       .replace(/`(.+?)`/g, '$1')
@@ -310,41 +483,20 @@
       .trim();
   }
 
-  // ─── 미리보기 렌더링 ────────────────────────────────────────────────────────
-  function renderPreview(blocks) {
-    const box = document.getElementById('preview-box');
-    box.innerHTML = '';
-    box.style.display = 'block';
-
-    const labels = {
-      h1: ['H1', 'tag-h1'], h2: ['H2', 'tag-h2'], h3: ['H3', 'tag-h3'],
-      paragraph: ['P', 'tag-p'], list: ['LIST', 'tag-list'],
-      table: ['TABLE', 'tag-table'], divider: ['---', 'tag-divider'],
-    };
-
-    blocks.forEach(block => {
-      const div = document.createElement('div');
-      div.className = 'preview-block';
-
-      const [label, cls] = labels[block.type] || ['?', 'tag-p'];
-      const tag = `<span class="tag ${cls}">${label}</span>`;
-
-      let content = '';
-      if (block.text) content = block.text.slice(0, 60) + (block.text.length > 60 ? '…' : '');
-      else if (block.items) content = block.items.slice(0, 2).join(', ') + (block.items.length > 2 ? '…' : '');
-      else if (block.headers) content = block.headers.join(' | ') + ` (${block.rows.length}행)`;
-
-      div.innerHTML = `${tag}<span class="text">${content}</span>`;
-      box.appendChild(div);
-    });
-  }
-
-  // ─── 삽입 버튼 ─────────────────────────────────────────────────────────────
+  // ─── 삽입 ────────────────────────────────────────────────────────────────
   document.getElementById('btn-insert').addEventListener('click', () => {
+    if (!fileQueue.length) return;
     document.getElementById('btn-insert').disabled = true;
     setStatus('삽입 중...');
     parent.postMessage({
-      pluginMessage: { type: 'insert', blocks: parsedBlocks, filename: currentFilename }
+      pluginMessage: {
+        type: 'insert',
+        files: fileQueue,
+        contentType: selectedType,
+        theme: selectedTheme,
+        fontFamily: document.getElementById('font-family').value.trim() || 'Inter',
+        fontSize: Number(document.getElementById('font-size').value) || 16,
+      }
     }, '*');
   });
 
@@ -352,11 +504,10 @@
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
   });
 
-  // ─── code.js 메시지 수신 ────────────────────────────────────────────────────
   window.onmessage = (e) => {
     const msg = e.data.pluginMessage;
     if (!msg) return;
-    if (msg.type === 'done') setStatus('완료!');
+    if (msg.type === 'done')  setStatus('완료!');
     if (msg.type === 'error') setStatus('오류: ' + msg.message, true);
   };
 

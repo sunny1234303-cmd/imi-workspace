@@ -1,254 +1,304 @@
-figma.showUI(__html__, { width: 420, height: 560, title: 'Markdown → Figma' });
+figma.showUI(__html__, { width: 460, height: 680, title: 'Markdown → Figma' });
 
-// 폰트 미리 로드
-async function loadFonts() {
-  await Promise.all([
-    figma.loadFontAsync({ family: 'Inter', style: 'Regular' }),
-    figma.loadFontAsync({ family: 'Inter', style: 'Bold' }),
-    figma.loadFontAsync({ family: 'Inter', style: 'Medium' }),
-  ]);
+// ─── 프리셋 ─────────────────────────────────────────────────────────────────
+const PRESETS = {
+  document: { width: 800,  padding: 56 },
+  sns:      { width: 1080, padding: 80 },
+  ad:       { width: 1200, padding: 72 },
+  report:   { width: 1440, padding: 80 },
+};
+
+// ─── 테마 ────────────────────────────────────────────────────────────────────
+const THEMES = {
+  light: {
+    bg:       { r: 1,    g: 1,    b: 1    },
+    heading:  { r: 0.08, g: 0.08, b: 0.08 },
+    text:     { r: 0.2,  g: 0.2,  b: 0.2  },
+    muted:    { r: 0.5,  g: 0.5,  b: 0.5  },
+    divider:  { r: 0.85, g: 0.85, b: 0.85 },
+    tableHdr: { r: 0.96, g: 0.96, b: 0.97 },
+    tableAlt: { r: 0.99, g: 0.99, b: 0.99 },
+    tableRow: { r: 1,    g: 1,    b: 1    },
+    border:   { r: 0.88, g: 0.88, b: 0.88 },
+  },
+  dark: {
+    bg:       { r: 0.10, g: 0.10, b: 0.12 },
+    heading:  { r: 1,    g: 1,    b: 1    },
+    text:     { r: 0.85, g: 0.85, b: 0.85 },
+    muted:    { r: 0.50, g: 0.50, b: 0.52 },
+    divider:  { r: 0.25, g: 0.25, b: 0.27 },
+    tableHdr: { r: 0.16, g: 0.16, b: 0.18 },
+    tableAlt: { r: 0.13, g: 0.13, b: 0.15 },
+    tableRow: { r: 0.11, g: 0.11, b: 0.13 },
+    border:   { r: 0.25, g: 0.25, b: 0.27 },
+  },
+  brand: {
+    bg:       { r: 0.486, g: 0.361, b: 0.988 },
+    heading:  { r: 1,     g: 1,     b: 1     },
+    text:     { r: 0.95,  g: 0.93,  b: 1     },
+    muted:    { r: 0.75,  g: 0.68,  b: 0.98  },
+    divider:  { r: 0.60,  g: 0.50,  b: 0.95  },
+    tableHdr: { r: 0.40,  g: 0.28,  b: 0.85  },
+    tableAlt: { r: 0.44,  g: 0.32,  b: 0.88  },
+    tableRow: { r: 0.46,  g: 0.34,  b: 0.90  },
+    border:   { r: 0.55,  g: 0.44,  b: 0.92  },
+  },
+};
+
+// ─── 폰트 로드 ───────────────────────────────────────────────────────────────
+async function loadFonts(family) {
+  for (const style of ['Regular', 'Bold', 'Medium']) {
+    try { await figma.loadFontAsync({ family, style }); } catch (_) {}
+  }
 }
 
+// ─── 텍스트 노드 생성 헬퍼 ───────────────────────────────────────────────────
+// 핵심: textAutoResize='HEIGHT' → resize(width) → characters 순서
+function makeT(text, size, style, width, color, font) {
+  const t = figma.createText();
+  try { t.fontName = { family: font, style }; }
+  catch (_) { t.fontName = { family: font, style: 'Regular' }; }
+  t.fontSize = size;
+  t.fills = [{ type: 'SOLID', color }];
+  t.textAutoResize = 'HEIGHT';   // 1. 모드 먼저
+  t.resize(width, 100);          // 2. 너비 고정
+  t.characters = text || ' ';   // 3. 텍스트 마지막 → 높이 자동 계산
+  return t;
+}
+
+// ─── 메시지 처리 ─────────────────────────────────────────────────────────────
 figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'cancel') {
-    figma.closePlugin();
-    return;
-  }
+  if (msg.type === 'cancel') { figma.closePlugin(); return; }
 
   if (msg.type === 'insert') {
+    const {
+      files,
+      contentType = 'document',
+      theme       = 'light',
+      fontFamily  = 'Inter',
+      fontSize    = 16,
+    } = msg;
+
+    const palette = THEMES[theme] || THEMES.light;
+    const preset  = PRESETS[contentType] || PRESETS.document;
+
     try {
-      await loadFonts();
-      const frame = await buildFrame(msg.blocks, msg.filename);
-      figma.currentPage.appendChild(frame);
-      figma.viewport.scrollAndZoomIntoView([frame]);
-      figma.ui.postMessage({ type: 'done' });
-      figma.closePlugin('✅ 삽입 완료!');
+      await loadFonts(fontFamily);
+
+      const frames = [];
+      let xOffset = 0;
+
+      for (const file of files) {
+        const frame = buildFrame(
+          file.blocks, file.name, preset, palette, fontFamily, Number(fontSize)
+        );
+        frame.x = xOffset;
+        frame.y = 0;
+        figma.currentPage.appendChild(frame);
+        xOffset += frame.width + 80;
+        frames.push(frame);
+      }
+
+      figma.viewport.scrollAndZoomIntoView(frames);
+      figma.closePlugin(`✅ ${frames.length}개 프레임 삽입 완료`);
     } catch (e) {
       figma.ui.postMessage({ type: 'error', message: e.message });
     }
   }
 };
 
-// ─── 메인 프레임 생성 ───────────────────────────────────────────────────────
-async function buildFrame(blocks, filename) {
-  const FRAME_WIDTH = 800;
-  const PADDING = 56;
+// ─── 메인 프레임 (절대좌표 배치) ──────────────────────────────────────────────
+function buildFrame(blocks, filename, preset, palette, font, base) {
+  const { width, padding } = preset;
+  const inner = width - padding * 2;
 
   const frame = figma.createFrame();
   frame.name = filename || 'Markdown Content';
-  frame.layoutMode = 'VERTICAL';
-  frame.primaryAxisSizingMode = 'AUTO';
-  frame.counterAxisSizingMode = 'FIXED';
-  frame.resize(FRAME_WIDTH, 100);
-  frame.paddingTop = PADDING;
-  frame.paddingBottom = PADDING;
-  frame.paddingLeft = PADDING;
-  frame.paddingRight = PADDING;
-  frame.itemSpacing = 0;
-  frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+  frame.fills = [{ type: 'SOLID', color: palette.bg }];
+  // auto-layout 없음 → 절대좌표로 배치
+
+  let y = padding;
 
   for (const block of blocks) {
-    const node = await createNode(block, FRAME_WIDTH - PADDING * 2);
-    if (node) {
-      frame.appendChild(node);
-    }
+    const result = buildBlock(block, inner, palette, font, base);
+    if (!result) continue;
+    const { node, gap } = result;
+    node.x = padding;
+    node.y = y;
+    frame.appendChild(node);
+    y += node.height + gap;
   }
 
+  frame.resize(width, y + padding);
   return frame;
 }
 
-// ─── 블록 → Figma 노드 ──────────────────────────────────────────────────────
-async function createNode(block, innerWidth) {
+// ─── 블록 → { node, gap } ────────────────────────────────────────────────────
+function buildBlock(block, inner, palette, font, base) {
   switch (block.type) {
-    case 'h1': return makeText(block.text, 40, 'Bold', innerWidth, 24);
-    case 'h2': return makeText(block.text, 28, 'Bold', innerWidth, 20);
-    case 'h3': return makeText(block.text, 20, 'Medium', innerWidth, 16);
-    case 'paragraph': return makeText(block.text, 16, 'Regular', innerWidth, 12);
-    case 'list': return makeList(block.items, block.ordered, innerWidth);
-    case 'divider': return makeDivider(innerWidth);
-    case 'table': return makeTable(block.headers, block.rows, innerWidth);
-    case 'spacer': return makeSpacer(block.height);
-    default: return null;
+    case 'h1':
+      return { node: makeT(block.text, Math.round(base * 2.25), 'Bold',    inner, palette.heading, font), gap: 20 };
+    case 'h2':
+      return { node: makeT(block.text, Math.round(base * 1.5),  'Bold',    inner, palette.heading, font), gap: 16 };
+    case 'h3':
+      return { node: makeT(block.text, Math.round(base * 1.15), 'Medium',  inner, palette.text,    font), gap: 12 };
+    case 'paragraph':
+      return { node: makeT(block.text, base, 'Regular', inner, palette.text, font), gap: 12 };
+    case 'list':
+      return makeList(block.items, block.ordered, inner, palette, font, base);
+    case 'divider':
+      return makeDivider(inner, palette);
+    case 'table':
+      return makeTable(block.headers, block.rows, inner, palette, font, base);
+    case 'spacer':
+      return makeSpacer(block.height || 16);
+    default:
+      return null;
   }
 }
 
-// ─── 텍스트 노드 ────────────────────────────────────────────────────────────
-function makeText(text, size, style, width, bottomSpacing) {
-  const wrapper = figma.createFrame();
-  wrapper.name = text.slice(0, 30);
-  wrapper.layoutMode = 'VERTICAL';
-  wrapper.primaryAxisSizingMode = 'AUTO';
-  wrapper.counterAxisSizingMode = 'FIXED';
-  wrapper.resize(width, 10);
-  wrapper.fills = [];
-  wrapper.paddingBottom = bottomSpacing;
+// ─── 리스트 (절대좌표) ────────────────────────────────────────────────────────
+function makeList(items, ordered, width, palette, font, base) {
+  const BULLET_W = ordered ? 26 : 16;
+  const GAP      = 8;
+  const TEXT_W   = width - BULLET_W - GAP;
+  const ROW_GAP  = Math.round(base * 0.4);
 
-  const t = figma.createText();
-  t.fontName = { family: 'Inter', style: style };
-  t.fontSize = size;
-  t.characters = text;
-  t.layoutAlign = 'STRETCH';
-  t.textAutoResize = 'HEIGHT';
-
-  if (style === 'Bold' && size >= 28) {
-    t.fills = [{ type: 'SOLID', color: { r: 0.08, g: 0.08, b: 0.08 } }];
-  } else {
-    t.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
-  }
-
-  wrapper.appendChild(t);
-  return wrapper;
-}
-
-// ─── 리스트 ─────────────────────────────────────────────────────────────────
-function makeList(items, ordered, width) {
   const container = figma.createFrame();
   container.name = 'List';
-  container.layoutMode = 'VERTICAL';
-  container.primaryAxisSizingMode = 'AUTO';
-  container.counterAxisSizingMode = 'FIXED';
-  container.resize(width, 10);
-  container.itemSpacing = 6;
   container.fills = [];
-  container.paddingBottom = 12;
+  container.clipsContent = false;
+
+  let y = 0;
 
   items.forEach((item, i) => {
-    const row = figma.createFrame();
-    row.layoutMode = 'HORIZONTAL';
-    row.primaryAxisSizingMode = 'AUTO';
-    row.counterAxisSizingMode = 'AUTO';
-    row.itemSpacing = 8;
-    row.fills = [];
-    row.name = `item-${i}`;
-
+    // 불릿
     const bullet = figma.createText();
-    bullet.fontName = { family: 'Inter', style: 'Regular' };
-    bullet.fontSize = 16;
-    bullet.characters = ordered ? `${i + 1}.` : '•';
-    bullet.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } }];
+    try { bullet.fontName = { family: font, style: 'Regular' }; }
+    catch (_) { bullet.fontName = { family: font, style: 'Regular' }; }
+    bullet.fontSize = base;
+    bullet.fills = [{ type: 'SOLID', color: palette.muted }];
     bullet.textAutoResize = 'WIDTH_AND_HEIGHT';
+    bullet.characters = ordered ? `${i + 1}.` : '•';
+    bullet.x = 0;
+    bullet.y = y;
+    container.appendChild(bullet);
 
-    const text = figma.createText();
-    text.fontName = { family: 'Inter', style: 'Regular' };
-    text.fontSize = 16;
-    text.characters = item;
-    text.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
-    text.textAutoResize = 'WIDTH_AND_HEIGHT';
+    // 내용
+    const text = makeT(item, base, 'Regular', TEXT_W, palette.text, font);
+    text.x = BULLET_W + GAP;
+    text.y = y;
+    container.appendChild(text);
 
-    row.appendChild(bullet);
-    row.appendChild(text);
-    container.appendChild(row);
+    y += Math.max(bullet.height, text.height) + ROW_GAP;
   });
 
-  return container;
+  container.resize(width, Math.max(y, 1));
+  return { node: container, gap: 12 };
 }
 
-// ─── 구분선 ─────────────────────────────────────────────────────────────────
-function makeDivider(width) {
-  const wrapper = figma.createFrame();
-  wrapper.layoutMode = 'VERTICAL';
-  wrapper.primaryAxisSizingMode = 'AUTO';
-  wrapper.counterAxisSizingMode = 'FIXED';
-  wrapper.resize(width, 1);
-  wrapper.fills = [];
-  wrapper.paddingTop = 8;
-  wrapper.paddingBottom = 16;
-  wrapper.name = 'Divider';
-
+// ─── 구분선 ──────────────────────────────────────────────────────────────────
+function makeDivider(width, palette) {
   const line = figma.createRectangle();
+  line.name = 'Divider';
   line.resize(width, 1);
-  line.fills = [{ type: 'SOLID', color: { r: 0.85, g: 0.85, b: 0.85 } }];
-  wrapper.appendChild(line);
-  return wrapper;
+  line.fills = [{ type: 'SOLID', color: palette.divider }];
+  return { node: line, gap: 16 };
 }
 
-// ─── 표(Table) ──────────────────────────────────────────────────────────────
-function makeTable(headers, rows, width) {
-  const colCount = headers.length;
-  const colWidth = Math.floor(width / colCount);
-  const ROW_HEIGHT = 44;
+// ─── 표 (절대좌표) ────────────────────────────────────────────────────────────
+function makeTable(headers, rows, width, palette, font, base) {
+  const colCount  = Math.max(headers.length, 1);
+  const colWidth  = Math.floor(width / colCount);
+  const CELL_PAD  = 12;
+  const FONT_SIZE = Math.round(base * 0.875);
+  const MIN_ROW_H = Math.round(base * 2.5);
 
   const tableFrame = figma.createFrame();
   tableFrame.name = 'Table';
-  tableFrame.layoutMode = 'VERTICAL';
-  tableFrame.primaryAxisSizingMode = 'AUTO';
-  tableFrame.counterAxisSizingMode = 'AUTO';
-  tableFrame.itemSpacing = 0;
   tableFrame.fills = [];
-  tableFrame.paddingBottom = 16;
-  tableFrame.strokes = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.8 } }];
+  tableFrame.clipsContent = true;
+  tableFrame.strokes = [{ type: 'SOLID', color: palette.border }];
   tableFrame.strokeWeight = 1;
   tableFrame.cornerRadius = 4;
-  tableFrame.clipsContent = true;
 
-  const allRows = [{ cells: headers, isHeader: true }, ...rows.map(r => ({ cells: r, isHeader: false }))];
+  const allRows = [
+    { cells: headers, isHeader: true },
+    ...rows.map(r => ({ cells: r, isHeader: false })),
+  ];
+
+  let rowY = 0;
 
   allRows.forEach(({ cells, isHeader }, rowIdx) => {
-    const rowFrame = figma.createFrame();
-    rowFrame.layoutMode = 'HORIZONTAL';
-    rowFrame.primaryAxisSizingMode = 'AUTO';
-    rowFrame.counterAxisSizingMode = 'AUTO';
-    rowFrame.itemSpacing = 0;
-    rowFrame.fills = isHeader
-      ? [{ type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.97 } }]
-      : rowIdx % 2 === 0
-        ? [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }]
-        : [{ type: 'SOLID', color: { r: 0.99, g: 0.99, b: 0.99 } }];
-    rowFrame.name = isHeader ? 'Header' : `Row ${rowIdx}`;
-
-    if (!isHeader) {
-      rowFrame.strokes = [{ type: 'SOLID', color: { r: 0.88, g: 0.88, b: 0.88 } }];
-      rowFrame.strokeWeight = 1;
-      rowFrame.strokeTopWeight = 1;
-      rowFrame.strokeBottomWeight = 0;
-      rowFrame.strokeLeftWeight = 0;
-      rowFrame.strokeRightWeight = 0;
-    }
-
-    cells.forEach((cell, colIdx) => {
-      const cellFrame = figma.createFrame();
-      cellFrame.layoutMode = 'VERTICAL';
-      cellFrame.primaryAxisAlignItems = 'CENTER';
-      cellFrame.primaryAxisSizingMode = 'FIXED';
-      cellFrame.counterAxisSizingMode = 'FIXED';
-      cellFrame.resize(colWidth, ROW_HEIGHT);
-      cellFrame.paddingLeft = 14;
-      cellFrame.paddingRight = 14;
-      cellFrame.paddingTop = 10;
-      cellFrame.paddingBottom = 10;
-      cellFrame.fills = [];
-      if (colIdx > 0) {
-        cellFrame.strokes = [{ type: 'SOLID', color: { r: 0.88, g: 0.88, b: 0.88 } }];
-        cellFrame.strokeWeight = 1;
-        cellFrame.strokeTopWeight = 0;
-        cellFrame.strokeBottomWeight = 0;
-        cellFrame.strokeLeftWeight = 1;
-        cellFrame.strokeRightWeight = 0;
-      }
-
-      const t = figma.createText();
-      t.fontName = { family: 'Inter', style: isHeader ? 'Bold' : 'Regular' };
-      t.fontSize = 14;
-      t.characters = cell || '';
-      t.layoutAlign = 'STRETCH';
-      t.textAutoResize = 'HEIGHT';
-      t.fills = [{ type: 'SOLID', color: { r: 0.15, g: 0.15, b: 0.15 } }];
-
-      cellFrame.appendChild(t);
-      rowFrame.appendChild(cellFrame);
+    // 각 셀의 텍스트를 먼저 만들어 최대 높이 계산
+    const textNodes = cells.map((cell) => {
+      return makeT(
+        cell || ' ',
+        FONT_SIZE,
+        isHeader ? 'Bold' : 'Regular',
+        colWidth - CELL_PAD * 2,
+        isHeader ? palette.heading : palette.text,
+        font
+      );
     });
 
-    tableFrame.appendChild(rowFrame);
+    const rowH = Math.max(
+      MIN_ROW_H,
+      ...textNodes.map(t => t.height + CELL_PAD * 2)
+    );
+
+    // 행 배경
+    const rowBg = figma.createRectangle();
+    rowBg.resize(width, rowH);
+    rowBg.fills = [{
+      type: 'SOLID',
+      color: isHeader
+        ? palette.tableHdr
+        : (rowIdx % 2 === 0 ? palette.tableRow : palette.tableAlt),
+    }];
+    rowBg.x = 0;
+    rowBg.y = rowY;
+    tableFrame.appendChild(rowBg);
+
+    // 행 구분선 (헤더 아래 제외)
+    if (rowIdx > 0) {
+      const border = figma.createRectangle();
+      border.resize(width, 1);
+      border.fills = [{ type: 'SOLID', color: palette.border }];
+      border.x = 0;
+      border.y = rowY;
+      tableFrame.appendChild(border);
+    }
+
+    // 셀
+    textNodes.forEach((t, colIdx) => {
+      t.x = colIdx * colWidth + CELL_PAD;
+      t.y = rowY + CELL_PAD;
+      tableFrame.appendChild(t);
+
+      // 열 구분선
+      if (colIdx > 0) {
+        const vLine = figma.createRectangle();
+        vLine.resize(1, rowH);
+        vLine.fills = [{ type: 'SOLID', color: palette.border }];
+        vLine.x = colIdx * colWidth;
+        vLine.y = rowY;
+        tableFrame.appendChild(vLine);
+      }
+    });
+
+    rowY += rowH;
   });
 
-  return tableFrame;
+  tableFrame.resize(width, rowY);
+  return { node: tableFrame, gap: 16 };
 }
 
-// ─── 빈 공간 ────────────────────────────────────────────────────────────────
+// ─── 스페이서 ─────────────────────────────────────────────────────────────────
 function makeSpacer(height) {
-  const spacer = figma.createFrame();
-  spacer.resize(10, height);
-  spacer.fills = [];
-  spacer.name = 'Spacer';
-  return spacer;
+  const s = figma.createFrame();
+  s.name = 'Spacer';
+  s.resize(10, height);
+  s.fills = [];
+  return { node: s, gap: 0 };
 }

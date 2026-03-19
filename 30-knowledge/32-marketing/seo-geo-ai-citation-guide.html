@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO vs GEO: USP 활용 전략 & AI 플랫폼별 인용 스타일 가이드</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent-blue: #4f8ef7;
+      --accent-purple: #a78bfa;
+      --accent-green: #34d399;
+      --accent-orange: #fb923c;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim: #4a5568;
+      --chatgpt: #10a37f;
+      --claude: #d97706;
+      --gemini: #4285f4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 0 48px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+    }
+    .header-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #4f8ef720, #a78bfa20);
+      border: 1px solid #4f8ef740;
+      color: var(--accent-blue);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.3;
+      background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .header-meta {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* Glossary bar */
+    .glossary-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .glossary-item {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .glossary-term {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-purple);
+      background: #a78bfa15;
+      border: 1px solid #a78bfa30;
+      padding: 2px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .glossary-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Quote */
+    .quote-card {
+      background: linear-gradient(135deg, #4f8ef710, #a78bfa10);
+      border: 1px solid #4f8ef730;
+      border-left: 3px solid var(--accent-purple);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+    .quote-card p {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #c4b5fd;
+    }
+    .quote-card .source {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 64px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .num {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .subsection-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin: 28px 0 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 640px) { .cards-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .card p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    thead tr {
+      background: var(--surface2);
+    }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-top: 1px solid var(--border);
+    }
+    tbody tr:hover {
+      background: var(--surface);
+    }
+    tbody td {
+      padding: 12px 16px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    tbody td:first-child {
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Platform cards */
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 700px) { .platform-grid { grid-template-columns: 1fr; } }
+
+    .platform-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .platform-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .platform-card.chatgpt::before { background: var(--chatgpt); }
+    .platform-card.claude::before { background: var(--claude); }
+    .platform-card.gemini::before { background: var(--gemini); }
+
+    .platform-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .platform-card.chatgpt .platform-name { color: var(--chatgpt); }
+    .platform-card.claude .platform-name { color: var(--claude); }
+    .platform-card.gemini .platform-name { color: var(--gemini); }
+
+    .platform-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .chatgpt .tag { background: #10a37f20; color: var(--chatgpt); border: 1px solid #10a37f30; }
+    .claude .tag { background: #d9770620; color: var(--claude); border: 1px solid #d9770630; }
+    .gemini .tag { background: #4285f420; color: var(--gemini); border: 1px solid #4285f430; }
+
+    .platform-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin: 14px 0 6px;
+    }
+    .platform-ul {
+      list-style: none;
+      padding: 0;
+    }
+    .platform-ul li {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 3px 0 3px 14px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .platform-ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+    }
+
+    .platform-links {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .platform-link {
+      display: block;
+      font-size: 11px;
+      color: var(--accent-blue);
+      text-decoration: none;
+      padding: 2px 0;
+      opacity: 0.8;
+    }
+    .platform-link:hover { opacity: 1; text-decoration: underline; }
+
+    /* Checklist */
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) { .checklist-grid { grid-template-columns: 1fr; } }
+
+    .checklist-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .checklist-card.common {
+      grid-column: 1 / -1;
+      border-color: #4f8ef730;
+    }
+    .checklist-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-blue { background: var(--accent-blue); }
+    .dot-chatgpt { background: var(--chatgpt); }
+    .dot-claude { background: var(--claude); }
+    .dot-gemini { background: var(--gemini); }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-box {
+      width: 16px; height: 16px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* Sources */
+    .sources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .source-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      gap: 16px;
+    }
+    .source-link {
+      font-size: 0.875rem;
+      color: var(--accent-blue);
+      text-decoration: none;
+      flex: 1;
+    }
+    .source-link:hover { text-decoration: underline; }
+    .source-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .badge-top { background: #34d39920; color: var(--accent-green); border: 1px solid #34d39930; }
+    .badge-high { background: #4f8ef720; color: var(--accent-blue); border: 1px solid #4f8ef730; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    /* Insight box */
+    .insight-box {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: #a78bfa0d;
+      border: 1px solid #a78bfa25;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-top: 8px;
+    }
+    .insight-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .insight-box strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+    /* Steps */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .chatgpt-step { background: #10a37f30; color: var(--chatgpt); border: 1px solid #10a37f50; }
+    .claude-step  { background: #d9770630; color: var(--claude);  border: 1px solid #d9770650; }
+    .gemini-step  { background: #4285f430; color: var(--gemini);  border: 1px solid #4285f450; }
+
+    .step-content { flex: 1; }
+    .step-title {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .step-desc {
+      font-size: 0.775rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    a { color: var(--accent-blue); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">GEO · SEO · AI Optimization</div>
+    <h1>SEO vs GEO<br>USP 활용 전략 & AI 플랫폼별 인용 스타일</h1>
+    <p class="header-meta">작성일: 2026-03-19 &nbsp;·&nbsp; 마케터를 위한 GEO 실무 가이드</p>
+  </div>
+
+  <!-- Glossary: 용어 먼저 이해하기 -->
+  <p class="subsection-title" style="margin-top:0">이 문서에서 자주 나오는 용어</p>
+  <div class="glossary-bar">
+    <div class="glossary-item">
+      <span class="glossary-term">SEO</span>
+      <span class="glossary-desc">Search Engine Optimization. 구글·네이버 등 검색엔진에서 내 콘텐츠가 상위에 노출되도록 최적화하는 작업. 지금까지 마케터가 해온 "검색 최적화"가 바로 SEO.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">GEO</span>
+      <span class="glossary-desc">Generative Engine Optimization. ChatGPT·Claude·Gemini 같은 AI가 질문에 답할 때 내 브랜드를 인용하거나 추천하도록 최적화하는 새로운 개념. 2023년 미국 프린스턴대 등 공동 연구팀이 처음 정의한 용어.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">USP</span>
+      <span class="glossary-desc">Unique Selling Proposition. 우리 브랜드만의 차별화된 강점. "왜 경쟁사 말고 우리를 선택해야 하는가"에 대한 핵심 답변.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">LLM</span>
+      <span class="glossary-desc">Large Language Model. ChatGPT·Claude·Gemini처럼 텍스트를 이해하고 생성하는 대형 AI 모델을 통칭하는 말. "AI가 글을 읽고 쓰는 엔진"이라고 이해하면 됨.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">E-E-A-T</span>
+      <span class="glossary-desc">Experience · Expertise · Authoritativeness · Trustworthiness. Google이 콘텐츠 품질을 평가하는 4가지 기준: 경험, 전문성, 권위성, 신뢰성. SEO와 GEO 모두에서 공통으로 중요한 신호. 출처: <a href="https://developers.google.com/search/docs/fundamentals/creating-helpful-content" target="_blank">Google Search Central 공식 문서</a></span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">a16z</span>
+      <span class="glossary-desc">Andreessen Horowitz. 실리콘밸리 최대 벤처캐피탈(VC) 중 하나. Airbnb·GitHub·Slack 등에 투자. AI·테크 트렌드 리포트를 정기 발행해 업계 레퍼런스로 활용됨. 이 문서에서 인용한 "GEO over SEO" 리포트의 저자.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">Bing</span>
+      <span class="glossary-desc">Microsoft가 운영하는 검색엔진. Microsoft가 OpenAI(ChatGPT 개발사)에 대규모 투자를 하면서, ChatGPT의 웹 검색 기능은 Bing의 검색 인덱스를 그대로 사용하고 있음. 즉, ChatGPT에서 검색이 되려면 Bing에 먼저 노출되어야 함.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">Schema Markup</span>
+      <span class="glossary-desc">웹페이지 HTML에 추가하는 코드로, "이 페이지는 FAQ입니다", "이건 제품 정보입니다"처럼 검색엔진과 AI가 콘텐츠를 더 잘 이해하도록 도와주는 표준 형식. Schema.org에서 정의한 국제 표준.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">Featured Snippet</span>
+      <span class="glossary-desc">Google 검색 결과 맨 위에 뜨는 "박스 형태 요약 답변". 사용자가 링크를 클릭하지 않아도 바로 답을 볼 수 있음. Gemini(Google AI)는 이 Featured Snippet에 선택된 콘텐츠를 우선 인용하는 경향이 있음.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">Core Web Vitals</span>
+      <span class="glossary-desc">Google이 정한 웹페이지 사용자 경험 측정 지표 3가지. 주로 페이지 로딩 속도(LCP: 2.5초 이내 권장)와 레이아웃 안정성(CLS)을 봄. 느린 페이지는 Gemini 인용에서 불리함. <a href="https://pagespeed.web.dev" target="_blank">PageSpeed Insights</a>에서 무료 측정 가능.</span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">Constitutional AI</span>
+      <span class="glossary-desc">Anthropic(Claude 개발사)이 도입한 AI 윤리 설계 원칙. AI가 스스로 "이 답변이 정직하고 해롭지 않은가"를 판단하도록 훈련. 그 결과 Claude는 과장되거나 출처 불명인 주장을 인용하길 꺼리는 성향이 있음. 출처: <a href="https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback" target="_blank">Anthropic 공식 연구</a></span>
+    </div>
+    <div class="glossary-item">
+      <span class="glossary-term">LLM Seeding</span>
+      <span class="glossary-desc">AI가 학습하거나 자주 검색하는 플랫폼(Reddit, Quora, 뉴스 미디어 등)에 브랜드 USP를 자연스럽게 언급해두는 전략. 씨앗을 뿌리듯 AI의 학습 데이터 소스에 브랜드 정보를 심어놓는 것. 출처: <a href="https://www.semrush.com/blog/llm-optimization/" target="_blank">Semrush 공식 블로그</a></span>
+    </div>
+  </div>
+
+  <!-- Quote -->
+  <div class="quote-card">
+    <p>"SEO는 <strong>검색 결과에 보이는 것</strong>이고, GEO는 <strong>AI의 기억 속에 있는 것</strong>이다."</p>
+    <span class="source">— <a href="https://a16z.com/geo-over-seo/" target="_blank">a16z 공식 리포트 (2025)</a> · 실리콘밸리 VC a16z가 발행한 AI 검색 트렌드 분석 리포트</span>
+  </div>
+
+  <!-- Section 1: SEO vs GEO -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">1</span>
+      SEO와 GEO, 무엇이 다른가?
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-label">기존 방식 · SEO</div>
+        <h3>구글 검색 결과에 내 링크를 올리는 것</h3>
+        <p>사용자가 검색창에 키워드를 입력하면 결과 페이지에 10개의 링크가 나옴. 그 중 내 링크가 클릭되도록 제목·설명·콘텐츠를 최적화하는 것이 SEO. 사용자가 직접 링크를 눌러서 내 사이트에 방문하는 구조.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">새로운 방식 · GEO</div>
+        <h3>AI가 답변을 생성할 때 내 브랜드를 꺼내도록 하는 것</h3>
+        <p>사용자가 ChatGPT에 "좋은 마케팅 툴 추천해줘"라고 물으면 AI가 직접 답변을 생성하면서 2~7개 정도의 브랜드·출처만 인용함. 사용자가 링크를 직접 클릭하지 않아도 AI가 대신 내 브랜드를 언급하는 구조. (<a href="https://www.semrush.com/blog/llm-optimization/" target="_blank">Semrush 공식 블로그</a>)</p>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <div class="insight-icon">💡</div>
+      <div>
+        <strong>경쟁 구도의 변화</strong><br>
+        SEO는 검색 결과 10개 링크 안에만 들면 됐지만, GEO는 AI가 인용하는 단 2~7개 출처 안에 들어야 합니다. 경쟁 난이도가 훨씬 높아진 대신, 한번 선택되면 사용자에게 직접 추천되는 효과를 얻습니다.
+      </div>
+    </div>
+
+    <p class="subsection-title" style="margin-top:32px">SEO — 우리의 차별점(USP)을 어디에 담는가</p>
+    <div class="table-wrap" style="margin-bottom:16px">
+      <table>
+        <thead><tr><th>위치</th><th>방법</th><th>왜 중요한가</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>메타태그</td>
+            <td>검색 결과에 보이는 제목(60자)과 설명(155자)에 USP를 압축</td>
+            <td>사용자가 클릭할지 결정하는 첫 인상. 클릭률(CTR)에 직결</td>
+          </tr>
+          <tr>
+            <td>키워드</td>
+            <td>USP를 검색어로 만들기 — "무료 반품 보장", "당일 배송 가능" 같은 구체적 문구</td>
+            <td>이 키워드를 검색하는 사람은 이미 그 혜택을 원하는 고객</td>
+          </tr>
+          <tr>
+            <td>콘텐츠 구조</td>
+            <td>FAQ, 비교표, 고객 후기로 USP를 "주장"이 아닌 "증거"로 제시</td>
+            <td>Google은 근거 없는 주장보다 검증된 사실을 신뢰</td>
+          </tr>
+          <tr>
+            <td>Schema Markup</td>
+            <td>USP 관련 정보(가격, 평점, FAQ)를 AI와 검색엔진이 읽기 쉬운 코드로 표시</td>
+            <td>Google이 Featured Snippet으로 선택할 가능성 증가</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:32px">
+      Google은 공식 문서에서 "다른 곳에서는 얻을 수 없는 독자적 가치를 제공하는 콘텐츠"를 높게 평가한다고 명시하고 있습니다. 바로 이 E-E-A-T 기준이 SEO에서 USP를 평가하는 핵심 잣대입니다.<br>
+      → <a href="https://developers.google.com/search/docs/fundamentals/creating-helpful-content" target="_blank">Google Search Central 공식 문서</a>
+    </p>
+
+    <p class="subsection-title">GEO — AI가 내 브랜드를 인용하게 만드는 방법</p>
+    <div class="table-wrap" style="margin-bottom:16px">
+      <table>
+        <thead><tr><th>전략</th><th>방법</th><th>왜 효과적인가</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>독자 데이터 확보</td>
+            <td>우리만의 설문 결과, 실험 수치, 사례 데이터를 콘텐츠에 포함</td>
+            <td>AI는 "다른 곳에서 인용할 수 없는 고유한 데이터"를 가진 출처를 우선 인용. 이 방법으로 AI 내 가시성이 최대 +40% 향상 (<a href="https://arxiv.org/abs/2311.09735" target="_blank">arXiv 2311.09735, Princeton·Georgia Tech 연구</a>)</td>
+          </tr>
+          <tr>
+            <td>앞에 먼저 쓰기</td>
+            <td>USP를 페이지 첫 50단어 안에 명확하게 배치</td>
+            <td>AI는 긴 글을 문단 단위로 파악하므로, 앞부분에 핵심이 없으면 무시될 수 있음</td>
+          </tr>
+          <tr>
+            <td>LLM Seeding</td>
+            <td>Reddit, Quora, 뉴스 미디어 등 AI 학습 소스에 브랜드 USP가 언급되도록 분산 배치</td>
+            <td>AI는 여러 곳에서 같은 정보가 언급될수록 신뢰도 높은 사실로 판단</td>
+          </tr>
+          <tr>
+            <td>AI가 읽기 쉬운 포맷</td>
+            <td>불릿 리스트, Q&A 형식, "정리하면" 요약 표현 사용</td>
+            <td>AI가 답변 생성 시 그대로 인용하기 좋은 구조</td>
+          </tr>
+          <tr>
+            <td>출처 명시</td>
+            <td>콘텐츠 내에 신뢰할 수 있는 외부 자료를 인용</td>
+            <td>AI는 다른 신뢰 출처를 인용한 콘텐츠를 더 믿을만한 것으로 분류</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="subsection-title">SEO vs GEO 한눈에 비교</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>구분</th><th>SEO (기존)</th><th>GEO (새로운)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>목표</td>
+            <td>검색 결과 링크 클릭 유도</td>
+            <td>AI 답변에 브랜드 인용·추천</td>
+          </tr>
+          <tr>
+            <td>경쟁 범위</td>
+            <td>검색 결과 상위 10개 링크 안에 들기</td>
+            <td>AI가 고르는 2~7개 출처 안에 들기</td>
+          </tr>
+          <tr>
+            <td>USP를 담는 곳</td>
+            <td>제목 태그, 메타 설명, 키워드</td>
+            <td>자연스러운 문장, 외부 커뮤니티, 구조화된 단락</td>
+          </tr>
+          <tr>
+            <td>콘텐츠 길이</td>
+            <td>충분한 정보를 담은 긴 글 (1,500자 이상)</td>
+            <td>첫 50단어에 핵심 답변, 이후 증거 보강</td>
+          </tr>
+          <tr>
+            <td>잘 됐을 때</td>
+            <td>방문자 수(트래픽) 증가</td>
+            <td>AI 답변 안에 브랜드명 등장</td>
+          </tr>
+          <tr>
+            <td>신뢰 기준</td>
+            <td>다른 사이트에서 내 링크를 얼마나 인용하는가 (백링크)</td>
+            <td>제3자가 내 브랜드를 언급하는가, 내 데이터가 고유한가</td>
+          </tr>
+          <tr>
+            <td>사용자 행동</td>
+            <td>링크를 직접 클릭해서 사이트 방문</td>
+            <td>AI가 대신 읽고 요약 → 사이트 방문 없이도 브랜드 노출</td>
+          </tr>
+          <tr>
+            <td>검색 질문 형태</td>
+            <td>"마케팅 툴" (짧은 키워드)</td>
+            <td>"소규모 팀이 쓰기 좋은 무료 마케팅 자동화 툴 추천해줘" (긴 대화형 질문)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 2: Platform Cards -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">2</span>
+      AI 플랫폼별로 인용하는 방식이 다르다
+    </div>
+
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:24px">
+      ChatGPT·Claude·Gemini는 모두 "AI"지만, 콘텐츠를 어디서 가져오고 어떤 기준으로 인용하는지가 완전히 다릅니다. 플랫폼마다 다른 전략이 필요한 이유입니다.
+    </p>
+
+    <div class="platform-grid">
+
+      <!-- ChatGPT -->
+      <div class="platform-card chatgpt">
+        <div class="platform-name">ChatGPT</div>
+        <div class="platform-sub">OpenAI · GPT-4o</div>
+        <div class="tag-list">
+          <span class="tag">Microsoft Bing 연동</span>
+          <span class="tag">숫자·수치 선호</span>
+        </div>
+
+        <div class="platform-section-label">어떻게 정보를 가져오나</div>
+        <ul class="platform-ul">
+          <li>웹 검색 ON 상태: Microsoft Bing 검색 결과를 실시간으로 읽고 인용. 답변 안에 [1][2] 형식으로 출처 표시</li>
+          <li>웹 검색 OFF 상태: 이미 학습된 데이터에서 답변 생성. 이 경우 출처 미표시</li>
+          <li>즉, ChatGPT에 인용되려면 Bing 검색에 먼저 노출되어야 함</li>
+        </ul>
+
+        <div class="platform-section-label">어떤 콘텐츠를 좋아하나</div>
+        <ul class="platform-ul">
+          <li>숫자와 통계가 있는 콘텐츠를 우선 인용 — "좋은 서비스"보다 "응답률 98.7%"가 훨씬 유리</li>
+          <li>뉴스, 학술 자료, 정부 공식 사이트처럼 권위 있는 도메인 선호</li>
+          <li>"주장 → 근거" 순서로 쓰인 논리적인 구조</li>
+          <li>리스트, 단계별 설명처럼 읽기 쉬운 포맷</li>
+        </ul>
+
+        <div class="platform-section-label">USP를 어떻게 표현해야 하나</div>
+        <ul class="platform-ul">
+          <li>모든 USP를 수치로 변환: "빠른 배송" → "평균 배송 1.8일 (업계 평균 3.2일)"</li>
+          <li>Forbes, TechCrunch, 국내 IT 미디어 등 언론에 브랜드 언급 기사 확보</li>
+          <li>경쟁사와 우리를 비교한 수치 표 포함</li>
+        </ul>
+
+        <div class="platform-links">
+          <a class="platform-link" href="https://help.openai.com/en/articles/8077698-how-chatgpt-searches-the-web" target="_blank">↗ OpenAI 공식 도움말 — ChatGPT 웹 검색 방식</a>
+        </div>
+      </div>
+
+      <!-- Claude -->
+      <div class="platform-card claude">
+        <div class="platform-name">Claude</div>
+        <div class="platform-sub">Anthropic · Constitutional AI</div>
+        <div class="tag-list">
+          <span class="tag">학습 데이터 기반</span>
+          <span class="tag">논리·맥락 선호</span>
+        </div>
+
+        <div class="platform-section-label">어떻게 정보를 가져오나</div>
+        <ul class="platform-ul">
+          <li>주로 학습된 데이터로 답변. 웹 검색 기능은 있으나 제한적으로 사용</li>
+          <li>"Constitutional AI" 원칙에 따라 정직하고 신뢰할 수 있는 정보만 인용하도록 설계됨. 과장된 표현이 있으면 의도적으로 인용을 피함</li>
+          <li>출처의 어조와 논리 일관성을 중요하게 평가</li>
+        </ul>
+
+        <div class="platform-section-label">어떤 콘텐츠를 좋아하나</div>
+        <ul class="platform-ul">
+          <li>광고 문구가 아닌 설명형 글 — "최고의 솔루션"보다 "이 문제를 이렇게 해결합니다"가 유리</li>
+          <li>주장에 이유가 따라오는 콘텐츠 — "왜 우리가 다른가"를 설명한 글</li>
+          <li>중립적이고 객관적인 어조. 브랜드 자화자찬보다 사실 기반 서술</li>
+        </ul>
+
+        <div class="platform-section-label">USP를 어떻게 표현해야 하나</div>
+        <ul class="platform-ul">
+          <li>"최고의 서비스" 같은 표현 삭제 → "고객 응대 평균 2시간 이내, 연간 해지율 2.3%" 같은 사실로 대체</li>
+          <li>창업 배경, 문제를 발견한 계기, 기술 원리처럼 "왜 이 일을 하는가"를 담은 콘텐츠</li>
+          <li>신뢰·투명성을 강점으로 내세우는 브랜드에 가장 친화적인 플랫폼</li>
+        </ul>
+
+        <div class="platform-links">
+          <a class="platform-link" href="https://www.anthropic.com/news/claudes-character" target="_blank">↗ Anthropic 공식 — Claude의 성격과 원칙</a>
+          <a class="platform-link" href="https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback" target="_blank">↗ Anthropic 공식 연구 — Constitutional AI</a>
+        </div>
+      </div>
+
+      <!-- Gemini -->
+      <div class="platform-card gemini">
+        <div class="platform-name">Gemini</div>
+        <div class="platform-sub">Google DeepMind · Search 통합</div>
+        <div class="tag-list">
+          <span class="tag">Google 검색 직결</span>
+          <span class="tag">SEO가 곧 GEO</span>
+        </div>
+
+        <div class="platform-section-label">어떻게 정보를 가져오나</div>
+        <ul class="platform-ul">
+          <li>Google 검색 엔진과 완전히 통합 — Grounding이라는 기술로 실시간 Google 검색 결과를 응답에 연결</li>
+          <li>Google AI Overviews(검색 결과 상단에 뜨는 AI 요약 박스)와 동일한 인프라 사용: 구글 검색 상위 콘텐츠 = Gemini 인용 우선순위</li>
+          <li>E-E-A-T 신호를 그대로 인용 가중치로 활용</li>
+        </ul>
+
+        <div class="platform-section-label">어떤 콘텐츠를 좋아하나</div>
+        <ul class="platform-ul">
+          <li>세 플랫폼 중 기존 SEO 최적화가 가장 직접적으로 GEO에도 적용되는 플랫폼</li>
+          <li>Schema Markup이 적용된 페이지 우대 — 특히 FAQ·제품·리뷰 마크업</li>
+          <li>Featured Snippet 형식: 질문에 바로 답변하고 이후에 부연 설명하는 구조</li>
+          <li>페이지 로딩 속도가 느리면 불리 (Core Web Vitals 기준 충족 필요)</li>
+        </ul>
+
+        <div class="platform-section-label">USP를 어떻게 표현해야 하나</div>
+        <ul class="platform-ul">
+          <li>이미 SEO를 잘 하고 있다면 Gemini GEO는 별도 작업 불필요 — 구글 최적화가 그대로 적용</li>
+          <li>"우리 서비스의 장점은 무엇인가요?" 같은 FAQ 형식으로 USP를 Q&A로 풀기</li>
+          <li>로컬 비즈니스라면 Google 비즈니스 프로필에 USP 키워드 반영이 가장 빠른 진입 경로</li>
+        </ul>
+
+        <div class="platform-links">
+          <a class="platform-link" href="https://developers.google.com/search/docs/appearance/ai-overviews" target="_blank">↗ Google Search Central 공식 — AI Overviews</a>
+          <a class="platform-link" href="https://ai.google.dev/gemini-api/docs/grounding" target="_blank">↗ Google AI 공식 — Grounding with Google Search</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Platform comparison table -->
+    <p class="subsection-title">세 플랫폼 한눈에 비교</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>구분</th><th style="color:#10a37f">ChatGPT</th><th style="color:#d97706">Claude</th><th style="color:#4285f4">Gemini</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>정보 출처</td>
+            <td>Microsoft Bing 검색 + 학습 데이터</td>
+            <td>학습 데이터 위주 (웹 검색 제한적)</td>
+            <td>Google 검색과 완전 통합</td>
+          </tr>
+          <tr>
+            <td>선호하는 콘텐츠</td>
+            <td>숫자·통계·벤치마크가 있는 글</td>
+            <td>이유와 맥락이 있는 설명형 글</td>
+            <td>구글 SEO 최적화가 잘 된 페이지</td>
+          </tr>
+          <tr>
+            <td>USP 표현 방식</td>
+            <td>수치로 증명하는 USP</td>
+            <td>"왜 우리인가"를 서술하는 USP</td>
+            <td>FAQ 답변 형식의 USP</td>
+          </tr>
+          <tr>
+            <td>피해야 할 것</td>
+            <td>출처 없는 주장, 근거 없는 수치</td>
+            <td>"최고", "최강" 같은 광고성 표현</td>
+            <td>느린 페이지, Schema 없는 콘텐츠</td>
+          </tr>
+          <tr>
+            <td>기존 SEO와의 연관성</td>
+            <td>중간 (Bing SEO 따로 필요)</td>
+            <td>낮음 (별도 전략 필요)</td>
+            <td>매우 높음 (구글 SEO = Gemini GEO)</td>
+          </tr>
+          <tr>
+            <td>시작 난이도</td>
+            <td>보통</td>
+            <td>어려움 (어조와 내용 전면 검토 필요)</td>
+            <td>쉬움 (기존 SEO 작업 연장선)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 3: Checklist -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">3</span>
+      실무 체크리스트 — 지금 당장 할 수 있는 것
+    </div>
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:20px">
+      세 플랫폼 모두에 공통으로 적용되는 것부터 시작하고, 이후 각 플랫폼에 맞게 추가하세요.
+    </p>
+    <div class="checklist-grid">
+      <div class="checklist-card common">
+        <div class="checklist-title"><span class="dot dot-blue"></span>공통 — 어느 AI든 먼저 해야 할 것</div>
+        <div class="check-item"><span class="check-box"></span>페이지 첫 문단(50단어 이내)에 우리 브랜드의 핵심 차별점 배치</div>
+        <div class="check-item"><span class="check-box"></span>"최고", "최대", "압도적" 같은 모호한 표현 → 구체적 수치나 사실로 교체</div>
+        <div class="check-item"><span class="check-box"></span>글쓴이 정보(저자명, 작성일, 전문 분야) 및 외부 출처 명시 (E-E-A-T 강화)</div>
+        <div class="check-item"><span class="check-box"></span>언론 보도, 수상 이력, 외부 리뷰 등 제3자 언급 최소 1건 이상 확보</div>
+      </div>
+      <div class="checklist-card">
+        <div class="checklist-title"><span class="dot dot-chatgpt"></span>ChatGPT — 숫자로 설득하기</div>
+        <div class="check-item"><span class="check-box"></span>브랜드 USP를 수치로 변환한 "데이터 페이지" 또는 섹션 제작</div>
+        <div class="check-item"><span class="check-box"></span>업계 미디어나 뉴스에 브랜드 언급 기사 최소 1건 확보</div>
+        <div class="check-item"><span class="check-box"></span>자사 vs 업계 평균 비교 표 콘텐츠에 포함</div>
+      </div>
+      <div class="checklist-card">
+        <div class="checklist-title"><span class="dot dot-claude"></span>Claude — 이유와 스토리로 설득하기</div>
+        <div class="check-item"><span class="check-box"></span>사이트 전체에서 광고성 과장 표현 제거 후 사실 기반 표현으로 교체</div>
+        <div class="check-item"><span class="check-box"></span>브랜드 창업 배경 또는 "왜 이 서비스를 만들었나" 스토리 페이지 작성</div>
+        <div class="check-item"><span class="check-box"></span>수상·파트너·고객사 로고 등 신뢰 요소를 한곳에 모아 페이지 구성</div>
+      </div>
+      <div class="checklist-card">
+        <div class="checklist-title"><span class="dot dot-gemini"></span>Gemini — 구글 최적화가 곧 답</div>
+        <div class="check-item"><span class="check-box"></span>주요 페이지에 FAQ 섹션 추가 + FAQ Schema Markup 코드 적용</div>
+        <div class="check-item"><span class="check-box"></span>PageSpeed Insights에서 페이지 속도 점수 확인 (목표: 모바일 70점 이상)</div>
+        <div class="check-item"><span class="check-box"></span>Google 비즈니스 프로필 정보 최신화 (설명란에 USP 키워드 포함)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: First Steps -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">4</span>
+      GEO 첫걸음 — 플랫폼별 시작 순서
+    </div>
+    <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:24px">
+      아무것도 없는 상태에서 각 AI 플랫폼에 처음 인용되기까지, 가장 빠르고 효과적인 순서입니다. 한 플랫폼씩 집중해서 시작하세요.
+    </p>
+
+    <div class="platform-grid">
+
+      <!-- ChatGPT First Steps -->
+      <div class="platform-card chatgpt">
+        <div class="platform-name">ChatGPT 첫걸음</div>
+        <div class="platform-sub">Microsoft Bing 기반이므로 Bing 노출이 먼저</div>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num chatgpt-step">1</div>
+            <div class="step-content">
+              <div class="step-title">Bing 웹마스터 도구에 사이트 등록</div>
+              <div class="step-desc">ChatGPT 웹 검색은 Bing 인덱스를 그대로 사용하므로, Bing에 노출되지 않으면 ChatGPT에도 나오지 않음. <a href="https://www.bing.com/webmasters" target="_blank">Bing Webmaster Tools</a>에서 사이트 등록 후 sitemap 제출.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num chatgpt-step">2</div>
+            <div class="step-content">
+              <div class="step-title">수치 기반 USP 페이지 1개 제작</div>
+              <div class="step-desc">우리 브랜드의 핵심 차별점을 숫자로 담은 페이지 하나를 만든다. 예: "왜 우리를 선택하는가" 페이지에 배송 속도, 만족도, 가격 비교 수치 포함.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num chatgpt-step">3</div>
+            <div class="step-content">
+              <div class="step-title">외부 미디어에 브랜드 언급 1건 확보</div>
+              <div class="step-desc">업계 뉴스, 파트너사 블로그, IT 미디어 등 권위 있는 사이트에 우리 브랜드 USP가 언급된 기사나 글 최소 1건 만들기.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num chatgpt-step">4</div>
+            <div class="step-content">
+              <div class="step-title">커뮤니티 씨딩 (LLM Seeding)</div>
+              <div class="step-desc">Reddit, Quora처럼 ChatGPT가 학습 소스로 자주 사용하는 플랫폼의 관련 질문에 브랜드 USP를 자연스럽게 담은 답변 작성. 광고처럼 보이지 않게 정보 제공 형식으로.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num chatgpt-step">5</div>
+            <div class="step-content">
+              <div class="step-title">ChatGPT에서 직접 테스트</div>
+              <div class="step-desc">"[우리 카테고리]에서 좋은 [제품/서비스] 추천해줘"라고 ChatGPT에 물어보고 우리 브랜드가 나오는지 확인. 안 나오면 2~4단계를 반복하며 보완.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claude First Steps -->
+      <div class="platform-card claude">
+        <div class="platform-name">Claude 첫걸음</div>
+        <div class="platform-sub">콘텐츠 어조와 신뢰도가 핵심</div>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num claude-step">1</div>
+            <div class="step-content">
+              <div class="step-title">브랜드 스토리 페이지 작성</div>
+              <div class="step-desc">Claude는 "왜 이 브랜드인가"를 가장 중요하게 봄. 창업 배경, 발견한 문제, 해결 방식을 설명형으로 담은 About 또는 Our Story 페이지 작성.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num claude-step">2</div>
+            <div class="step-content">
+              <div class="step-title">사이트 전체 광고성 표현 제거</div>
+              <div class="step-desc">"업계 최고", "압도적 1위", "최강" 같은 근거 없는 수식어를 모두 찾아 구체적 사실로 교체. Claude는 이런 표현이 있으면 해당 콘텐츠 인용을 피하도록 설계됨.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num claude-step">3</div>
+            <div class="step-content">
+              <div class="step-title">신뢰 증거 페이지 구축</div>
+              <div class="step-desc">우리가 직접 주장하는 것이 아니라 제3자가 검증한 것들 — 고객사 로고, 수상 이력, 미디어 보도, 파트너십 — 을 한 페이지에 모아서 정리.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num claude-step">4</div>
+            <div class="step-content">
+              <div class="step-title">전문성을 보여주는 콘텐츠 정기 발행</div>
+              <div class="step-desc">우리 브랜드 USP와 연결된 주제로 심층 글 작성. 단순 홍보가 아닌 업계 인사이트, 실제 사례, 데이터 분석 형식. 작성자 이름과 전문 분야 명시 필수. 월 2회 이상 권장.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num claude-step">5</div>
+            <div class="step-content">
+              <div class="step-title">Claude에서 직접 테스트</div>
+              <div class="step-desc">"[우리 고객이 겪는 문제]를 해결하는 방법을 알려줘"처럼 솔루션을 찾는 질문으로 테스트. 우리 브랜드나 콘텐츠가 언급되는지 확인.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gemini First Steps -->
+      <div class="platform-card gemini">
+        <div class="platform-name">Gemini 첫걸음</div>
+        <div class="platform-sub">구글 SEO 최적화가 그대로 GEO</div>
+
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num gemini-step">1</div>
+            <div class="step-content">
+              <div class="step-title">Google Search Console에서 색인 상태 확인</div>
+              <div class="step-desc">Gemini는 Google 검색 상위 콘텐츠를 직접 인용하므로, 우리 핵심 페이지가 구글에 제대로 등록되어 있는지 먼저 확인. <a href="https://search.google.com/search-console" target="_blank">Search Console</a> → URL 검사 도구 활용.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num gemini-step">2</div>
+            <div class="step-content">
+              <div class="step-title">FAQ 섹션 추가 + FAQ 코드(Schema) 적용</div>
+              <div class="step-desc">주요 페이지에 "자주 묻는 질문" 섹션을 만들고, FAQ Schema Markup 코드를 추가. 이렇게 하면 구글의 Featured Snippet 박스에 선택될 가능성이 높아지고, Gemini 인용으로 직결됨.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num gemini-step">3</div>
+            <div class="step-content">
+              <div class="step-title">페이지 속도 점검</div>
+              <div class="step-desc"><a href="https://pagespeed.web.dev" target="_blank">PageSpeed Insights</a>에서 우리 사이트 속도 측정. 모바일 기준 LCP(가장 큰 콘텐츠가 뜨는 시간) 2.5초 이내가 목표. 느린 페이지는 Gemini 인용에서 불리.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num gemini-step">4</div>
+            <div class="step-content">
+              <div class="step-title">Google 비즈니스 프로필 최신화</div>
+              <div class="step-desc">비즈니스 소개 설명란에 USP 키워드 포함, 사진 업데이트, 고객 리뷰에 답변. 로컬 비즈니스라면 세 플랫폼 중 가장 빠르게 GEO 효과를 볼 수 있는 방법.</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num gemini-step">5</div>
+            <div class="step-content">
+              <div class="step-title">Google에서 AI Overviews 노출 테스트</div>
+              <div class="step-desc">Google에서 "[우리 카테고리] 추천" 또는 "[우리 카테고리] 고르는 방법"을 검색. 결과 상단에 AI 요약 박스(AI Overviews)가 뜨는지, 우리 브랜드가 포함되는지 확인. 미노출이면 1~3단계 점검.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Section 5: Sources -->
+  <div class="section">
+    <div class="section-title">
+      <span class="num">4</span>
+      참고 출처
+    </div>
+    <div class="sources-list">
+      <div class="source-item">
+        <a class="source-link" href="https://arxiv.org/abs/2311.09735" target="_blank">arXiv 2311.09735 — GEO: Generative Engine Optimization (Princeton·Georgia Tech·IIT Delhi 공동 연구, KDD 2024 게재)</a>
+        <span class="source-badge badge-top">최고 · 학술논문</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://developers.google.com/search/docs/fundamentals/creating-helpful-content" target="_blank">Google Search Central — 유용하고 신뢰할 수 있는 콘텐츠 만들기 (E-E-A-T 공식 가이드)</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://developers.google.com/search/docs/appearance/ai-overviews" target="_blank">Google Search Central — AI Overviews 공식 가이드</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://ai.google.dev/gemini-api/docs/grounding" target="_blank">Google AI — Gemini의 Grounding with Google Search 공식 문서</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://www.anthropic.com/research/constitutional-ai-harmlessness-from-ai-feedback" target="_blank">Anthropic — Constitutional AI: Harmlessness from AI Feedback (Claude 설계 원칙 공식 연구)</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://www.anthropic.com/news/claudes-character" target="_blank">Anthropic — Claude의 성격과 가치관 공식 발표</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://help.openai.com/en/articles/8077698-how-chatgpt-searches-the-web" target="_blank">OpenAI 공식 도움말 — ChatGPT가 웹을 검색하는 방법</a>
+        <span class="source-badge badge-top">최고 · 공식 문서</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://www.semrush.com/blog/llm-optimization/" target="_blank">Semrush 공식 블로그 — LLM Optimization: AI가 내 브랜드를 이야기하게 만들기</a>
+        <span class="source-badge badge-high">높음 · 공식 블로그</span>
+      </div>
+      <div class="source-item">
+        <a class="source-link" href="https://a16z.com/geo-over-seo/" target="_blank">a16z (Andreessen Horowitz) — GEO over SEO: 생성형 검색이 검색의 규칙을 어떻게 바꾸는가 (2025)</a>
+        <span class="source-badge badge-high">높음 · 공식 리포트</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>SEO vs GEO 인용 스타일 가이드 &nbsp;·&nbsp; 2026-03-19</p>
+  </footer>
+
+</div>
+</body>
+</html>

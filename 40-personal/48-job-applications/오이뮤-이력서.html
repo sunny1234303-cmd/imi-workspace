@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>진선이 이력서 — 오이뮤</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #f0f2f5;
+    padding: 40px 20px 80px;
+    color: #222;
+    font-size: 14px;
+    line-height: 1.9;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 52px 52px 60px;
+  }
+
+  /* ===== TYPOGRAPHY SYSTEM ===== */
+  h2 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #222;
+    margin: 56px 0 4px;
+    padding-bottom: 7px;
+    border-bottom: 2px solid #222;
+  }
+  h2.compact {
+    margin: 44px 0 4px;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    margin: 36px 0 3px;
+  }
+
+  .job-title { margin: 20px 0 0; }
+  h2 + .job-title { margin-top: 16px; }
+  .title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 3px; }
+  .title-row h3 { margin: 0; }
+  .title-row .period { flex-shrink: 0; margin-left: auto; font-size: 12px; font-weight: 500; color: #999; }
+  .job-title .meta { margin: 0 0 8px; font-size: 12.5px; color: #666; }
+
+  h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #666;
+    margin: 24px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  p { margin-bottom: 10px; }
+
+  ul, ol { padding-left: 18px; margin: 6px 0 12px; }
+  li { margin-bottom: 6px; }
+
+  strong { font-weight: 700; }
+
+  hr {
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 24px 0 0;
+  }
+
+  /* ===== HEADER ===== */
+  .name    { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #111; margin-bottom: 5px; }
+  .contact { font-size: 13px; color: #777; margin-bottom: 18px; }
+  .quote   { display: block; background: #f5f5f5; border-left: 3px solid #222; padding: 9px 14px; font-size: 13px; font-style: italic; color: #444; margin-bottom: 12px; }
+  .tagline { font-size: 14px; font-weight: 700; color: #111; margin-bottom: 8px; }
+  .bio     { font-size: 13.5px; color: #444; line-height: 1.9; margin-bottom: 10px; }
+
+  /* ===== JOB META ===== */
+  .meta {
+    font-size: 12.5px;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  .meta .period {
+    display: inline-block;
+    background: #f0f0f0;
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-weight: 600;
+    color: #333;
+    margin-right: 4px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ===== SKILLS ===== */
+  .skills { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .skill-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #f8f8f8;
+    border-radius: 5px;
+    padding: 9px 14px;
+  }
+  .skill-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #222;
+    white-space: nowrap;
+    min-width: 110px;
+    padding-top: 3px;
+  }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 2px 12px;
+    font-size: 12.5px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  /* ===== TABLE ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px;
+    font-size: 13.5px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  th, td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    vertical-align: top;
+    text-align: left;
+  }
+  th {
+    background: #f0f0f0;
+    font-weight: 700;
+    font-size: 12px;
+    color: #333;
+  }
+  td { color: #333; }
+
+  /* ===== BLOCKQUOTE ===== */
+  blockquote {
+    background: #f8f8f8;
+    border-left: 3px solid #aaa;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: #555;
+    margin: 8px 0;
+  }
+
+  /* ===== AWARD BADGE ===== */
+  .badge {
+    display: inline-block;
+    background: #ebebeb;
+    color: #222;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 5px;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* ===== PROJECT ITEM ===== */
+  .project-item { margin: 18px 0 0; }
+  .project-item + .project-item { margin-top: 16px; }
+  .proj-name { font-size: 13.5px; font-weight: 700; color: #111; margin-bottom: 4px; }
+  .proj-row { font-size: 13px; color: #333; margin: 3px 0; line-height: 1.7; }
+  .proj-label { font-weight: 700; color: #222; margin-right: 5px; }
+  .proj-label.problem { color: #222; }
+  .proj-result { font-weight: 700; color: #111; }
+  .project-item ul { margin: 4px 0 0; }
+  .project-item li { margin-bottom: 3px; font-size: 13px; }
+
+  /* ===== FOOTER ===== */
+  .footer { font-size: 12px; color: #aaa; text-align: right; margin-top: 44px; }
+
+  /* ===== FOOTNOTE ===== */
+  .footnote { font-size: 12px; color: #888; margin-top: 4px; }
+
+  /* ===== PRINT ===== */
+  @media print {
+    @page { size: A4; margin: 16mm 20mm; }
+
+    body { background: #fff; padding: 0; font-size: 9.5px; }
+
+    .wrap {
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      max-width: 100%;
+    }
+
+    h2    { font-size: 8.5px; margin: 18px 0 6px; padding-bottom: 3px; }
+    h2.compact { margin: 12px 0 6px; }
+    h3    { font-size: 10px;  margin: 10px 0 3px; }
+    .title-row { gap: 6px; margin-bottom: 2px; }
+    .title-row h3 { margin: 0; }
+    h4    { font-size: 8.5px; margin: 8px 0 4px; padding-bottom: 2px; }
+    hr    { margin: 10px 0 0; }
+
+    .name    { font-size: 16px; }
+    .contact { font-size: 8.5px; margin-bottom: 10px; }
+    .quote   { font-size: 8.5px; padding: 5px 10px; margin-bottom: 6px; }
+    .tagline { font-size: 9px; margin-bottom: 4px; }
+    .bio     { font-size: 8.5px; }
+    .meta, .job-title .meta { font-size: 8.5px; margin-bottom: 5px; }
+    .title-row .period { font-size: 7.5px; }
+
+    .skills  { gap: 4px; }
+    .skill-row   { padding: 5px 10px; gap: 8px; }
+    .skill-label { font-size: 8px; min-width: 72px; }
+    .tag         { font-size: 8px; padding: 1px 6px; }
+
+    table    { font-size: 8.5px; }
+    th, td   { padding: 4px 8px; border-color: #aaa; }
+    th       { background: #e8e8e8 !important; font-size: 8px; }
+
+    ul, ol   { padding-left: 13px; margin: 3px 0 6px; }
+    li       { margin-bottom: 2px; }
+
+    blockquote { padding: 4px 10px; font-size: 8.5px; }
+    .project-item { margin: 8px 0 0; }
+    .proj-name { font-size: 8.5px; margin-bottom: 2px; }
+    .proj-row { font-size: 8px; margin: 1px 0; }
+    .project-item li { font-size: 8px; margin-bottom: 1px; }
+    .badge { font-size: 7.5px; padding: 0 4px; margin-right: 3px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    h3, h4 { page-break-after: avoid; }
+    tr     { page-break-inside: avoid; }
+    .footnote { font-size: 8px; color: #888; margin-top: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div style="margin: 40px 0 20px;">
+  <p class="name">진선이</p>
+  <p class="contact">wlstjsdl0127@naver.com · 010-5160-1471</p>
+  <p class="tagline">브랜드의 결을 이해하고, 콘텐츠로 잇는 마케터</p>
+  <span class="quote">"마케팅을 운영하지 않습니다. 마케팅이 작동하는 구조를 만듭니다."</span>
+  <p class="bio">스타트업 창업과 글로벌 브랜드 마케팅을 모두 경험한 마케터입니다. 신사업 기획, 마케팅, 이커머스 플랫폼, 베뉴 운영 지원 등의 영역을 경험하며, 문제를 다면적으로 분석하고 실행으로 옮기는 역량을 가지고 있습니다.</p>
+  <p class="bio">빠른 답을 찾는 흐름 속 뾰족한 why를 던지는 깊은 판단력을 갖고자, 독서와 일상 속에서 인사이트를 얻습니다. 반복 업무는 AI로 자동화하고, 본질의 깊이에 집중하는 환경을 설계하여 마케팅이 작동하는 구조를 만드는 역량을 가지고 있습니다.</p>
+</div>
+
+<hr>
+
+<!-- 경력 요약 -->
+<h2>경력 요약</h2>
+<table>
+  <tr><th>기간</th><th>소속</th><th>직무</th></tr>
+  <tr><td>2024.07 ~ 2025.11</td><td>YBM 퍼블위즈</td><td>온라인 마케터 (내셔널지오그래픽 매거진 브랜드 전담)</td></tr>
+  <tr><td>2023.06 ~ 2023.09</td><td>광주관광공사</td><td>마케팅 PM 인턴</td></tr>
+</table>
+
+<hr>
+
+<!-- 보유 역량 -->
+<h2>보유 역량</h2>
+<div class="skills">
+  <div class="skill-row">
+    <div class="skill-label">브랜드 콘텐츠</div>
+    <div class="skill-tags">
+      <span class="tag">콘텐츠 기획·제작</span>
+      <span class="tag">SNS 운영</span>
+      <span class="tag">인플루언서 소싱·계약·운영</span>
+      <span class="tag">콜라보 기획·협상</span>
+      <span class="tag">시즌별 캠페인 기획·실행</span>
+      <span class="tag">CRM 운영</span>
+    </div>
+  </div>
+  <div class="skill-row">
+    <div class="skill-label">플랫폼·자료관리</div>
+    <div class="skill-tags">
+      <span class="tag">자사몰(스마트스토어) 운영</span>
+      <span class="tag">상세페이지 기획·제작</span>
+      <span class="tag">KPI 대시보드 설계</span>
+      <span class="tag">Excel·Google Sheets</span>
+    </div>
+  </div>
+  <div class="skill-row">
+    <div class="skill-label">디자인·제작</div>
+    <div class="skill-tags">
+      <span class="tag">Illustrator</span>
+      <span class="tag">Photoshop</span>
+      <span class="tag">Figma</span>
+      <span class="tag">PowerPoint</span>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- 관련 경력 -->
+<h2>관련 경력</h2>
+
+<div class="job-title">
+  <div class="title-row">
+    <h3>1. YBM 퍼블위즈 — 온라인 마케터</h3>
+    <span class="period">2024.07 ~ 2025.11 (1년 5개월)</span>
+  </div>
+  <p class="meta">내셔널지오그래픽 매거진 E-commerce 전담 · 기획 100% · 제안 100% · 실행 100%</p>
+</div>
+
+
+<div class="project-item">
+  <p class="proj-name">새학기 시즌 캠페인</p>
+  <p class="proj-row"><span class="proj-label problem">[문제]</span>기존 '구독 독자' 타깃의 시즌 수요 한계 → 신규 고객 유입 정체</p>
+  <p class="proj-row"><span class="proj-label">[실행]</span>타깃 재정의·계열사 콜라보 기획·캠페인 실행 전담</p>
+  <p class="proj-row"><span class="proj-label">[성과]</span><span class="proj-result">신규 구매 고객 수(YoY) +47.4%, 월 매출(YoY) +41.3%</span></p>
+  <ul>
+    <li>'독자 → 영어교육에 관심 있는 초등 학부모'로 타깃 재정의, 시즌 수요 포착</li>
+    <li>계열사 YBM과 영어회화 체험권 증정 콜라보 기획·실행</li>
+    <li>구매 금액별 사은품 증정으로 객단가 증대 구조 병행</li>
+  </ul>
+</div>
+
+<div class="project-item">
+  <p class="proj-name">어린이날 콜라보·인플루언서 캠페인</p>
+  <p class="proj-row"><span class="proj-label problem">[문제]</span>SNS 브랜드 노출 부족 → LTV 높은 잠재 고객 확장 필요</p>
+  <p class="proj-row"><span class="proj-label">[실행]</span>그란데클립 콜라보 협상·인플루언서 소싱·계약·콘텐츠 운영</p>
+  <p class="proj-row"><span class="proj-label">[성과]</span><span class="proj-result">원고료 0원으로 키즈 인플루언서 11명 릴스 집행, 콜라보 사입 단가 38% 절감</span></p>
+  <ul>
+    <li>그란데클립과 '공룡' 테마 어린이날 콜라보 기획·협상</li>
+    <li>키즈 인플루언서 11명 직접 컨택·전자계약, UGC 및 2차 마케팅 활용권 확보</li>
+    <li>인스타그램 채널 최초 인플루언서 마케팅 도입·운영</li>
+  </ul>
+</div>
+
+<div class="project-item">
+  <p class="proj-name">콘텐츠 기획 및 오가닉 운영</p>
+  <ul>
+    <li>브랜드 공감형 인사이트 콘텐츠 기획·제작 — 매거진 진입 허들 완화 및 검색 트래픽 확장</li>
+    <li>인스타그램 브랜드 콘텐츠 기획·발행 — 브랜드 이미지 제고 목적 운영</li>
+    <li>카카오 채널 CRM 연령별 세분화·타깃 맞춤형 운영 (월 1회 기획·발송)</li>
+  </ul>
+</div>
+
+<div class="project-item">
+  <p class="proj-name">자사몰·외부 플랫폼 운영 및 상품 관리</p>
+  <ul>
+    <li>네이버 스마트스토어·카카오톡 스토어 상품 등록, 옵션 관리, 상품 DB 정리·유지</li>
+    <li>플랫폼별 상품명을 내부 제품 명칭으로 자동 매핑하는 AI 기반 Excel RPA 시스템 구축·운영</li>
+    <li>CTA 기반 브랜드 팝업 상세페이지 신규 기획·운영 (스마트스토어 팝업 기능 최초 활성화)</li>
+    <li>타깃 소구점 중심 제품 상세페이지 전면 리뉴얼</li>
+    <li>스마트스토어 내 배너 기획·제작·운영</li>
+    <li>비수기 대응 번들 큐레이션 신상품 기획·런칭</li>
+  </ul>
+</div>
+
+<div class="project-item">
+  <p class="proj-name">데이터 정리 · 성과 관리</p>
+  <ul>
+    <li>전 채널 성과 통합 Excel 대시보드 구축 (CTR·CPC·CVR·신규/재구매 고객 수 등)</li>
+    <li>전년도·전월 데이터 비교 기반 인사이트 도출 및 캠페인 전략 반영</li>
+    <li>월간 결과 보고서 제작·공유</li>
+    <li>반복 정산 업무를 AI 활용으로 구조화 — 휴먼에러 최소화 및 데이터 정확도 유지</li>
+  </ul>
+</div>
+
+<hr>
+
+<div class="job-title">
+  <div class="title-row">
+    <h3>2. 광주관광공사 — 마케팅 PM 인턴</h3>
+    <span class="period">2023.06 ~ 2023.09 (3개월)</span>
+  </div>
+</div>
+<ul style="margin-top:10px;">
+  <li>김대중컨벤션센터 디지털 사이니지 행사 홍보물 기획·제작·운영</li>
+  <li>학술대회 유치 마케팅 기획 및 외부 기관 커뮤니케이션</li>
+  <li>CRM 기반 행사·센터 DB 구축 및 운영</li>
+</ul>
+
+<hr>
+
+<!-- 대외활동 -->
+<h2>대외활동</h2>
+
+<div class="job-title">
+  <div class="title-row">
+    <h3>식품 대기업 프로젝트 — 우먼센스</h3>
+    <span class="period">2023.03 ~ 2023.06</span>
+  </div>
+</div>
+<div class="project-item">
+  <p class="proj-name">피자알볼로 IMC 리브랜딩 캠페인 — 실행팀장</p>
+  <p class="proj-row"><span class="proj-label">[성과]</span><span class="proj-result">참가 7팀 중 실행 기획안 최종 선정, 식품 마케팅 공모전 대상</span></p>
+  <ul>
+    <li>56명 팀 총괄 운영 — 타 팀원 흡수 후 각 세부 팀장에게 권한 위임, 한정 예산 내 전 기획 평균 이상 달성</li>
+    <li>부산시 콜라보레이션 브랜디드 굿즈 기획, 프로모션 콘텐츠 제작 및 공식 인스타그램 발행</li>
+    <li>풀무원다논 "하루요거트" 리브랜딩 기획, 오프라인 팝업스토어 실행조 편입 (예산총괄)</li>
+    <li>쉐이크쉑 콘크리트 제품 개발 R&D 기획</li>
+  </ul>
+</div>
+
+<div class="job-title" style="margin-top:24px;">
+  <div class="title-row">
+    <h3>띵크베이크 — 창업 (베이킹 플랫폼 앱)</h3>
+    <span class="period">2022.06 ~ 2022.11</span>
+  </div>
+</div>
+<div class="project-item">
+  <ul>
+    <li>사업계획서 작성 및 IR 피칭, 앱 기획, 최종 엑스포 출전 실무 운영</li>
+    <li><strong>온라인 전국 창업 배틀 189팀 중 1위</strong>, 전국민 참여 모의투자대회 호남권 3위</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- 수상 및 인증서 -->
+<h2 class="compact">수상 및 인증서</h2>
+<table>
+  <tr><th>연도</th><th>내용</th></tr>
+  <tr><td>2023</td><td><span class="badge">대상</span>우먼센스 식품 마케팅 공모전 — 피자알볼로 IMC 기획·실행 (팀장)</td></tr>
+  <tr><td>2023</td><td><span class="badge">최우수상</span>우먼센스 식품 마케팅 공모전 — 쉐이크쉑팀 (팀원)</td></tr>
+  <tr><td>2023</td><td><span class="badge">최우수상</span>우먼센스 식품 마케팅 공모전 — 풀무원다논팀 (팀원)</td></tr>
+  <tr><td>2022</td><td><span class="badge">전국 1위</span>학생 창업유망팀 300 창업배틀 — 온라인 189팀 중 1위 (교육부 주최)</td></tr>
+  <tr><td>2022</td><td><span class="badge">장관 인증서</span>2022 학생 창업유망팀 300 성장트랙 선정</td></tr>
+  <tr><td>2022</td><td><span class="badge">호남권 3위</span>2022 전국민 참여 모의투자대회 — 띵크베이크 팀</td></tr>
+</table>
+
+<hr>
+
+<!-- 학력 -->
+<h2 class="compact">학력</h2>
+<table>
+  <tr><th>기간</th><th>학교</th><th>전공</th></tr>
+  <tr><td>2023.09 ~ 2025.08</td><td>경희사이버대학교 (편입)</td><td>마케팅·지속 경영 리더십 전공</td></tr>
+  <tr><td>2021.03 ~ 2023.02</td><td>조선이공대학교</td><td>프랜차이즈 창업경영학과</td></tr>
+</table>
+
+<hr>
+
+<!-- 수료 및 자격증 -->
+<h2 class="compact">수료 및 자격증</h2>
+<table>
+  <tr><th>연도</th><th>자격증·수료</th><th>발급기관</th></tr>
+  <tr><td>2026</td><td>생성AI 활용 지피터스 AI스터디 20기 맞춤형자동화 수료 (30시간)</td><td>GPTers Group / 지니파이(주)</td></tr>
+  <tr><td>2025</td><td>생성AI 활용 지피터스 AI스터디 18기 클로드코드 수료 (30시간)</td><td>GPTers Group / 지니파이(주)</td></tr>
+  <tr><td>2023</td><td>컴퓨터활용능력 1급</td><td>대한상공회의소</td></tr>
+  <tr><td>2023</td><td>콘텐츠 마케터 1급</td><td>국제능력평가원 (문화체육관광부)</td></tr>
+  <tr><td>2023</td><td>우먼센스 식품 대기업 마케터 인재양성 프로젝트 이수</td><td>㈜서울문화사 우먼센스</td></tr>
+  <tr><td>2022</td><td>Google 애널리틱스 초급·고급 수료</td><td>Google 애널리틱스 아카데미</td></tr>
+</table>
+
+<p class="footer">작성일: 2026-03-31 · 오이뮤 지원용</p>
+
+</div>
+</body>
+</html>

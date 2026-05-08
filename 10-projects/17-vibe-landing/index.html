@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코딩 몰라도 됩니다 — 마케터를 위한 AI 자동화</title>
+
+  <!-- =============================================
+    GA4: analytics.google.com에서 측정 ID 발급 후
+    아래 두 곳의 G-XXXXXXXXXX를 교체하세요
+  ============================================= -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+
+  <!-- =============================================
+    Meta Pixel: business.facebook.com에서 픽셀 ID 발급 후
+    아래 두 곳의 YOUR_PIXEL_ID를 교체하세요
+  ============================================= -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'YOUR_PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/>
+  </noscript>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a8f0a8;
+      border: 1px solid #a8f0a8;
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 6vw, 44px);
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      word-break: keep-all;
+    }
+
+    h1 span {
+      color: #a8f0a8;
+    }
+
+    .sub {
+      font-size: 16px;
+      color: #aaa;
+      line-height: 1.7;
+      margin-bottom: 36px;
+      word-break: keep-all;
+    }
+
+    .points {
+      list-style: none;
+      margin-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 15px;
+      color: #ddd;
+      line-height: 1.5;
+    }
+
+    .points li::before {
+      content: '✓';
+      color: #a8f0a8;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .cta {
+      display: inline-block;
+      background: #a8f0a8;
+      color: #0d0d0d;
+      font-size: 16px;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      transition: opacity 0.15s;
+      width: 100%;
+      text-align: center;
+    }
+
+    .cta:hover { opacity: 0.85; }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: #555;
+      text-align: center;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #222;
+      margin: 36px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="tag">AI 마케팅 · 바이브코딩</div>
+
+    <h1>
+      코딩 몰라도 됩니다.<br>
+      <span>마케터가 직접 만드는<br>AI 자동화 시스템</span>
+    </h1>
+
+    <p class="sub">
+      맥미니 대란의 이유, 바이브 코딩의 실체,<br>
+      마케터가 Claude로 당장 써먹는 자동화 3가지
+    </p>
+
+    <ul class="points">
+      <li>파일 정리 자동화 — 반복 작업을 AI에게 넘기는 법</li>
+      <li>데이터 연동 분석 — 여러 채널 수치를 한 번에 정리</li>
+      <li>회의록 자동 생성 — 실시간 녹음에서 요약까지</li>
+    </ul>
+
+    <a class="cta" href="https://brunch.co.kr/@aha-forest/12" target="_blank" rel="noopener">
+      전체 글 읽기 →
+    </a>
+
+    <hr class="divider">
+
+    <p class="footer">AI로 마케팅을 바꾸는 사람들의 이야기 · Aha Forest</p>
+  </div>
+</body>
+</html>

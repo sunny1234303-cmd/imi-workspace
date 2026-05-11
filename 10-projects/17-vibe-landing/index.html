@@ -15,16 +15,25 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-VNB04L30DF');
-    gtag('config', 'AW-16149034568');
+    gtag('config', 'AW-18149034568');
   </script>
 
   <!-- Google Ads 전환 추적 -->
   <script>
+  function gtag_report_conversion(url) {
+    var callback = function () {
+      if (typeof(url) != 'undefined') {
+        window.location = url;
+      }
+    };
     gtag('event', 'conversion', {
-      'send_to': 'AW-16149034568/K6olc1st5qkctMiUkc50',
-      'value': 1.0,
-      'currency': 'KRW'
+        'send_to': 'AW-18149034568/M4OlCIzt5qkcEMiUkc5D',
+        'value': 1.0,
+        'currency': 'KRW',
+        'event_callback': callback
     });
+    return false;
+  }
   </script>
 
   <!-- =============================================
@@ -175,7 +184,7 @@
       <li>회의록 자동 생성 — 실시간 녹음에서 요약까지</li>
     </ul>
 
-    <a class="cta" href="https://brunch.co.kr/@aha-forest/12" target="_blank" rel="noopener">
+    <a class="cta" href="https://brunch.co.kr/@aha-forest/12" target="_blank" rel="noopener" onclick="return gtag_report_conversion('https://brunch.co.kr/@aha-forest/12')">
       전체 글 읽기 →
     </a>
 

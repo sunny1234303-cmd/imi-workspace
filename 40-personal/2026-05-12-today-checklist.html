@@ -215,6 +215,20 @@
     .add-btn:hover { background: #333; }
 
     .empty-msg { text-align: center; font-size: 13px; color: #ccc; padding: 16px 0; }
+
+    .url-btn {
+      font-size: 11px; font-weight: 600; color: #555;
+      background: #f0f0f0; border-radius: 6px;
+      padding: 3px 8px; text-decoration: none; white-space: nowrap;
+      flex-shrink: 0; transition: background 0.15s;
+    }
+    .url-btn:hover { background: #ddd; color: #111; }
+    .company-item.applied .url-btn { opacity: 0.4; }
+
+    .sync-status { font-size: 11px; color: #bbb; text-align: right; margin-top: 10px; line-height: 1.6; }
+    .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ddd; margin-right: 4px; vertical-align: middle; }
+    .sync-status.ok .sync-dot { background: #52c41a; }
+    .sync-status.err .sync-dot { background: #ff4d4f; }
   </style>
 </head>
 <body>
@@ -380,13 +394,20 @@
         <input class="add-input" id="input-role" type="text" placeholder="직무 (선택)" style="max-width:140px;" />
       </div>
       <div class="add-form-row">
+        <input class="add-input" id="input-url" type="url" placeholder="공고 URL (선택)" />
+      </div>
+      <div class="add-form-row">
         <button class="add-btn" onclick="addCompany()">+ 추가</button>
       </div>
+    </div>
+    <div class="sync-status" id="sync-status">
+      <span class="sync-dot"></span>로컬 모드 · 연동하려면 <code style="font-size:10px;">node 40-personal/checklist-server.js</code> 실행 후 <a href="http://localhost:3737" style="color:#aaa;font-size:10px;">localhost:3737</a> 접속
     </div>
 
   </div>
 
   <script>
+    const STORAGE_KEY = 'checklist-2026-05-12';
     const state = {};
 
     /* ── 현재 시각 ── */
@@ -394,6 +415,102 @@
     function updateClock() {
       const d = new Date();
       document.getElementById('now-badge').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    /* ── localStorage 저장/복원 ── */
+    function saveState() {
+      const data = {
+        done: Array.from(document.querySelectorAll('.item.done')).map(el => el.id),
+        companies: Array.from(document.querySelectorAll('.company-item')).map(el => ({
+          name: el.querySelector('.company-name').textContent,
+          role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
+          url: el.dataset.url || '',
+          applied: el.classList.contains('applied')
+        })),
+        timers: {}
+      };
+      Object.keys(state).forEach(id => {
+        if (state[id] && state[id].endTime) {
+          data.timers[id] = { endTime: state[id].endTime, durMin: state[id].durMin };
+        }
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+
+        /* 완료 항목 복원 */
+        if (data.done) {
+          data.done.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('done');
+          });
+          updateProgress();
+        }
+
+        /* 회사 목록 복원 */
+        if (data.companies && data.companies.length > 0) {
+          const emptyMsg = document.getElementById('empty-msg');
+          if (emptyMsg) emptyMsg.remove();
+          data.companies.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'company-item' + (c.applied ? ' applied' : '');
+            li.dataset.url = c.url || '';
+            li.innerHTML = `
+              <div class="company-check" onclick="toggleCompany(this.parentElement)">
+                <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
+                  <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="company-info" onclick="toggleCompany(this.parentElement)">
+                <div class="company-name">${esc(c.name)}</div>
+                ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
+              </div>
+              ${c.url ? `<a class="url-btn" href="${esc(c.url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
+              <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
+            `;
+            document.getElementById('company-list').appendChild(li);
+          });
+          updateCompanyCount();
+        }
+
+        /* 타이머 복원 */
+        if (data.timers) {
+          Object.keys(data.timers).forEach(id => {
+            const t = data.timers[id];
+            const remaining = Math.floor((t.endTime - Date.now()) / 1000);
+            if (!state[id]) state[id] = {};
+            state[id].durMin = t.durMin;
+            if (remaining > 0) {
+              state[id].endTime = t.endTime;
+              state[id].remaining = remaining;
+              const cd = document.getElementById('cd-' + id);
+              cd.classList.remove('idle');
+              cd.textContent = formatTime(remaining);
+              document.getElementById('start-' + id).disabled = false;
+              const item = document.getElementById(id);
+              item.classList.add('running');
+              state[id].intervalId = setInterval(() => {
+                state[id].remaining--;
+                document.getElementById('cd-' + id).textContent = formatTime(state[id].remaining);
+                if (state[id].remaining <= 0) {
+                  clearInterval(state[id].intervalId);
+                  state[id].intervalId = null;
+                  delete state[id].endTime;
+                  item.classList.remove('running');
+                  document.getElementById('cd-' + id).textContent = '완료!';
+                  sendNotif(item.dataset.label);
+                  saveState();
+                }
+              }, 1000);
+            }
+          });
+        }
+      } catch(e) {}
     }
 
     /* ── 직접 입력 이벤트 연결 ── */
@@ -405,7 +522,6 @@
       input.addEventListener('input', () => {
         const min = parseInt(input.value);
         if (min > 0) {
-          /* 프리셋 버튼 선택 해제 */
           item.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
           wrap.classList.add('selected');
           if (!state[id]) state[id] = {};
@@ -421,7 +537,6 @@
         }
       });
 
-      /* Enter 키로 바로 시작 */
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -457,8 +572,10 @@
       if (Notification.permission === 'default') Notification.requestPermission();
 
       s.remaining = s.durMin * 60;
+      s.endTime = Date.now() + s.remaining * 1000;
       const item = document.getElementById(id);
       item.classList.add('running');
+      saveState();
 
       s.intervalId = setInterval(() => {
         s.remaining--;
@@ -466,9 +583,11 @@
         if (s.remaining <= 0) {
           clearInterval(s.intervalId);
           s.intervalId = null;
+          delete s.endTime;
           item.classList.remove('running');
           document.getElementById('cd-' + id).textContent = '완료!';
           sendNotif(item.dataset.label);
+          saveState();
         }
       }, 1000);
     }
@@ -479,8 +598,10 @@
       if (!s) return;
       clearInterval(s.intervalId);
       s.intervalId = null;
+      delete s.endTime;
       document.getElementById(id).classList.remove('running');
       document.getElementById('cd-' + id).textContent = formatTime(s.remaining);
+      saveState();
     }
 
     function formatTime(sec) {
@@ -499,6 +620,7 @@
     function toggle(id) {
       document.getElementById(id).classList.toggle('done');
       updateProgress();
+      saveState();
     }
 
     function updateProgress() {
@@ -508,12 +630,42 @@
       document.getElementById('label').textContent = done + ' / ' + total + ' 완료';
     }
 
+    /* ── 서버 연동 ── */
+    function syncToServer() {
+      if (location.protocol === 'file:') return;
+      const companies = Array.from(document.querySelectorAll('.company-item')).map(el => ({
+        name: el.querySelector('.company-name').textContent,
+        role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
+        url: el.dataset.url || '',
+        applied: el.classList.contains('applied')
+      }));
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companies })
+      })
+        .then(r => r.json())
+        .then(() => setSyncStatus('ok'))
+        .catch(() => setSyncStatus('err'));
+    }
+
+    function setSyncStatus(status) {
+      const el = document.getElementById('sync-status');
+      if (!el) return;
+      el.className = 'sync-status ' + status;
+      el.innerHTML = status === 'ok'
+        ? '<span class="sync-dot"></span>워크스페이스 연동됨 · 44-이직현황.md 자동 커밋'
+        : '<span class="sync-dot"></span>서버 연결 끊김';
+    }
+
     /* ── 회사 리스트 ── */
     function addCompany() {
       const nameEl = document.getElementById('input-name');
       const roleEl = document.getElementById('input-role');
+      const urlEl  = document.getElementById('input-url');
       const name = nameEl.value.trim();
       const role = roleEl.value.trim();
+      const url  = urlEl.value.trim();
       if (!name) { nameEl.focus(); return; }
 
       const emptyMsg = document.getElementById('empty-msg');
@@ -521,6 +673,7 @@
 
       const li = document.createElement('li');
       li.className = 'company-item';
+      li.dataset.url = url;
       li.innerHTML = `
         <div class="company-check" onclick="toggleCompany(this.parentElement)">
           <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
@@ -531,15 +684,18 @@
           <div class="company-name">${esc(name)}</div>
           ${role ? `<div class="company-role">${esc(role)}</div>` : ''}
         </div>
+        ${url ? `<a class="url-btn" href="${esc(url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
         <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
       `;
       document.getElementById('company-list').appendChild(li);
-      nameEl.value = ''; roleEl.value = '';
+      nameEl.value = ''; roleEl.value = ''; urlEl.value = '';
       nameEl.focus();
       updateCompanyCount();
+      saveState();
+      syncToServer();
     }
 
-    function toggleCompany(el) { el.classList.toggle('applied'); updateCompanyCount(); }
+    function toggleCompany(el) { el.classList.toggle('applied'); updateCompanyCount(); saveState(); syncToServer(); }
 
     function deleteCompany(el) {
       el.remove();
@@ -550,6 +706,8 @@
         document.getElementById('company-list').appendChild(empty);
       }
       updateCompanyCount();
+      saveState();
+      syncToServer();
     }
 
     function updateCompanyCount() {
@@ -564,10 +722,14 @@
     }
 
     document.getElementById('input-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-role').focus(); });
-    document.getElementById('input-role').addEventListener('keydown', e => { if (e.key === 'Enter') addCompany(); });
+    document.getElementById('input-role').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-url').focus(); });
+    document.getElementById('input-url').addEventListener('keydown', e => { if (e.key === 'Enter') addCompany(); });
 
     updateClock();
     setInterval(updateClock, 30000);
+    loadState();
+
+    if (location.protocol !== 'file:') setSyncStatus('ok');
   </script>
 </body>
 </html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘 할 일 — 2026.05.12</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 48px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      height: fit-content;
+    }
+
+    .header { margin-bottom: 28px; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+    .header h1 { font-size: 20px; font-weight: 700; color: #111; }
+    .header p { font-size: 13px; color: #999; margin-top: 4px; }
+
+    .now-badge {
+      font-size: 12px; font-weight: 600; color: #555;
+      background: #f0f0f0; border-radius: 8px;
+      padding: 4px 10px; white-space: nowrap;
+    }
+
+    .progress-bar-wrap { background: #eee; border-radius: 99px; height: 6px; margin-top: 16px; overflow: hidden; }
+    .progress-bar { height: 100%; background: #111; border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+    .progress-label { font-size: 12px; color: #999; text-align: right; margin-top: 6px; }
+
+    .list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .item {
+      border: 1.5px solid #e8e8e8;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .item.done { border-color: #e0e0e0; }
+    .item.running { border-color: #111; }
+
+    .item-main {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      cursor: pointer; transition: background 0.15s; user-select: none;
+    }
+    .item-main:hover { background: #fafafa; }
+    .item.done .item-main { background: #f7f7f7; }
+    .item.done .text { color: #bbb; text-decoration: line-through; }
+    .item.done .badge { opacity: 0.4; }
+
+    .badge {
+      font-size: 11px; font-weight: 700; color: #fff;
+      background: #111; border-radius: 6px;
+      padding: 2px 8px; min-width: 24px; text-align: center; flex-shrink: 0;
+    }
+    .text { flex: 1; font-size: 15px; font-weight: 500; color: #222; line-height: 1.4; }
+    .sub { display: block; font-size: 12px; font-weight: 400; color: #aaa; margin-top: 2px; }
+
+    .check-icon {
+      width: 22px; height: 22px; border: 2px solid #ddd; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .item.done .check-icon { background: #111; border-color: #111; }
+    .check-icon svg { display: none; }
+    .item.done .check-icon svg { display: block; }
+
+    /* 타이머 영역 */
+    .item-timer {
+      padding: 10px 16px 12px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .item.done .item-timer { background: #f7f7f7; }
+
+    .duration-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    .dur-btn {
+      font-size: 12px; font-weight: 500;
+      border: 1.5px solid #e8e8e8; border-radius: 99px;
+      padding: 4px 12px;
+      cursor: pointer; background: #fff; color: #555;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .dur-btn:hover { border-color: #aaa; color: #222; }
+    .dur-btn.selected { background: #111; color: #fff; border-color: #111; }
+
+    /* 직접 입력 */
+    .dur-custom-wrap {
+      display: flex; align-items: center; gap: 4px;
+      border: 1.5px solid #e8e8e8; border-radius: 99px;
+      padding: 3px 10px 3px 8px;
+      background: #fff; transition: border-color 0.15s;
+    }
+    .dur-custom-wrap:focus-within { border-color: #111; }
+    .dur-custom-wrap.selected { border-color: #111; background: #f5f5f5; }
+
+    .dur-custom {
+      border: none; outline: none;
+      font-size: 12px; color: #222; font-family: inherit;
+      width: 36px; background: transparent;
+      text-align: right;
+    }
+    .dur-custom::placeholder { color: #ccc; }
+    .dur-unit { font-size: 12px; color: #888; }
+
+    /* 실행 행 */
+    .timer-row { display: flex; align-items: center; gap: 10px; }
+
+    .countdown {
+      font-size: 22px; font-weight: 700; color: #111;
+      font-variant-numeric: tabular-nums; letter-spacing: -0.5px; min-width: 72px;
+    }
+    .countdown.idle { font-size: 14px; font-weight: 400; color: #ccc; }
+
+    .start-btn {
+      padding: 7px 18px; background: #111; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap;
+    }
+    .start-btn:hover { background: #333; }
+    .start-btn:disabled { background: #ccc; cursor: default; }
+
+    .stop-btn {
+      padding: 7px 14px; background: #fff; color: #555;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap;
+      display: none;
+    }
+    .stop-btn:hover { border-color: #aaa; color: #222; }
+
+    .item.running .start-btn { display: none; }
+    .item.running .stop-btn { display: inline-block; }
+
+    /* 구분선 */
+    .divider { border: none; border-top: 1.5px solid #f0f0f0; margin: 28px 0; }
+
+    /* 회사 섹션 */
+    .section-title {
+      font-size: 15px; font-weight: 700; color: #111;
+      margin-bottom: 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-title span { font-size: 12px; font-weight: 500; color: #999; }
+
+    .company-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+
+    .company-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px;
+      border: 1.5px solid #e8e8e8; border-radius: 10px;
+      cursor: pointer; transition: background 0.15s; user-select: none;
+    }
+    .company-item:hover { background: #fafafa; }
+    .company-item.applied { background: #f7f7f7; border-color: #e0e0e0; }
+    .company-item.applied .company-name { color: #bbb; text-decoration: line-through; }
+    .company-item.applied .company-role { color: #ccc; }
+
+    .company-check {
+      width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .company-item.applied .company-check { background: #111; border-color: #111; }
+    .company-check svg { display: none; }
+    .company-item.applied .company-check svg { display: block; }
+
+    .company-info { flex: 1; }
+    .company-name { font-size: 14px; font-weight: 600; color: #222; }
+    .company-role { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+    .delete-btn {
+      background: none; border: none; color: #ccc;
+      cursor: pointer; font-size: 16px; line-height: 1;
+      padding: 0 2px; transition: color 0.15s; flex-shrink: 0;
+    }
+    .delete-btn:hover { color: #ff4d4f; }
+
+    .add-form { display: flex; gap: 8px; flex-direction: column; }
+    .add-form-row { display: flex; gap: 8px; }
+
+    .add-input {
+      flex: 1; padding: 10px 14px;
+      border: 1.5px solid #e8e8e8; border-radius: 8px;
+      font-size: 13px; color: #222; outline: none;
+      transition: border-color 0.15s; font-family: inherit;
+    }
+    .add-input:focus { border-color: #111; }
+    .add-input::placeholder { color: #ccc; }
+
+    .add-btn {
+      padding: 10px 18px; background: #111; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+      white-space: nowrap; font-family: inherit; width: 100%;
+    }
+    .add-btn:hover { background: #333; }
+
+    .empty-msg { text-align: center; font-size: 13px; color: #ccc; padding: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <h1>오늘 할 일</h1>
+          <p>2026년 5월 12일 (화)</p>
+        </div>
+        <div class="now-badge" id="now-badge">--:--</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="bar"></div>
+      </div>
+      <div class="progress-label" id="label">0 / 5 완료</div>
+    </div>
+
+    <ul class="list">
+
+      <li class="item" id="item-1" data-label="이력서 넣기">
+        <div class="item-main" onclick="toggle('item-1')">
+          <span class="badge">1</span>
+          <span class="text">이력서 넣기<span class="sub">지원 완료 후 체크</span></span>
+          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="item-timer">
+          <div class="duration-row">
+            <button class="dur-btn" onclick="selectDur('item-1', 30, this)">30분</button>
+            <button class="dur-btn" onclick="selectDur('item-1', 60, this)">1시간</button>
+            <button class="dur-btn" onclick="selectDur('item-1', 90, this)">1시간 30분</button>
+            <button class="dur-btn" onclick="selectDur('item-1', 120, this)">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-item-1">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-item-1" onclick="startTimer('item-1')" disabled>시작</button>
+            <button class="stop-btn" onclick="stopTimer('item-1')">중단</button>
+          </div>
+        </div>
+      </li>
+
+      <li class="item" id="item-2" data-label="광고 공부 후 광고비 변경">
+        <div class="item-main" onclick="toggle('item-2')">
+          <span class="badge">2</span>
+          <span class="text">광고 공부 후 광고비 변경하기<span class="sub">공부 먼저, 그 다음 예산 수정</span></span>
+          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="item-timer">
+          <div class="duration-row">
+            <button class="dur-btn" onclick="selectDur('item-2', 30, this)">30분</button>
+            <button class="dur-btn" onclick="selectDur('item-2', 60, this)">1시간</button>
+            <button class="dur-btn" onclick="selectDur('item-2', 90, this)">1시간 30분</button>
+            <button class="dur-btn" onclick="selectDur('item-2', 120, this)">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-item-2">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-item-2" onclick="startTimer('item-2')" disabled>시작</button>
+            <button class="stop-btn" onclick="stopTimer('item-2')">중단</button>
+          </div>
+        </div>
+      </li>
+
+      <li class="item" id="item-3" data-label="메타 광고 인증서">
+        <div class="item-main" onclick="toggle('item-3')">
+          <span class="badge">3</span>
+          <span class="text">메타 광고 인증서 받기<span class="sub">Meta Blueprint 시험 응시</span></span>
+          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="item-timer">
+          <div class="duration-row">
+            <button class="dur-btn" onclick="selectDur('item-3', 30, this)">30분</button>
+            <button class="dur-btn" onclick="selectDur('item-3', 60, this)">1시간</button>
+            <button class="dur-btn" onclick="selectDur('item-3', 90, this)">1시간 30분</button>
+            <button class="dur-btn" onclick="selectDur('item-3', 120, this)">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-item-3">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-item-3" onclick="startTimer('item-3')" disabled>시작</button>
+            <button class="stop-btn" onclick="stopTimer('item-3')">중단</button>
+          </div>
+        </div>
+      </li>
+
+      <li class="item" id="item-4" data-label="구글 광고 인증서">
+        <div class="item-main" onclick="toggle('item-4')">
+          <span class="badge">4</span>
+          <span class="text">구글 광고 인증서 받기<span class="sub">Google Skillshop 시험 응시</span></span>
+          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="item-timer">
+          <div class="duration-row">
+            <button class="dur-btn" onclick="selectDur('item-4', 30, this)">30분</button>
+            <button class="dur-btn" onclick="selectDur('item-4', 60, this)">1시간</button>
+            <button class="dur-btn" onclick="selectDur('item-4', 90, this)">1시간 30분</button>
+            <button class="dur-btn" onclick="selectDur('item-4', 120, this)">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-item-4">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-item-4" onclick="startTimer('item-4')" disabled>시작</button>
+            <button class="stop-btn" onclick="stopTimer('item-4')">중단</button>
+          </div>
+        </div>
+      </li>
+
+      <li class="item" id="item-5" data-label="브런치/블로그 업로드">
+        <div class="item-main" onclick="toggle('item-5')">
+          <span class="badge">5</span>
+          <span class="text">인사이트 정리 후 브런치/블로그 업로드<span class="sub">글 작성 → 발행</span></span>
+          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="item-timer">
+          <div class="duration-row">
+            <button class="dur-btn" onclick="selectDur('item-5', 30, this)">30분</button>
+            <button class="dur-btn" onclick="selectDur('item-5', 60, this)">1시간</button>
+            <button class="dur-btn" onclick="selectDur('item-5', 90, this)">1시간 30분</button>
+            <button class="dur-btn" onclick="selectDur('item-5', 120, this)">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-item-5">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-item-5" onclick="startTimer('item-5')" disabled>시작</button>
+            <button class="stop-btn" onclick="stopTimer('item-5')">중단</button>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+
+    <hr class="divider" />
+
+    <div class="section-title">
+      오늘 지원할 회사
+      <span id="company-count">0개</span>
+    </div>
+
+    <ul class="company-list" id="company-list">
+      <li class="empty-msg" id="empty-msg">회사를 추가해 주세요</li>
+    </ul>
+
+    <div class="add-form">
+      <div class="add-form-row">
+        <input class="add-input" id="input-name" type="text" placeholder="회사명" />
+        <input class="add-input" id="input-role" type="text" placeholder="직무 (선택)" style="max-width:140px;" />
+      </div>
+      <div class="add-form-row">
+        <button class="add-btn" onclick="addCompany()">+ 추가</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const state = {};
+
+    /* ── 현재 시각 ── */
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function updateClock() {
+      const d = new Date();
+      document.getElementById('now-badge').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    /* ── 직접 입력 이벤트 연결 ── */
+    document.querySelectorAll('.dur-custom').forEach(input => {
+      const wrap = input.closest('.dur-custom-wrap');
+      const item = input.closest('.item');
+      const id = item.id;
+
+      input.addEventListener('input', () => {
+        const min = parseInt(input.value);
+        if (min > 0) {
+          /* 프리셋 버튼 선택 해제 */
+          item.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+          wrap.classList.add('selected');
+          if (!state[id]) state[id] = {};
+          state[id].durMin = min;
+          if (!state[id].intervalId) {
+            const cd = document.getElementById('cd-' + id);
+            cd.classList.remove('idle');
+            cd.textContent = formatTime(min * 60);
+            document.getElementById('start-' + id).disabled = false;
+          }
+        } else {
+          wrap.classList.remove('selected');
+        }
+      });
+
+      /* Enter 키로 바로 시작 */
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const min = parseInt(input.value);
+          if (min > 0) startTimer(id);
+        }
+      });
+    });
+
+    /* ── 프리셋 선택 ── */
+    function selectDur(id, min, btn) {
+      const item = document.getElementById(id);
+      item.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      item.querySelector('.dur-custom-wrap').classList.remove('selected');
+      item.querySelector('.dur-custom').value = '';
+
+      if (!state[id]) state[id] = {};
+      state[id].durMin = min;
+
+      if (!state[id].intervalId) {
+        const cd = document.getElementById('cd-' + id);
+        cd.classList.remove('idle');
+        cd.textContent = formatTime(min * 60);
+        document.getElementById('start-' + id).disabled = false;
+      }
+    }
+
+    /* ── 타이머 시작 ── */
+    function startTimer(id) {
+      const s = state[id];
+      if (!s || !s.durMin) return;
+      if (Notification.permission === 'default') Notification.requestPermission();
+
+      s.remaining = s.durMin * 60;
+      const item = document.getElementById(id);
+      item.classList.add('running');
+
+      s.intervalId = setInterval(() => {
+        s.remaining--;
+        document.getElementById('cd-' + id).textContent = formatTime(s.remaining);
+        if (s.remaining <= 0) {
+          clearInterval(s.intervalId);
+          s.intervalId = null;
+          item.classList.remove('running');
+          document.getElementById('cd-' + id).textContent = '완료!';
+          sendNotif(item.dataset.label);
+        }
+      }, 1000);
+    }
+
+    /* ── 타이머 중단 ── */
+    function stopTimer(id) {
+      const s = state[id];
+      if (!s) return;
+      clearInterval(s.intervalId);
+      s.intervalId = null;
+      document.getElementById(id).classList.remove('running');
+      document.getElementById('cd-' + id).textContent = formatTime(s.remaining);
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return pad(m) + ':' + pad(s);
+    }
+
+    /* ── 알림 ── */
+    function sendNotif(label) {
+      if (Notification.permission !== 'granted') return;
+      new Notification('시간 완료!', { body: label + ' 시간이 끝났어요.' });
+    }
+
+    /* ── 체크 토글 ── */
+    function toggle(id) {
+      document.getElementById(id).classList.toggle('done');
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const total = document.querySelectorAll('.item').length;
+      const done  = document.querySelectorAll('.item.done').length;
+      document.getElementById('bar').style.width = Math.round(done / total * 100) + '%';
+      document.getElementById('label').textContent = done + ' / ' + total + ' 완료';
+    }
+
+    /* ── 회사 리스트 ── */
+    function addCompany() {
+      const nameEl = document.getElementById('input-name');
+      const roleEl = document.getElementById('input-role');
+      const name = nameEl.value.trim();
+      const role = roleEl.value.trim();
+      if (!name) { nameEl.focus(); return; }
+
+      const emptyMsg = document.getElementById('empty-msg');
+      if (emptyMsg) emptyMsg.remove();
+
+      const li = document.createElement('li');
+      li.className = 'company-item';
+      li.innerHTML = `
+        <div class="company-check" onclick="toggleCompany(this.parentElement)">
+          <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
+            <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="company-info" onclick="toggleCompany(this.parentElement)">
+          <div class="company-name">${esc(name)}</div>
+          ${role ? `<div class="company-role">${esc(role)}</div>` : ''}
+        </div>
+        <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
+      `;
+      document.getElementById('company-list').appendChild(li);
+      nameEl.value = ''; roleEl.value = '';
+      nameEl.focus();
+      updateCompanyCount();
+    }
+
+    function toggleCompany(el) { el.classList.toggle('applied'); updateCompanyCount(); }
+
+    function deleteCompany(el) {
+      el.remove();
+      if (!document.querySelector('.company-item')) {
+        const empty = document.createElement('li');
+        empty.className = 'empty-msg'; empty.id = 'empty-msg';
+        empty.textContent = '회사를 추가해 주세요';
+        document.getElementById('company-list').appendChild(empty);
+      }
+      updateCompanyCount();
+    }
+
+    function updateCompanyCount() {
+      const total   = document.querySelectorAll('.company-item').length;
+      const applied = document.querySelectorAll('.company-item.applied').length;
+      document.getElementById('company-count').textContent =
+        total === 0 ? '0개' : applied === total ? total + '개 완료 ✓' : applied + ' / ' + total + '개';
+    }
+
+    function esc(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('input-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-role').focus(); });
+    document.getElementById('input-role').addEventListener('keydown', e => { if (e.key === 'Enter') addCompany(); });
+
+    updateClock();
+    setInterval(updateClock, 30000);
+  </script>
+</body>
+</html>

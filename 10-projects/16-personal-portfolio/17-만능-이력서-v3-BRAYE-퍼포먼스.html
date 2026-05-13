@@ -194,9 +194,11 @@
   .project-item li { margin-bottom: 3px; font-size: 13px; }
 
   /* ===== EXP SUMMARY ===== */
-  .exp-summary { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-  .exp-row { display: flex; align-items: flex-start; gap: 14px; padding: 8px 14px; background: #f8f8f8; border-radius: 5px; }
-  .exp-label { font-size: 11.5px; font-weight: 700; color: #111; white-space: nowrap; min-width: 200px; padding-top: 2px; }
+  .exp-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .exp-table tr { background: #f8f8f8; }
+  .exp-table tr + tr td { border-top: 1px solid #e8e8e8; }
+  .exp-table td { padding: 8px 14px; vertical-align: top; }
+  .exp-label { font-size: 11.5px; font-weight: 700; color: #111; white-space: nowrap; width: 210px; }
   .exp-detail { font-size: 13px; color: #444; line-height: 1.7; }
 
   /* ===== FOOTER ===== */
@@ -246,9 +248,8 @@
     ul, ol   { padding-left: 13px; margin: 3px 0 6px; }
     li       { margin-bottom: 2px; }
 
-    .exp-summary { gap: 3px; }
-    .exp-row { padding: 4px 10px; gap: 8px; }
-    .exp-label { font-size: 8px; min-width: 135px; }
+    .exp-table td { padding: 4px 10px; }
+    .exp-label { font-size: 8px; width: 140px; }
     .exp-detail { font-size: 8px; }
 
     blockquote { padding: 4px 10px; font-size: 8.5px; }
@@ -282,28 +283,28 @@
 
 <!-- 주요 역량 요약 -->
 <h2>주요 역량 요약</h2>
-<div class="exp-summary">
-  <div class="exp-row">
-    <span class="exp-label">Paid Media 광고 기획·운영</span>
-    <span class="exp-detail">인플루언서 UGC·디지털 에셋 2차 마케팅 활용권 확보, 콘텐츠 상위 노출 및 재고·에셋 후속 프로모션 연계 운영</span>
-  </div>
-  <div class="exp-row">
-    <span class="exp-label">전환 소재 기획·제작 및 A/B테스트</span>
-    <span class="exp-detail">네이버 검색광고 소재 A/B테스트 기반 최적화, Excel 대시보드 기반 성과 분석</span>
-  </div>
-  <div class="exp-row">
-    <span class="exp-label">데이터 기반 분석 및 전략 수립</span>
-    <span class="exp-detail">멀티채널 광고 효율 데이터 분석 — ROAS·유입·전환율 지표 기반 채널별 예산 배분 및 전략 수립 실무 경험</span>
-  </div>
-  <div class="exp-row">
-    <span class="exp-label">Lifecycle 재구매 최적화</span>
-    <span class="exp-detail">카카오 채널 CRM 7,300명 기반 Lifecycle 설계 — 재구매 유도 메시지 기획·발송으로 고객 관계 강화 및 LTV 제고</span>
-  </div>
-  <div class="exp-row">
-    <span class="exp-label">마케팅 실무 AI 도입</span>
-    <span class="exp-detail">VBA RPA 정산 자동화·LLM 이미지 제작 자동화, AI 활용 강연</span>
-  </div>
-</div>
+<table class="exp-table">
+  <tr>
+    <td class="exp-label">Paid Media 광고 기획·운영</td>
+    <td class="exp-detail">인플루언서 UGC·디지털 에셋 2차 마케팅 활용권 확보, 콘텐츠 상위 노출 및 재고·에셋 후속 프로모션 연계 운영</td>
+  </tr>
+  <tr>
+    <td class="exp-label">전환 소재 기획·제작 및 A/B테스트</td>
+    <td class="exp-detail">네이버 검색광고 소재 A/B테스트 기반 최적화, Excel 대시보드 기반 성과 분석</td>
+  </tr>
+  <tr>
+    <td class="exp-label">데이터 기반 분석 및 전략 수립</td>
+    <td class="exp-detail">멀티채널 광고 효율 데이터 분석 — ROAS·유입·전환율 지표 기반 채널별 예산 배분 및 전략 수립 실무 경험</td>
+  </tr>
+  <tr>
+    <td class="exp-label">Lifecycle 재구매 최적화</td>
+    <td class="exp-detail">카카오 채널 CRM 7,300명 기반 Lifecycle 설계 — 재구매 유도 메시지 기획·발송으로 고객 관계 강화 및 LTV 제고</td>
+  </tr>
+  <tr>
+    <td class="exp-label">마케팅 실무 AI 도입</td>
+    <td class="exp-detail">VBA RPA 정산 자동화·LLM 이미지 제작 자동화, AI 활용 강연</td>
+  </tr>
+</table>
 
 <hr>
 

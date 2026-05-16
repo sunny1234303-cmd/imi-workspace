@@ -5,33 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>코딩 몰라도 됩니다 — 마케터를 위한 AI 자동화</title>
 
-  <!-- =============================================
-    GA4: analytics.google.com에서 측정 ID 발급 후
-    아래 두 곳의 G-XXXXXXXXXX를 교체하세요
-  ============================================= -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VNB04L30DF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-VNB04L30DF');
-    gtag('config', 'AW-18149034568');
-  </script>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N8NS54Z2');</script>
+  <!-- End Google Tag Manager -->
 
-  <!-- Google Ads 전환 추적 -->
+  <!-- Google Ads 전환 추적 (GTM 연동 전까지 유지) -->
   <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
   function gtag_report_conversion(url) {
-    var callback = function () {
-      if (typeof(url) != 'undefined') {
-        window.location = url;
-      }
-    };
-    gtag('event', 'conversion', {
-        'send_to': 'AW-18149034568/M4OlCIzt5qkcEMiUkc5D',
-        'value': 1.0,
-        'currency': 'KRW',
-        'event_callback': callback
+    dataLayer.push({
+      'event': 'ads_conversion',
+      'send_to': 'AW-18149034568/M4OlCIzt5qkcEMiUkc5D',
+      'value': 1.0,
+      'currency': 'KRW',
+      'conversion_url': url
     });
+    setTimeout(function() {
+      if (typeof url !== 'undefined') window.location = url;
+    }, 300);
     return false;
   }
   </script>
@@ -177,6 +173,11 @@
   </style>
 </head>
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8NS54Z2"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
   <div class="bg-glow"></div>
   <div class="container">
     <p class="hook">

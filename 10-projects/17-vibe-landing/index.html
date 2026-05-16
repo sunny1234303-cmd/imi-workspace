@@ -62,135 +62,140 @@
 
     body {
       font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-      background: #0d0d0d;
-      color: #f0f0f0;
+      background: #080c2a;
+      color: #fff;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    @keyframes colorShift {
+      0%   { opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+      33%  { opacity: 0.85; filter: hue-rotate(30deg) brightness(1.1); }
+      66%  { opacity: 1; filter: hue-rotate(-20deg) brightness(0.95); }
+      100% { opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50%       { opacity: 0.6;  transform: scale(1.15); }
+    }
+
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 55%, rgba(60, 80, 200, 0.45) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 30% 20%, rgba(30, 50, 160, 0.3) 0%, transparent 60%),
+        linear-gradient(160deg, #0b1040 0%, #080c28 50%, #0a0d35 100%);
+      z-index: 0;
+      animation: colorShift 8s ease-in-out infinite;
     }
 
     .container {
-      max-width: 600px;
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
       width: 100%;
+      padding: 60px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
     }
 
-    .tag {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #a8f0a8;
-      border: 1px solid #a8f0a8;
-      border-radius: 20px;
-      padding: 4px 12px;
-      margin-bottom: 24px;
+    .hook {
+      font-size: clamp(14px, 3vw, 16px);
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.7;
+      margin-bottom: 28px;
+      word-break: keep-all;
     }
 
     h1 {
-      font-size: clamp(28px, 6vw, 44px);
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 20px;
+      font-size: clamp(42px, 10vw, 64px);
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 48px;
       word-break: keep-all;
     }
 
-    h1 span {
-      color: #a8f0a8;
+    .cta-wrap {
+      position: relative;
     }
 
-    .sub {
-      font-size: 16px;
-      color: #aaa;
-      line-height: 1.7;
-      margin-bottom: 36px;
-      word-break: keep-all;
-    }
-
-    .points {
-      list-style: none;
-      margin-bottom: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .points li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      font-size: 15px;
-      color: #ddd;
-      line-height: 1.5;
-    }
-
-    .points li::before {
-      content: '✓';
-      color: #a8f0a8;
-      font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 1px;
+    .cta-glow {
+      position: absolute;
+      inset: -8px;
+      border-radius: 999px;
+      background: radial-gradient(ellipse at center, rgba(120, 140, 255, 0.35) 0%, transparent 70%);
+      filter: blur(8px);
+      pointer-events: none;
+      animation: glowPulse 3s ease-in-out infinite;
     }
 
     .cta {
+      position: relative;
       display: inline-block;
-      background: #a8f0a8;
-      color: #0d0d0d;
-      font-size: 16px;
-      font-weight: 800;
       text-decoration: none;
-      padding: 16px 32px;
-      border-radius: 8px;
-      transition: opacity 0.15s;
-      width: 100%;
-      text-align: center;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 18px 52px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      background: rgba(30, 40, 100, 0.6);
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s, background 0.2s;
+      letter-spacing: 0.01em;
     }
 
-    .cta:hover { opacity: 0.85; }
+    .cta:hover {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(50, 65, 140, 0.7);
+    }
 
     .footer {
-      margin-top: 28px;
-      font-size: 12px;
-      color: #555;
-      text-align: center;
+      margin-top: 48px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.05em;
     }
 
-    .divider {
-      border: none;
-      border-top: 1px solid #222;
-      margin: 36px 0;
+    .notice {
+      margin-top: 14px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
     }
   </style>
 </head>
 <body>
+  <div class="bg-glow"></div>
   <div class="container">
-    <div class="tag">AI 마케팅 · 바이브코딩</div>
-
-    <h1>
-      코딩 몰라도 됩니다.<br>
-      <span>마케터가 직접 만드는<br>AI 자동화 시스템</span>
-    </h1>
-
-    <p class="sub">
-      맥미니 대란의 이유, 바이브 코딩의 실체,<br>
-      마케터가 Claude로 당장 써먹는 자동화 3가지
+    <p class="hook">
+      코딩 한 줄 몰라도 됩니다,<br>
+      마케터가 Claude로 당장 써먹는
     </p>
 
-    <ul class="points">
-      <li>파일 정리 자동화 — 반복 작업을 AI에게 넘기는 법</li>
-      <li>데이터 연동 분석 — 여러 채널 수치를 한 번에 정리</li>
-      <li>회의록 자동 생성 — 실시간 녹음에서 요약까지</li>
-    </ul>
+    <h1>AI 자동화<br>실전 가이드</h1>
 
-    <a class="cta" href="https://brunch.co.kr/@aha-forest/12" target="_blank" rel="noopener" onclick="return gtag_report_conversion('https://brunch.co.kr/@aha-forest/12')">
-      전체 글 읽기 →
-    </a>
+    <div class="cta-wrap">
+      <div class="cta-glow"></div>
+      <a class="cta" href="https://brunch.co.kr/@aha-forest/12" target="_blank" rel="noopener" onclick="return gtag_report_conversion('https://brunch.co.kr/@aha-forest/12')">
+        지금 무료 보기
+      </a>
+    </div>
 
-    <hr class="divider">
+    <p class="notice">*카카오브런치로 이동합니다</p>
 
-    <p class="footer">AI로 마케팅을 바꾸는 사람들의 이야기 · Aha Forest</p>
+    <p class="footer">Aha Forest</p>
   </div>
 </body>
 </html>

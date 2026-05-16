@@ -115,37 +115,87 @@
     "todos": [
       {
         "id": "item-1",
-        "label": "구글 애즈 이미지 교체",
+        "label": "구글 애즈 인증서 교육",
         "done": true
       },
       {
         "id": "item-2",
-        "label": "메타 A/B 이미지 + 세부사항 변경",
-        "done": true
-      },
-      {
-        "id": "item-3",
-        "label": "이력서 재작성 + 서류 지원",
-        "done": true
-      },
-      {
-        "id": "item-4",
-        "label": "채용 브랜드 리스트업",
-        "done": true
-      },
-      {
-        "id": "item-5",
-        "label": "구글 애즈 인증서 교육",
-        "done": false
-      },
-      {
-        "id": "item-6",
         "label": "메타 광고 인증서 교육",
         "done": false
       },
       {
-        "id": "item-7",
+        "id": "item-3",
+        "label": "지원서 작성 및 커밋",
+        "done": false
+      },
+      {
+        "id": "item-4",
         "label": "아하모먼트 블로그",
+        "done": false
+      },
+      {
+        "id": "item-5",
+        "label": "고민의 시간",
+        "done": false
+      }
+    ]
+  },
+  "2026.05.15": {
+    "companies": [],
+    "todos": [
+      {
+        "id": "item-1",
+        "label": "구글 애즈 인증서 교육",
+        "done": true
+      },
+      {
+        "id": "item-2",
+        "label": "메타 광고 인증서 교육",
+        "done": false
+      },
+      {
+        "id": "item-3",
+        "label": "지원서 작성 및 커밋",
+        "done": false
+      },
+      {
+        "id": "item-4",
+        "label": "아하모먼트 블로그",
+        "done": true
+      },
+      {
+        "id": "item-5",
+        "label": "고민의 시간",
+        "done": false
+      }
+    ]
+  },
+  "2026.05.16": {
+    "companies": [],
+    "todos": [
+      {
+        "id": "item-1",
+        "label": "구글 애널리틱스 강의 듣기 및 실습",
+        "done": true
+      },
+      {
+        "id": "item-2",
+        "label": "공고 리스트업하기",
+        "done": false
+      },
+      {
+        "id": "item-3",
+        "label": "채용 지원하기",
+        "done": false
+      },
+      {
+        "id": "item-4",
+        "label": "구글 광고 운영 현황 확인하기",
+        "done": false
+      },
+      {
+        "id": "item-5",
+        "label": "메타 강의 기반 재 최적화 실행",
         "done": false
       }
     ]

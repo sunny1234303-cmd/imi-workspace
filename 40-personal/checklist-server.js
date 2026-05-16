@@ -13,11 +13,23 @@ const WORKSPACE     = path.resolve(DIR, '..');
 const HTML_FILE     = path.join(DIR, '2026-05-12-today-checklist.html');
 const TRACKING_FILE = path.join(DIR, '44-이직현황.md');
 const BRAND_FILE    = path.join(WORKSPACE, '50-resources/소비재-브랜드-리스트.md');
+const HISTORY_FILE  = path.join(DIR, 'checklist-history.json');
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function todayStr() {
   const d = new Date();
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+}
+
+function saveHistory(date, companies, todos) {
+  let history = {};
+  try {
+    if (fs.existsSync(HISTORY_FILE)) {
+      history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+    }
+  } catch(e) {}
+  history[date] = { companies, todos: todos || [] };
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), 'utf-8');
 }
 
 function syncToMarkdown(companies) {
@@ -104,13 +116,29 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.url === '/api/history') {
+    try {
+      const history = fs.existsSync(HISTORY_FILE)
+        ? JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'))
+        : {};
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify(history));
+    } catch(e) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/api/sync') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const { companies = [] } = JSON.parse(body);
+        const { companies = [], todos = [] } = JSON.parse(body);
         syncToMarkdown(companies);
+        saveHistory(todayStr(), companies, todos);
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
         res.end(JSON.stringify({ ok: true }));

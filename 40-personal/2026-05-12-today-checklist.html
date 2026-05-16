@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>오늘 할 일 — 2026.05.12</title>
+  <title>오늘 할 일 — 2026.05.16</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -185,6 +185,8 @@
     .company-info { flex: 1; }
     .company-name { font-size: 14px; font-weight: 600; color: #222; }
     .company-role { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .company-date { font-size: 11px; color: #ccc; margin-top: 1px; }
+    .company-item.applied .company-date { color: #ddd; }
 
     .delete-btn {
       background: none; border: none; color: #ccc;
@@ -229,6 +231,43 @@
     .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ddd; margin-right: 4px; vertical-align: middle; }
     .sync-status.ok .sync-dot { background: #52c41a; }
     .sync-status.err .sync-dot { background: #ff4d4f; }
+
+    /* 회사 날짜 구분선 */
+    .company-date-sep-li { list-style: none; }
+    .company-date-sep {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: #ccc; margin: 10px 0 4px;
+    }
+    .company-date-sep::before, .company-date-sep::after {
+      content: ''; flex: 1; border-top: 1px solid #f0f0f0;
+    }
+    .company-item.past { pointer-events: none; opacity: 0.7; }
+    .company-item.past:hover { background: transparent; }
+
+    /* 이전 기록 */
+    #history-section { display: none; }
+    .history-day { margin-bottom: 10px; border: 1.5px solid #f0f0f0; border-radius: 10px; overflow: hidden; }
+    .history-date {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; cursor: pointer; background: #fafafa;
+      font-size: 13px; font-weight: 600; color: #555;
+      transition: background 0.15s;
+    }
+    .history-date:hover { background: #f0f0f0; }
+    .history-count { font-size: 12px; font-weight: 400; color: #aaa; }
+    .history-list { list-style: none; display: none; flex-direction: column; gap: 0; }
+    .history-list.open { display: flex; }
+    .history-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-top: 1px solid #f5f5f5;
+      font-size: 13px; color: #555;
+    }
+    .history-item.done .history-name { color: #bbb; text-decoration: line-through; }
+    .history-item.applied .history-name { color: #bbb; text-decoration: line-through; }
+    .history-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
+    .history-item.done .history-dot, .history-item.applied .history-dot { background: #111; }
+    .history-name { flex: 1; }
+    .history-role { font-size: 11px; color: #ccc; }
   </style>
 </head>
 <body>
@@ -238,7 +277,7 @@
       <div class="header-top">
         <div>
           <h1>오늘 할 일</h1>
-          <p>2026년 5월 12일 (화)</p>
+          <p>2026년 5월 16일 (토)</p>
         </div>
         <div class="now-badge" id="now-badge">--:--</div>
       </div>
@@ -250,10 +289,10 @@
 
     <ul class="list">
 
-      <li class="item" id="item-1" data-label="이력서 넣기">
+      <li class="item" id="item-1" data-label="구글 애널리틱스 강의 듣기 및 실습">
         <div class="item-main" onclick="toggle('item-1')">
           <span class="badge">1</span>
-          <span class="text">이력서 넣기<span class="sub">지원 완료 후 체크</span></span>
+          <span class="text">구글 애널리틱스 강의 듣기 및 실습<span class="sub">강의 수강 → 실습 진행</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -275,10 +314,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-2" data-label="광고 공부 후 광고비 변경">
+      <li class="item" id="item-2" data-label="공고 리스트업하기">
         <div class="item-main" onclick="toggle('item-2')">
           <span class="badge">2</span>
-          <span class="text">광고 공부 후 광고비 변경하기<span class="sub">공부 먼저, 그 다음 예산 수정</span></span>
+          <span class="text">공고 리스트업하기<span class="sub">지원할 공고 탐색 · 정리</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -300,10 +339,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-3" data-label="메타 광고 인증서">
+      <li class="item" id="item-3" data-label="채용 지원하기">
         <div class="item-main" onclick="toggle('item-3')">
           <span class="badge">3</span>
-          <span class="text">메타 광고 인증서 받기<span class="sub">Meta Blueprint 시험 응시</span></span>
+          <span class="text">채용 지원하기<span class="sub">자소서 작성 → 지원서 제출</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -325,10 +364,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-4" data-label="구글 광고 인증서">
+      <li class="item" id="item-4" data-label="구글 광고 운영 현황 확인하기">
         <div class="item-main" onclick="toggle('item-4')">
           <span class="badge">4</span>
-          <span class="text">구글 광고 인증서 받기<span class="sub">Google Skillshop 시험 응시</span></span>
+          <span class="text">구글 광고 운영 현황 확인하기<span class="sub">성과 지표 점검 · 이슈 확인</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -350,10 +389,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-5" data-label="브런치/블로그 업로드">
+      <li class="item" id="item-5" data-label="메타 강의 기반 재 최적화 실행">
         <div class="item-main" onclick="toggle('item-5')">
           <span class="badge">5</span>
-          <span class="text">인사이트 정리 후 브런치/블로그 업로드<span class="sub">글 작성 → 발행</span></span>
+          <span class="text">메타 강의 기반 재 최적화 실행<span class="sub">강의 내용 적용 · 광고 세팅 개선</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -384,10 +423,6 @@
       <span id="company-count">0개</span>
     </div>
 
-    <ul class="company-list" id="company-list">
-      <li class="empty-msg" id="empty-msg">회사를 추가해 주세요</li>
-    </ul>
-
     <div class="add-form">
       <div class="add-form-row">
         <input class="add-input" id="input-name" type="text" placeholder="회사명" />
@@ -400,18 +435,36 @@
         <button class="add-btn" onclick="addCompany()">+ 추가</button>
       </div>
     </div>
+
+    <ul class="company-list" id="company-list">
+      <li class="empty-msg" id="empty-msg">회사를 추가해 주세요</li>
+    </ul>
     <div class="sync-status" id="sync-status">
       <span class="sync-dot"></span>로컬 모드 · 연동하려면 <code style="font-size:10px;">node 40-personal/checklist-server.js</code> 실행 후 <a href="http://localhost:3737" style="color:#aaa;font-size:10px;">localhost:3737</a> 접속
+    </div>
+
+    <div id="history-section">
+      <hr class="divider" />
+      <div class="section-title">
+        이전 기록
+        <span id="history-toggle" style="cursor:pointer;" onclick="toggleHistory()">펼치기</span>
+      </div>
+      <div id="history-wrap" style="display:none;"></div>
     </div>
 
   </div>
 
   <script>
-    const STORAGE_KEY = 'checklist-2026-05-12';
+    const _dd = new Date();
+    const STORAGE_KEY = 'checklist-' + _dd.getFullYear() + '-' + String(_dd.getMonth()+1).padStart(2,'0') + '-' + String(_dd.getDate()).padStart(2,'0') + '-v2';
     const state = {};
 
     /* ── 현재 시각 ── */
     function pad(n) { return String(n).padStart(2, '0'); }
+    function todayDisplay() {
+      const d = new Date();
+      return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`;
+    }
     function updateClock() {
       const d = new Date();
       document.getElementById('now-badge').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -425,6 +478,7 @@
           name: el.querySelector('.company-name').textContent,
           role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
           url: el.dataset.url || '',
+          date: el.dataset.date || '',
           applied: el.classList.contains('applied')
         })),
         timers: {}
@@ -460,6 +514,7 @@
             const li = document.createElement('li');
             li.className = 'company-item' + (c.applied ? ' applied' : '');
             li.dataset.url = c.url || '';
+            li.dataset.date = c.date || '';
             li.innerHTML = `
               <div class="company-check" onclick="toggleCompany(this.parentElement)">
                 <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
@@ -469,6 +524,7 @@
               <div class="company-info" onclick="toggleCompany(this.parentElement)">
                 <div class="company-name">${esc(c.name)}</div>
                 ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
+                ${c.date ? `<div class="company-date">${esc(c.date)}</div>` : ''}
               </div>
               ${c.url ? `<a class="url-btn" href="${esc(c.url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
               <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
@@ -621,6 +677,7 @@
       document.getElementById(id).classList.toggle('done');
       updateProgress();
       saveState();
+      syncToServer();
     }
 
     function updateProgress() {
@@ -633,16 +690,22 @@
     /* ── 서버 연동 ── */
     function syncToServer() {
       if (location.protocol === 'file:') return;
-      const companies = Array.from(document.querySelectorAll('.company-item')).map(el => ({
+      const companies = Array.from(document.querySelectorAll('.company-item:not(.past)')).map(el => ({
         name: el.querySelector('.company-name').textContent,
         role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
         url: el.dataset.url || '',
+        date: el.dataset.date || '',
         applied: el.classList.contains('applied')
+      }));
+      const todos = Array.from(document.querySelectorAll('.item')).map(el => ({
+        id: el.id,
+        label: el.dataset.label,
+        done: el.classList.contains('done')
       }));
       fetch('/api/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companies })
+        body: JSON.stringify({ companies, todos })
       })
         .then(r => r.json())
         .then(() => setSyncStatus('ok'))
@@ -671,9 +734,11 @@
       const emptyMsg = document.getElementById('empty-msg');
       if (emptyMsg) emptyMsg.remove();
 
+      const today = todayDisplay();
       const li = document.createElement('li');
       li.className = 'company-item';
       li.dataset.url = url;
+      li.dataset.date = today;
       li.innerHTML = `
         <div class="company-check" onclick="toggleCompany(this.parentElement)">
           <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
@@ -683,6 +748,7 @@
         <div class="company-info" onclick="toggleCompany(this.parentElement)">
           <div class="company-name">${esc(name)}</div>
           ${role ? `<div class="company-role">${esc(role)}</div>` : ''}
+          <div class="company-date">${today}</div>
         </div>
         ${url ? `<a class="url-btn" href="${esc(url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
         <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
@@ -711,8 +777,8 @@
     }
 
     function updateCompanyCount() {
-      const total   = document.querySelectorAll('.company-item').length;
-      const applied = document.querySelectorAll('.company-item.applied').length;
+      const total   = document.querySelectorAll('.company-item:not(.past)').length;
+      const applied = document.querySelectorAll('.company-item:not(.past).applied').length;
       document.getElementById('company-count').textContent =
         total === 0 ? '0개' : applied === total ? total + '개 완료 ✓' : applied + ' / ' + total + '개';
     }
@@ -725,9 +791,105 @@
     document.getElementById('input-role').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-url').focus(); });
     document.getElementById('input-url').addEventListener('keydown', e => { if (e.key === 'Enter') addCompany(); });
 
+    /* ── 이전 기록 ── */
+    function loadHistory() {
+      if (location.protocol === 'file:') return;
+      fetch('/api/history')
+        .then(r => r.json())
+        .then(history => renderHistory(history))
+        .catch(() => {});
+    }
+
+    function renderHistory(history) {
+      const todayKey = todayDisplay();
+      const pastDates = Object.keys(history).filter(d => d !== todayKey).sort().reverse();
+      if (pastDates.length === 0) return;
+
+      // 1. 회사 리스트 하단에 이전 날짜 회사 추가 (read-only)
+      const companyListEl = document.getElementById('company-list');
+      pastDates.forEach(date => {
+        const entry = history[date];
+        const companies = Array.isArray(entry) ? entry : (entry.companies || []);
+        if (companies.length === 0) return;
+
+        const sep = document.createElement('li');
+        sep.className = 'company-date-sep-li';
+        sep.innerHTML = `<div class="company-date-sep">${date}</div>`;
+        companyListEl.appendChild(sep);
+
+        companies.forEach(c => {
+          const li = document.createElement('li');
+          li.className = 'company-item past' + (c.applied ? ' applied' : '');
+          li.innerHTML = `
+            <div class="company-check">
+              <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
+                <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="company-info">
+              <div class="company-name">${esc(c.name)}</div>
+              ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
+              <div class="company-date">${c.date || date}</div>
+            </div>
+            ${c.url ? `<a class="url-btn" href="${esc(c.url)}" target="_blank" onclick="event.stopPropagation()" style="pointer-events:auto;">공고</a>` : ''}
+          `;
+          companyListEl.appendChild(li);
+        });
+      });
+
+      // 2. 이전 기록 섹션에 할일 완료 이력 표시
+      const hasTodos = pastDates.some(date => {
+        const entry = history[date];
+        return !Array.isArray(entry) && (entry.todos || []).length > 0;
+      });
+      if (!hasTodos) return;
+
+      document.getElementById('history-section').style.display = 'block';
+      const wrap = document.getElementById('history-wrap');
+      wrap.innerHTML = '';
+
+      pastDates.forEach(date => {
+        const entry = history[date];
+        const todos = Array.isArray(entry) ? [] : (entry.todos || []);
+        const companies = Array.isArray(entry) ? entry : (entry.companies || []);
+        if (todos.length === 0) return;
+
+        const doneCount = todos.filter(t => t.done).length;
+        const appliedCount = companies.filter(c => c.applied).length;
+        const listId = 'hl-' + date.replace(/\./g, '-');
+
+        const day = document.createElement('div');
+        day.className = 'history-day';
+        day.innerHTML = `
+          <div class="history-date" onclick="document.getElementById('${listId}').classList.toggle('open')">
+            <span>${date}</span>
+            <span class="history-count">할일 ${doneCount}/${todos.length} · 지원 ${appliedCount}/${companies.length}개</span>
+          </div>
+          <ul class="history-list" id="${listId}">
+            ${todos.map(t => `
+              <li class="history-item ${t.done ? 'done' : ''}">
+                <span class="history-dot"></span>
+                <span class="history-name">${esc(t.label)}</span>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+        wrap.appendChild(day);
+      });
+    }
+
+    function toggleHistory() {
+      const wrap = document.getElementById('history-wrap');
+      const btn  = document.getElementById('history-toggle');
+      const open = wrap.style.display === 'none';
+      wrap.style.display = open ? 'block' : 'none';
+      btn.textContent = open ? '접기' : '펼치기';
+    }
+
     updateClock();
     setInterval(updateClock, 30000);
     loadState();
+    loadHistory();
 
     if (location.protocol !== 'file:') setSyncStatus('ok');
   </script>

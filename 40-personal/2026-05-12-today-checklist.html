@@ -277,22 +277,22 @@
       <div class="header-top">
         <div>
           <h1>오늘 할 일</h1>
-          <p>2026년 5월 16일 (토)</p>
+          <p>2026년 5월 18일 (월)</p>
         </div>
         <div class="now-badge" id="now-badge">--:--</div>
       </div>
       <div class="progress-bar-wrap">
         <div class="progress-bar" id="bar"></div>
       </div>
-      <div class="progress-label" id="label">0 / 5 완료</div>
+      <div class="progress-label" id="label">0 / 3 완료</div>
     </div>
 
     <ul class="list">
 
-      <li class="item" id="item-1" data-label="구글 애널리틱스 강의 듣기 및 실습">
+      <li class="item" id="item-1" data-label="채용 공고 리스트업">
         <div class="item-main" onclick="toggle('item-1')">
           <span class="badge">1</span>
-          <span class="text">구글 애널리틱스 강의 듣기 및 실습<span class="sub">강의 수강 → 실습 진행</span></span>
+          <span class="text">채용 공고 리스트업<span class="sub">브랜드 마케터 공고 탐색 · 정리</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -314,10 +314,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-2" data-label="공고 리스트업하기">
+      <li class="item" id="item-2" data-label="포폴 재작성">
         <div class="item-main" onclick="toggle('item-2')">
           <span class="badge">2</span>
-          <span class="text">공고 리스트업하기<span class="sub">지원할 공고 탐색 · 정리</span></span>
+          <span class="text">포폴 재작성<span class="sub">캠페인 성과 중심으로 재구성</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -339,10 +339,10 @@
         </div>
       </li>
 
-      <li class="item" id="item-3" data-label="채용 지원하기">
+      <li class="item" id="item-3" data-label="서류 전송">
         <div class="item-main" onclick="toggle('item-3')">
           <span class="badge">3</span>
-          <span class="text">채용 지원하기<span class="sub">자소서 작성 → 지원서 제출</span></span>
+          <span class="text">서류 전송<span class="sub">최종 확인 → 지원서 제출</span></span>
           <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
         <div class="item-timer">
@@ -360,56 +360,6 @@
             <div class="countdown idle" id="cd-item-3">시간 선택 후 시작</div>
             <button class="start-btn" id="start-item-3" onclick="startTimer('item-3')" disabled>시작</button>
             <button class="stop-btn" onclick="stopTimer('item-3')">중단</button>
-          </div>
-        </div>
-      </li>
-
-      <li class="item" id="item-4" data-label="구글 광고 운영 현황 확인하기">
-        <div class="item-main" onclick="toggle('item-4')">
-          <span class="badge">4</span>
-          <span class="text">구글 광고 운영 현황 확인하기<span class="sub">성과 지표 점검 · 이슈 확인</span></span>
-          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        </div>
-        <div class="item-timer">
-          <div class="duration-row">
-            <button class="dur-btn" onclick="selectDur('item-4', 30, this)">30분</button>
-            <button class="dur-btn" onclick="selectDur('item-4', 60, this)">1시간</button>
-            <button class="dur-btn" onclick="selectDur('item-4', 90, this)">1시간 30분</button>
-            <button class="dur-btn" onclick="selectDur('item-4', 120, this)">2시간</button>
-            <div class="dur-custom-wrap">
-              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
-              <span class="dur-unit">분</span>
-            </div>
-          </div>
-          <div class="timer-row">
-            <div class="countdown idle" id="cd-item-4">시간 선택 후 시작</div>
-            <button class="start-btn" id="start-item-4" onclick="startTimer('item-4')" disabled>시작</button>
-            <button class="stop-btn" onclick="stopTimer('item-4')">중단</button>
-          </div>
-        </div>
-      </li>
-
-      <li class="item" id="item-5" data-label="메타 강의 기반 재 최적화 실행">
-        <div class="item-main" onclick="toggle('item-5')">
-          <span class="badge">5</span>
-          <span class="text">메타 강의 기반 재 최적화 실행<span class="sub">강의 내용 적용 · 광고 세팅 개선</span></span>
-          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        </div>
-        <div class="item-timer">
-          <div class="duration-row">
-            <button class="dur-btn" onclick="selectDur('item-5', 30, this)">30분</button>
-            <button class="dur-btn" onclick="selectDur('item-5', 60, this)">1시간</button>
-            <button class="dur-btn" onclick="selectDur('item-5', 90, this)">1시간 30분</button>
-            <button class="dur-btn" onclick="selectDur('item-5', 120, this)">2시간</button>
-            <div class="dur-custom-wrap">
-              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
-              <span class="dur-unit">분</span>
-            </div>
-          </div>
-          <div class="timer-row">
-            <div class="countdown idle" id="cd-item-5">시간 선택 후 시작</div>
-            <button class="start-btn" id="start-item-5" onclick="startTimer('item-5')" disabled>시작</button>
-            <button class="stop-btn" onclick="stopTimer('item-5')">중단</button>
           </div>
         </div>
       </li>

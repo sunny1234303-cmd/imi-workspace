@@ -20,7 +20,7 @@ const GROUPS_DIR    = path.join(DIR, 'groups');
 const NOTES_IDS_FILE  = path.join(DIR, 'checklist-notes-ids.json');
 const GCAL_TOKEN_FILE = path.join(DIR, 'checklist-gcal-token.json');
 const GCAL_REDIRECT   = `http://localhost:${PORT}/api/auth/google/callback`;
-const GCAL_SCOPE      = 'https://www.googleapis.com/auth/calendar';
+const GCAL_SCOPE      = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks';
 
 // .env 로드
 ;(function loadEnv() {
@@ -223,6 +223,23 @@ async function gcalAPI(method, apiPath, body) {
   return httpsJSON(options, bodyStr);
 }
 
+async function gtasksAPI(method, apiPath, body) {
+  const accessToken = await getAccessToken();
+  if (!accessToken) return null;
+  const bodyStr = body ? JSON.stringify(body) : undefined;
+  const options = {
+    hostname: 'tasks.googleapis.com',
+    path: apiPath,
+    method,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...(bodyStr ? { 'Content-Length': Buffer.byteLength(bodyStr) } : {}),
+    },
+  };
+  return httpsJSON(options, bodyStr);
+}
+
 function saveHistory(date, companies, todos) {
   let history = {};
   try {
@@ -405,6 +422,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === 'POST' && req.url === '/api/delete-group') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { name } = JSON.parse(body);
+        if (!name) throw new Error('name required');
+        const filePath = groupFilePath(name);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/api/create-group') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
@@ -568,6 +605,68 @@ const server = http.createServer(async (req, res) => {
     const eventId = decodeURIComponent(req.url.replace('/api/calendar/events/', ''));
     try {
       await gcalAPI('DELETE', `/calendar/v3/calendars/primary/events/${eventId}`);
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify({ ok: true }));
+    } catch(e) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // ── Google Tasks ─────────────────────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/api/gtasks') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { title, notes } = JSON.parse(body);
+        const n = new Date();
+        const due = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T00:00:00.000Z`;
+        const result = await gtasksAPI('POST', '/tasks/v1/lists/@default/tasks', {
+          title,
+          notes: notes || '',
+          due,
+        });
+        if (result?.error) throw new Error(result.error.message || JSON.stringify(result.error));
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ ok: true, id: result?.id }));
+      } catch(e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'PATCH' && req.url.startsWith('/api/gtasks/')) {
+    const taskId = decodeURIComponent(req.url.replace('/api/gtasks/', ''));
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { done } = JSON.parse(body);
+        const patch = { status: done ? 'completed' : 'needsAction' };
+        if (!done) patch.completed = null;
+        const result = await gtasksAPI('PATCH', `/tasks/v1/lists/@default/tasks/${encodeURIComponent(taskId)}`, patch);
+        if (result?.error) throw new Error(result.error.message || JSON.stringify(result.error));
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ ok: true, id: result?.id }));
+      } catch(e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'DELETE' && req.url.startsWith('/api/gtasks/')) {
+    const taskId = decodeURIComponent(req.url.replace('/api/gtasks/', ''));
+    try {
+      await gtasksAPI('DELETE', `/tasks/v1/lists/@default/tasks/${encodeURIComponent(taskId)}`);
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
       res.end(JSON.stringify({ ok: true }));

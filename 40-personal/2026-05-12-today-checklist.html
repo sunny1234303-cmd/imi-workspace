@@ -525,16 +525,52 @@
 
     .empty-msg { text-align: center; font-size: 13px; color: var(--text-muted); padding: 16px 0; }
 
-    .sync-status {
-      font-size: 11px; color: var(--text-muted);
-      display: flex; align-items: flex-start; justify-content: flex-end;
-      gap: 5px; margin-top: 10px;
+    /* ── Integration Panel ── */
+    .integration-panel {
+      margin-top: 16px;
+      border: 1px solid var(--border-subtle);
     }
-
-    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-subtle); flex-shrink: 0; margin-top: 3px; }
-    .sync-status.ok  .sync-dot { background: #22c55e; }
-    .sync-status.err .sync-dot { background: #ef4444; }
-    .sync-files { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; line-height: 1.5; }
+    .integration-toggle {
+      display: flex; align-items: center; gap: 7px;
+      width: 100%; padding: 8px 10px;
+      background: none; border: none;
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-muted); cursor: pointer;
+      transition: color 0.15s;
+    }
+    .integration-toggle:hover { color: var(--text-primary); }
+    .integration-toggle svg { margin-left: auto; transition: transform 0.2s; flex-shrink: 0; }
+    .integration-toggle.open svg { transform: rotate(180deg); }
+    .int-status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border-subtle); flex-shrink: 0;
+    }
+    .integration-body { display: none; border-top: 1px solid var(--border-subtle); }
+    .integration-body.open { display: block; }
+    .int-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+    }
+    .int-row:last-child { border-bottom: none; }
+    .int-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border-subtle); flex-shrink: 0; margin-top: 3px;
+    }
+    .int-dot.ok  { background: #22c55e; }
+    .int-dot.err { background: #ef4444; }
+    .int-content { flex: 1; }
+    .int-title { color: var(--text-primary); font-weight: 500; }
+    .int-detail { color: var(--text-muted); display: block; margin-top: 2px; line-height: 1.6; }
+    .int-action {
+      background: none; border: 1px solid var(--border-subtle);
+      font-family: inherit; font-size: 10px; color: var(--text-muted);
+      padding: 2px 7px; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .int-action:hover { border-color: var(--text-secondary); color: var(--text-primary); }
 
     /* ── Calendar ── */
     .cal-header {
@@ -589,17 +625,6 @@
     .cal-dot.gcal    { background: var(--dot-gcal); }
     .cal-day.today .cal-dot { background: rgba(255,255,255,0.65); }
 
-    /* ── GCal 연결 버튼 ── */
-    .gcal-connect-btn {
-      display: flex; align-items: center; gap: 6px;
-      width: 100%; padding: 7px 10px; margin-bottom: 14px;
-      background: none; border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm); font-family: inherit;
-      font-size: 11px; color: var(--text-muted); cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .gcal-connect-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
-    .gcal-connect-btn .gcal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dot-gcal); flex-shrink: 0; }
     .gcal-event-item { font-size: 12px; color: var(--text-primary); padding: 3px 0; display: flex; align-items: flex-start; gap: 6px; }
     .gcal-event-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; min-width: 44px; }
     .gcal-event-del  { margin-left: auto; background: none; border: none; font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 0 2px; }
@@ -800,19 +825,10 @@
 
       <ul class="company-list" id="company-list"></ul>
 
-      <div class="sync-status" id="sync-status">
-        <span class="sync-dot"></span>
-        <span id="sync-text">로컬 모드 · 서버 미연결</span>
-      </div>
-
     </div>
 
     <!-- Right Panel: Calendar -->
     <div class="right-panel">
-      <button class="gcal-connect-btn" id="gcal-connect-btn" onclick="gcalConnect()" style="display:none;">
-        <span class="gcal-dot"></span>
-        <span id="gcal-connect-text">Google Calendar 연결</span>
-      </button>
       <div class="cal-header">
         <div class="cal-month" id="cal-month-label">—</div>
         <div class="cal-nav">
@@ -835,6 +851,42 @@
         oninput="debounceSaveMemo()"
       ></textarea>
       <div class="memo-saved" id="memo-saved">저장됨</div>
+
+      <!-- 연동 관리 패널 -->
+      <div class="integration-panel">
+        <button class="integration-toggle" id="integration-toggle" onclick="toggleIntegrationPanel()">
+          <span class="int-status-dot" id="int-status-dot"></span>
+          연동 관리
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="integration-body" id="integration-body">
+          <!-- 워크스페이스 -->
+          <div class="int-row">
+            <span class="int-dot" id="ws-dot"></span>
+            <div class="int-content">
+              <span class="int-title">워크스페이스</span>
+              <span class="int-detail" id="ws-detail">확인 중…</span>
+            </div>
+          </div>
+          <!-- 애플 메모 -->
+          <div class="int-row">
+            <span class="int-dot" id="notes-dot"></span>
+            <div class="int-content">
+              <span class="int-title">애플 메모</span>
+              <span class="int-detail" id="notes-detail">대기 중</span>
+            </div>
+          </div>
+          <!-- Google -->
+          <div class="int-row">
+            <span class="int-dot" id="gcal-dot"></span>
+            <div class="int-content">
+              <span class="int-title">Google Calendar · Tasks</span>
+              <span class="int-detail" id="gcal-detail">미연결</span>
+            </div>
+            <button class="int-action" id="gcal-action" onclick="gcalConnect()">연결하기</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -954,6 +1006,16 @@
     clearTimeout(_memoTimer);
     _memoTimer = setTimeout(saveMemo, 600);
   }
+  function setNotesStatus(ok, time) {
+    const dot    = document.getElementById('notes-dot');
+    const detail = document.getElementById('notes-detail');
+    if (!dot) return;
+    intState.notes = ok;
+    dot.className = 'int-dot ' + (ok ? 'ok' : 'err');
+    detail.textContent = ok ? `동기화됨 · ${time}` : '연동 실패';
+    updateIntegrationDot();
+  }
+
   function syncAppleNotes() {
     if (location.protocol === 'file:') return;
     const content = document.getElementById('memo-textarea').value;
@@ -965,7 +1027,16 @@
         content,
         todos: todos.map(t => ({ label: t.label, done: t.done }))
       })
-    }).catch(() => {});
+    }).then(r => {
+      if (r.ok) {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        setNotesStatus(true, `${hh}:${mm}`);
+      } else {
+        setNotesStatus(false);
+      }
+    }).catch(() => setNotesStatus(false));
   }
 
   function saveMemo() {
@@ -993,18 +1064,21 @@
     if (location.protocol === 'file:') return;
     const res = await fetch('/api/auth/status').then(r => r.json()).catch(() => ({}));
     gcalConnected = !!res.authenticated;
-    const btn = document.getElementById('gcal-connect-btn');
-    const txt = document.getElementById('gcal-connect-text');
-    btn.style.display = 'flex';
+    const dot    = document.getElementById('gcal-dot');
+    const detail = document.getElementById('gcal-detail');
+    const action = document.getElementById('gcal-action');
+    if (!dot) return;
+    intState.gcal = gcalConnected;
+    dot.className = 'int-dot ' + (gcalConnected ? 'ok' : 'err');
     if (gcalConnected) {
-      txt.textContent = 'Google Calendar 연동됨';
-      btn.style.cursor = 'default';
-      btn.onclick = null;
+      detail.textContent = '연동됨';
+      if (action) action.style.display = 'none';
       loadGCalEvents(calState.year, calState.month);
     } else {
-      txt.textContent = 'Google Calendar 연결하기';
-      btn.onclick = gcalConnect;
+      detail.textContent = '미연결';
+      if (action) { action.style.display = ''; action.onclick = gcalConnect; }
     }
+    updateIntegrationDot();
   }
 
   function loadGCalEvents(year, month) {
@@ -1101,6 +1175,21 @@
     saveTodos();
     renderTodos();
     syncToServer();
+
+    console.log('[GTasks] gcalConnected:', gcalConnected);
+    if (gcalConnected) {
+      fetch('/api/gtasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: todo.label, notes: todo.sub || '' })
+      }).then(r => r.json()).then(data => {
+        console.log('[GTasks] create result:', data);
+        if (data.id) {
+          todo.gtaskId = data.id;
+          localStorage.setItem(LS_TODOS, JSON.stringify(todos));
+        }
+      }).catch(e => console.error('[GTasks] 오류:', e));
+    }
   }
 
   // ── Todo render ───────────────────────────────────────────
@@ -1246,9 +1335,20 @@
     saveTodos();
     renderTodos();
     syncToServer();
+    if (gcalConnected && t.gtaskId) {
+      fetch('/api/gtasks/' + encodeURIComponent(t.gtaskId), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ done: t.done })
+      }).catch(() => {});
+    }
   }
 
   function deleteTodo(id) {
+    const target = todos.find(x => x.id === id);
+    if (gcalConnected && target && target.gtaskId) {
+      fetch('/api/gtasks/' + encodeURIComponent(target.gtaskId), { method: 'DELETE' }).catch(() => {});
+    }
     const t = timerState[id];
     if (t && t.intervalId) clearInterval(t.intervalId);
     delete timerState[id];
@@ -1447,11 +1547,18 @@
 
   function deleteGroup(name) {
     if (name === '회사리스트') return;
+    if (!confirm(`"${name}" 그룹을 삭제하시겠습니까?\n그룹 내 항목은 회사리스트로 이동됩니다.`)) return;
+    fetch('/api/delete-group', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).catch(() => {});
     companyGroups = companyGroups.filter(g => g !== name);
     companies = companies.map(c => c.group === name ? { ...c, group: '회사리스트' } : c);
     renderCompanies();
     saveCompanies();
     syncToServer();
+    fetch('/api/sync-files').then(r => r.json()).then(data => setSyncStatus('ok', data.files || [])).catch(() => {});
   }
 
   // ── Company form ──────────────────────────────────────────
@@ -1707,13 +1814,38 @@
     }).catch(() => {});
   }
 
+  // ── 연동 관리 패널 ───────────────────────────────────────────
+  const intState = { ws: null, notes: null, gcal: null };
+
+  function updateIntegrationDot() {
+    const dot = document.getElementById('int-status-dot');
+    if (!dot) return;
+    const allOk = intState.ws !== false && intState.notes !== false && intState.gcal !== false;
+    const anyErr = intState.ws === false || intState.notes === false || intState.gcal === false;
+    dot.style.background = anyErr ? '#ef4444' : allOk ? '#22c55e' : '#d1d0c8';
+  }
+
+  function toggleIntegrationPanel() {
+    const btn  = document.getElementById('integration-toggle');
+    const body = document.getElementById('integration-body');
+    btn.classList.toggle('open');
+    body.classList.toggle('open');
+  }
+
   function setSyncStatus(status, files) {
-    const el   = document.getElementById('sync-status');
-    const text = document.getElementById('sync-text');
-    el.className = 'sync-status ' + status;
-    if (status !== 'ok') { text.textContent = '서버 연결 끊김'; return; }
-    if (!files || files.length === 0) { text.textContent = '워크스페이스 연동됨'; return; }
-    text.innerHTML = `<span class="sync-files"><span>워크스페이스 연동됨 · 자동 커밋</span>${files.map(f => `<span style="opacity:0.65;">${f}</span>`).join('')}</span>`;
+    const dot    = document.getElementById('ws-dot');
+    const detail = document.getElementById('ws-detail');
+    if (!dot) return;
+    intState.ws = status === 'ok';
+    dot.className = 'int-dot ' + (status === 'ok' ? 'ok' : 'err');
+    if (status !== 'ok') {
+      detail.textContent = '서버 연결 끊김';
+    } else if (!files || files.length === 0) {
+      detail.textContent = '연동됨';
+    } else {
+      detail.innerHTML = '자동 커밋' + files.map(f => `<br><span style="opacity:0.65;">${f}</span>`).join('');
+    }
+    updateIntegrationDot();
   }
 
   // ── Calendar ──────────────────────────────────────────────

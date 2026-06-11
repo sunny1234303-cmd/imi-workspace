@@ -45,3 +45,4 @@ pnpm-lock.yaml
 
 # Never commit real API keys
 *_API_KEY.mcp.json
+40-personal/checklist-gcal-token.json

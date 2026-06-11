@@ -1,0 +1,96 @@
+/* ── 플로팅 버튼 ────────────────────────────────────────────────── */
+#__jc-float-btn__ {
+  all: initial !important;
+  position: fixed !important;
+  /* 위치는 JS가 left/top으로 제어 */
+  width: 96px !important;
+  height: 48px !important;
+  border-radius: 100px !important;
+  background-color: #FAF9F6 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 2147483647 !important;
+  border: 1.5px solid #d8d4ce !important;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08) !important;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease !important;
+  user-select: none !important;
+  touch-action: none !important;
+}
+
+#__jc-float-btn__:hover {
+  transform: scale(1.07) !important;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1) !important;
+}
+
+#__jc-float-btn__:active,
+#__jc-float-btn__.dragging {
+  cursor: grabbing !important;
+  transform: scale(0.97) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.2) !important;
+  transition: none !important;
+}
+
+/* 스냅 애니메이션 */
+#__jc-float-btn__.snapping {
+  transition: left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+              top  0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#__jc-float-btn__.active {
+  border-color: #b0aba4 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.__jc-btn-img__ {
+  width: 80% !important;
+  height: 80% !important;
+  object-fit: contain !important;
+  display: block !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* ── 팝업 ───────────────────────────────────────────────────────── */
+#__jc-float-popup__ {
+  all: initial !important;
+  position: fixed !important;
+  /* left/top은 JS가 동적으로 계산 */
+  z-index: 2147483646 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border-radius: 4px !important;
+  overflow: hidden !important;
+  border: 1px solid #d8d4ce !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.14), 0 3px 10px rgba(0,0,0,0.08) !important;
+}
+
+#__jc-float-popup__.open {
+  opacity: 1 !important;
+  pointer-events: all !important;
+  animation: jc-spring-in 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) forwards !important;
+}
+
+#__jc-float-popup__.closing {
+  animation: jc-fade-out 0.18s ease forwards !important;
+}
+
+@keyframes jc-spring-in {
+  from { transform: scale(0.92) translateY(10px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+@keyframes jc-fade-out {
+  from { transform: scale(1)    translateY(0);   opacity: 1; }
+  to   { transform: scale(0.94) translateY(8px); opacity: 0; }
+}
+
+#__jc-float-popup__ iframe {
+  all: initial !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+}

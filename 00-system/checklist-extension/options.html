@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Checklist Popup — Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #faf9f6;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: #fff;
+      border: 1px solid #d8d4ce;
+      border-radius: 4px;
+      padding: 28px 28px 24px;
+    }
+
+    h1 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #7f7f7f;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #7f7f7f;
+      margin-bottom: 6px;
+    }
+
+    input[type="url"],
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #d8d4ce;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: #1a1a1a;
+      background: #faf9f6;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus { border-color: #1a1a1a; }
+
+    .hint {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 6px;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    button {
+      padding: 9px 20px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover { background: #333; }
+
+    .status {
+      font-size: 12px;
+      color: #16a34a;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .status.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Local Checklist Popup</h1>
+    <p class="subtitle">Set the URL of your local web app. The floating button will open this URL as a popup on every tab.</p>
+
+    <label for="serverUrl">Server URL</label>
+    <input type="text" id="serverUrl" placeholder="http://localhost:3737" spellcheck="false" />
+    <p class="hint">Default: http://localhost:3737</p>
+
+    <div class="actions">
+      <button id="save">Save</button>
+      <span class="status" id="status">Saved.</span>
+    </div>
+  </div>
+
+  <script>
+    const input    = document.getElementById('serverUrl');
+    const saveBtn  = document.getElementById('save');
+    const statusEl = document.getElementById('status');
+
+    chrome.storage.sync.get({ serverUrl: 'http://localhost:3737' }, ({ serverUrl }) => {
+      input.value = serverUrl;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const url = input.value.trim() || 'http://localhost:3737';
+      chrome.storage.sync.set({ serverUrl: url }, () => {
+        statusEl.classList.add('show');
+        setTimeout(() => statusEl.classList.remove('show'), 2000);
+      });
+    });
+
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveBtn.click(); });
+  </script>
+</body>
+</html>

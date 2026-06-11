@@ -1463,5 +1463,30 @@
         "done": false
       }
     ]
+  },
+  "2026.06.11": {
+    "companies": [],
+    "todos": [
+      {
+        "id": "todo-1781168542274",
+        "label": "ㄴㄴㅇㄴㅇㄴ",
+        "done": false
+      }
+    ]
+  },
+  "2026.06.12": {
+    "companies": [],
+    "todos": [
+      {
+        "id": "todo-1781195136101",
+        "label": "26년 재무 플랜",
+        "done": true
+      },
+      {
+        "id": "todo-1781195154034",
+        "label": "블로그 작성",
+        "done": false
+      }
+    ]
   }
 }

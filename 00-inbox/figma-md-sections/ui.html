@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #f7f7f8;
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    /* 드롭존 */
+    .dropzone {
+      position: relative;
+      border: 1.5px dashed #d0d0d0;
+      border-radius: 10px;
+      background: #fff;
+      transition: border-color .15s, background .15s;
+      flex: 1;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+    }
+    .dropzone.drag-over {
+      border-color: #7c5cfc;
+      background: #f5f2ff;
+    }
+    .dropzone-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #aaa;
+      pointer-events: none;
+      transition: opacity .15s;
+    }
+    .dropzone-hint svg { opacity: .5; }
+    .dropzone-hint span { font-size: 12px; }
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 120px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      background: transparent;
+      padding: 12px 14px;
+      border-radius: 10px;
+    }
+    textarea::placeholder { color: #bbb; }
+
+    /* 옵션 행 */
+    .options-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    label.label { font-size: 12px; color: #666; white-space: nowrap; }
+
+    select {
+      border: 1px solid #e0e0e0;
+      border-radius: 7px;
+      background: #fff;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #333;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 24px;
+    }
+    select:focus { border-color: #7c5cfc; }
+
+    /* 토글 */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-left: auto;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-wrap input { display: none; }
+    .toggle-track {
+      width: 32px;
+      height: 18px;
+      border-radius: 9px;
+      background: #ddd;
+      position: relative;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+      transition: transform .2s;
+    }
+    input:checked ~ .toggle-track { background: #7c5cfc; }
+    input:checked ~ .toggle-track .toggle-thumb { transform: translateX(14px); }
+    .toggle-label { font-size: 12px; color: #555; }
+
+    /* 섹션 카운트 */
+    .section-count {
+      font-size: 11px;
+      color: #7c5cfc;
+      min-height: 16px;
+      font-weight: 500;
+    }
+
+    /* 버튼 */
+    button#generate {
+      width: 100%;
+      padding: 11px;
+      background: #7c5cfc;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, opacity .15s;
+    }
+    button#generate:hover { background: #6a4af0; }
+    button#generate:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* 상태 메시지 */
+    .status {
+      font-size: 12px;
+      min-height: 16px;
+      text-align: center;
+    }
+    .status.success { color: #16a34a; }
+    .status.error   { color: #dc2626; }
+  </style>
+</head>
+<body>
+
+  <h1>MD → 섹션 생성</h1>
+
+  <div class="dropzone" id="dropzone">
+    <div class="dropzone-hint" id="hint">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <span>.md 파일을 끌어다 놓거나 아래에 붙여넣으세요</span>
+    </div>
+    <textarea
+      id="markdown"
+      placeholder="# 섹션 제목 &lt;!--1440px,900px--&gt;&#10;&#10;## 소제목&#10;본문 내용...&#10;&#10;# 다른 섹션 &lt;!--800px,600px--&gt;&#10;&#10;## 소제목&#10;본문 내용..."
+    ></textarea>
+  </div>
+
+  <div class="options-row">
+    <label class="label" for="splitLevel">분할 기준</label>
+    <select id="splitLevel">
+      <option value="1" selected>H1 (#)</option>
+      <option value="2">H2 (##)</option>
+      <option value="3">H3 (###)</option>
+    </select>
+
+    <label class="toggle-wrap">
+      <input type="checkbox" id="colorize" />
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span class="toggle-label">색상 구분</span>
+    </label>
+  </div>
+
+  <div class="section-count" id="sectionCount"></div>
+
+  <button id="generate" disabled>섹션 생성</button>
+
+  <div class="status" id="status"></div>
+
+  <script>
+    const markdownEl  = document.getElementById("markdown");
+    const dropzone    = document.getElementById("dropzone");
+    const hint        = document.getElementById("hint");
+    const splitLevel  = document.getElementById("splitLevel");
+    const colorize    = document.getElementById("colorize");
+    const generateBtn = document.getElementById("generate");
+    const countEl     = document.getElementById("sectionCount");
+    const statusEl    = document.getElementById("status");
+
+    // ── 실시간 섹션 카운트 ───────────────────────────────────────────────
+
+    function countSections(md, level) {
+      const prefix = "#".repeat(Number(level));
+      const re = new RegExp(`^${prefix}(?!#) +.+`, "gm");
+      return (md.match(re) || []).length;
+    }
+
+    function updateCount() {
+      const md = markdownEl.value.trim();
+      const n = md ? countSections(md, splitLevel.value) : 0;
+      countEl.textContent = n > 0 ? `${n}개 섹션 감지됨` : md ? "헤딩을 찾을 수 없습니다" : "";
+      generateBtn.disabled = n === 0;
+    }
+
+    markdownEl.addEventListener("input", updateCount);
+    splitLevel.addEventListener("change", updateCount);
+
+    // ── 드래그앤드롭 ────────────────────────────────────────────────────
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("drag-over");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag-over"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        markdownEl.value = ev.target.result;
+        hint.style.opacity = "0";
+        updateCount();
+      };
+      reader.readAsText(file, "utf-8");
+    });
+
+    // textarea에 내용 생기면 hint 숨기기
+    markdownEl.addEventListener("input", () => {
+      hint.style.opacity = markdownEl.value ? "0" : "1";
+    });
+
+    // ── 생성 버튼 ───────────────────────────────────────────────────────
+
+    generateBtn.addEventListener("click", () => {
+      setStatus("", "");
+      generateBtn.disabled = true;
+      generateBtn.textContent = "생성 중…";
+
+      parent.postMessage({
+        pluginMessage: {
+          type: "generate",
+          markdown: markdownEl.value,
+          splitLevel: splitLevel.value,
+          colorize: colorize.checked,
+        }
+      }, "*");
+    });
+
+    // ── 메시지 수신 ─────────────────────────────────────────────────────
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      generateBtn.textContent = "섹션 생성";
+      updateCount();
+
+      if (msg.type === "success") {
+        setStatus(`${msg.count}개 섹션이 생성되었습니다.`, "success");
+      }
+      if (msg.type === "error") {
+        setStatus(msg.message, "error");
+      }
+    };
+
+    function setStatus(text, type) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + type;
+    }
+  </script>
+</body>
+</html>

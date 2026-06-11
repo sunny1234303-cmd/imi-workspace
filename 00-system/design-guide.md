@@ -25,6 +25,18 @@
 
 @font-face {
   font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Pretendard';
   src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
@@ -39,6 +51,18 @@
   font-family: 'Pretendard';
   src: url('/fonts/Pretendard-SemiBold.woff2') format('woff2');
   font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Black.woff2') format('woff2');
+  font-weight: 900;
   font-style: normal;
 }
 
@@ -65,9 +89,13 @@
   --text-sm:     13px;   /* 보조 본문, 메타 정보 */
 
   /* ── Font Weights ─────────────────────────────────── */
+  --weight-thin:      100;   /* 대형 연락처·수치 — 가볍고 우아한 대비 */
+  --weight-light:     300;   /* 보조 대형 텍스트 */
   --weight-regular:   400;
   --weight-medium:    500;
   --weight-semibold:  600;
+  --weight-extrabold: 800;   /* 히어로 디스플레이 — 강렬한 무게감 */
+  --weight-black:     900;   /* 최대 강조 */
 
   /* ── Spacing (8px base) ───────────────────────────── */
   --space-1:  4px;    /* 아주 좁은 간격 (글자·라벨 사이) */
@@ -106,10 +134,13 @@
 | Body | `--text-body` | 14px | Regular 400 | 일반 본문, 설명 |
 | Small | `--text-sm` | 13px | Regular 400 | 기간, 메타 정보, 보조 설명 |
 
-**공통 규칙**:
-- `letter-spacing: -0.02em` 전 계층 적용
+**굵기 대비 활용 원칙**:
+- **Black(900) × Thin(100)** 조합이 핵심 — 같은 화면에서 극단적 대비로 긴장감을 만든다
+- H1/H2는 Medium(500) — 두껍지 않게 세련되게
+- ExtraBold/Black은 히어로 디스플레이 텍스트에만 사용 (남발하면 힘 잃음)
+- Thin/Light는 대형 크기(48px↑)에서만 사용 — 작은 크기에서는 가독성 저하
+- `letter-spacing: -0.02em` 전 계층 공통 적용
 - `line-height: 1.6` 본문 이상 적용
-- H1/H2는 Medium(500)으로 — 두껍지 않게 세련되게
 
 ---
 
@@ -182,6 +213,81 @@ Breakpoint:
 ```
 
 액센트 컬러 없음 (추후 추가 시 이 파일 업데이트).
+
+---
+
+## 선(Line) 활용 원칙
+
+이 디자인 시스템에서 선은 장식이 아닌 **구조** 역할을 한다. 색상 대신 선으로 위계와 영역을 나눈다.
+
+### 선 종류
+
+| 종류 | 값 | 용도 |
+|---|---|---|
+| 굵은 선 (Primary) | `#222222`, `2.25px` | 섹션 경계, 헤더·푸터 구분, 핵심 분리 |
+| 얇은 선 (Subtle) | `#d8d4ce`, `1px` | 행(row) 간 구분, 콘텐츠 내부 반복 분리 |
+
+### 수평선 사용 패턴
+
+**섹션 경계** — 헤더/본문/푸터를 구분할 때 굵은 선 사용
+```
+[헤더 영역]
+────────────────  ← border-bottom: 2.25px #222222
+[본문 영역]
+────────────────  ← border-bottom: 2.25px #222222
+[로고·푸터 영역]
+```
+
+**행(row) 구분** — 라벨+내용 반복 테이블에서 얇은 선 사용
+```
+실행 목적  |  LTV 높은 잠재고객 확장 방안 기획
+- - - - - - - - - - ← border-bottom: 1px #d8d4ce
+접근 과정  |  ...
+- - - - - - - - - -
+결과      |  ...
+```
+
+### 수직선 사용 패턴
+
+**컬럼 분리** — 좌(이미지·프로필)와 우(콘텐츠)를 나눌 때 굵은 수직선 사용
+```
+[좌 컬럼]  │  [우 컬럼]
+이름·사진  │  스펙 테이블
+           ↑
+  border-right: 2.25px #222222
+```
+
+**2단 레이아웃 기본 구조**
+```css
+.two-col {
+  display: grid;
+  grid-template-columns: 2fr 3fr;  /* 좌:우 = 40:60 */
+}
+
+.two-col > *:first-child {
+  border-right: var(--border-width) solid var(--color-border);
+}
+```
+
+### 선 활용 실제 예시
+
+**Career Timeline** — 수평선만으로 구성
+- 헤더(타이틀) 아래 굵은 선 1개
+- 각 이력 항목 사이 얇은 선 반복
+
+**Case Study** — 수평선 계층화
+- 프로젝트명/날짜 메타 행 아래 굵은 선 → 본문과 명확히 분리
+- 실행목적/접근과정/결과/역할 행 사이 얇은 선
+
+**Profile Card** — 수평 + 수직 교차
+- 수평 굵은 선: 헤더↔본문↔로고바 구분 (3단 구조)
+- 수직 굵은 선: 프로필 사진 영역↔스펙 테이블 분리
+
+### 절대 하지 말 것
+- box-shadow로 영역 구분 (납작한 Quiet Luxury 무드와 충돌)
+- 얇은 선(1px)을 섹션 경계에 사용 (위계가 사라짐)
+- 굵은 선을 행 구분에 남발 (시각적 피로)
+- 컬러로 배경 영역을 나누는 방식 (선 하나로 충분)
 
 ---
 

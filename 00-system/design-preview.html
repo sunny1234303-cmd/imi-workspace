@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Guide Preview</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+:root {
+  --font:           'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  --letter-spacing: -0.02em;
+  --line-height:    1.6;
+
+  --color-bg:           #FAF9F6;
+  --color-text:         #1A1A1A;
+  --color-text-muted:   #7F7F7F;
+  --color-border:       #222222;
+  --border-width:       2.25px;
+
+  --text-hero:   88px;
+  --text-h1:     40px;
+  --text-h2:     36px;
+  --text-h3:     18px;
+  --text-label:  16px;
+  --text-body:   14px;
+  --text-sm:     13px;
+
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+
+  --space-section:       96px;
+  --space-section-lg:    120px;
+  --space-section-mo:    56px;
+  --space-section-mo-lg: 64px;
+
+  --max-width: 1440px;
+  --radius:    0px;
+  --radius-sm: 4px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+  background: var(--color-bg);
+  letter-spacing: var(--letter-spacing);
+  line-height: var(--line-height);
+  padding: var(--space-8);
+}
+
+/* ── Layout ─────────────────────────────── */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.section {
+  padding-top: var(--space-section);
+}
+.section:first-child {
+  padding-top: 0;
+}
+
+.section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+/* ── Header ─────────────────────────────── */
+.header {
+  padding-bottom: var(--space-8);
+  border-bottom: var(--border-width) solid var(--color-border);
+  margin-bottom: var(--space-8);
+}
+
+.header-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.header-title {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+}
+
+.header-meta {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* ── Color Swatches ─────────────────────── */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.color-card {
+  border: var(--border-width) solid var(--color-border);
+}
+
+.color-swatch {
+  height: 80px;
+}
+
+.color-info {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.color-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.color-hex {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.color-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+/* ── Typography ─────────────────────────── */
+.type-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--space-8);
+  align-items: baseline;
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid #e8e4df;
+}
+
+.type-row:last-child {
+  border-bottom: none;
+}
+
+.type-meta {
+  flex-shrink: 0;
+}
+
+.type-token {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0;
+}
+
+.type-spec {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+  letter-spacing: 0;
+}
+
+.type-sample {
+  letter-spacing: var(--letter-spacing);
+  line-height: var(--line-height);
+  word-break: keep-all;
+}
+
+/* ── Spacing ────────────────────────────── */
+.space-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.space-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 60px;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.space-token {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0;
+}
+
+.space-bar-wrap {
+  height: 10px;
+  background: #e8e4df;
+}
+
+.space-bar {
+  height: 100%;
+  background: var(--color-text);
+}
+
+.space-val {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: right;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Components ─────────────────────────── */
+.component-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* Button */
+.demo-buttons {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--letter-spacing);
+  cursor: pointer;
+  border: none;
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius);
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.75; }
+
+.btn-primary {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-text);
+  border: var(--border-width) solid var(--color-border);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid #e8e4df;
+}
+
+/* Input */
+.demo-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 360px;
+}
+
+.input-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.input {
+  font-family: var(--font);
+  font-size: var(--text-body);
+  letter-spacing: var(--letter-spacing);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-4);
+  outline: none;
+  width: 100%;
+}
+.input::placeholder { color: var(--color-text-muted); }
+.input:focus { border-color: var(--color-text); }
+
+/* Card */
+.demo-card {
+  border: var(--border-width) solid var(--color-border);
+  padding: var(--space-8);
+  max-width: 400px;
+}
+
+.card-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.card-title {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-4);
+}
+
+.card-body {
+  font-size: var(--text-body);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.card-divider {
+  height: var(--border-width);
+  background: var(--color-border);
+  margin-bottom: var(--space-6);
+}
+
+.card-meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Divider */
+.demo-divider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 500px;
+}
+
+.divider-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.divider-full {
+  height: var(--border-width);
+  background: var(--color-border);
+}
+
+.divider-muted {
+  height: 1px;
+  background: #e8e4df;
+}
+
+/* ── Career Timeline ────────────────────── */
+.timeline-wrap {
+  width: 100%;
+}
+
+.timeline-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  margin-bottom: 0;
+}
+
+.timeline-header-title {
+  font-size: var(--text-h1);
+  font-weight: var(--weight-medium);
+  line-height: 1.15;
+  letter-spacing: var(--letter-spacing);
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid #d8d4ce;
+  gap: var(--space-8);
+}
+
+.timeline-row:last-child {
+  border-bottom: none;
+}
+
+.timeline-left {}
+
+.timeline-company {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.timeline-company.muted {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.timeline-meta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.timeline-right {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: var(--line-height);
+}
+
+.timeline-present {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* ── Contact Point ──────────────────────── */
+.contact-wrap {
+  position: relative;
+  background: var(--color-bg);
+  min-height: 420px;
+  padding: var(--space-8);
+  border: var(--border-width) solid var(--color-border);
+  overflow: hidden;
+}
+
+.contact-copyright {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  letter-spacing: var(--letter-spacing);
+}
+
+.contact-title {
+  font-size: clamp(56px, 8vw, 96px);
+  font-weight: 900;
+  letter-spacing: var(--letter-spacing);
+  line-height: 1.1;
+  color: var(--color-text);
+  margin-top: var(--space-2);
+}
+
+.contact-info {
+  position: absolute;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  text-align: right;
+}
+
+.contact-detail {
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 100;
+  letter-spacing: var(--letter-spacing);
+  line-height: 1.3;
+  color: var(--color-text);
+}
+
+/* ── Case Study Layout ──────────────────── */
+.case-wrap {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  min-height: 600px;
+  border: var(--border-width) solid var(--color-border);
+}
+
+.case-image {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-8);
+  min-height: 580px;
+  background: #2a2a2a;
+}
+
+.case-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.1) 40%,
+    rgba(0,0,0,0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.case-image > *:not(.case-image-overlay) {
+  position: relative;
+  z-index: 1;
+}
+
+.case-image-eyebrow {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.6);
+  line-height: 1.8;
+  letter-spacing: var(--letter-spacing);
+}
+
+.case-image-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: var(--weight-extrabold);
+  color: #ffffff;
+  letter-spacing: var(--letter-spacing);
+  line-height: 1.15;
+}
+
+.case-image-brand {
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.case-content {
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.case-title {
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing);
+  margin-bottom: var(--space-8);
+}
+
+.case-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  margin-bottom: 0;
+}
+
+.case-meta-name {
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+}
+
+.case-meta-date {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.case-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.case-table tr {
+  border-bottom: 1px solid #d8d4ce;
+}
+
+.case-table tr:last-child {
+  border-bottom: none;
+}
+
+.case-table td {
+  padding: var(--space-4) var(--space-2);
+  vertical-align: top;
+  font-size: var(--text-body);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
+}
+
+.case-table td:first-child {
+  width: 100px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding-right: var(--space-6);
+  white-space: nowrap;
+}
+
+.case-table td:last-child {
+  color: var(--color-text);
+}
+
+.case-assets {
+  margin-top: var(--space-8);
+}
+
+.case-assets-label {
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.case-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.case-asset-thumb {
+  aspect-ratio: 16/9;
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  background: #d8d4ce;
+}
+
+.case-page-num {
+  position: absolute;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  letter-spacing: var(--letter-spacing);
+  line-height: 1;
+}
+
+/* ── Profile Card Layout ────────────────── */
+.profile-wrap {
+  border: var(--border-width) solid var(--color-border);
+  background: var(--color-bg);
+}
+
+/* Header */
+.profile-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  padding: var(--space-8);
+  border-bottom: var(--border-width) solid var(--color-border);
+  align-items: start;
+}
+
+.profile-headline {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--letter-spacing);
+  line-height: 1.35;
+  color: var(--color-text);
+}
+
+.profile-tagline {
+  font-size: var(--text-body);
+  color: var(--color-text);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
+  text-align: right;
+}
+
+/* Body */
+.profile-body {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+/* Left: photo + name */
+.profile-left {
+  padding: var(--space-8);
+  border-right: var(--border-width) solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.profile-name-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.profile-name {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--letter-spacing);
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.profile-name-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.profile-tags {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
+
+.profile-role {
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing);
+}
+
+.profile-photo {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  background: #d8d4ce;
+  max-width: 260px;
+}
+
+/* Right: spec table */
+.profile-right {
+  padding: var(--space-8);
+}
+
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.profile-table tr {
+  border-bottom: 1px solid #d8d4ce;
+}
+
+.profile-table tr:last-child {
+  border-bottom: none;
+}
+
+.profile-table td {
+  padding: var(--space-4) var(--space-2);
+  vertical-align: top;
+  font-size: var(--text-body);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
+}
+
+.profile-table td:first-child {
+  width: 110px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  padding-right: var(--space-6);
+  white-space: nowrap;
+  font-size: var(--text-body);
+}
+
+.profile-table td:last-child {
+  color: var(--color-text);
+}
+
+.profile-table .sub-label td:first-child {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.check-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+}
+
+.check-item::before {
+  content: '✓ ';
+  font-weight: var(--weight-medium);
+}
+
+/* Footer logo bar */
+.profile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-8);
+}
+
+.profile-logos {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.profile-logo-item {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.profile-copyright {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* ── Component sub-label ─────────────────── */
+.component-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <p class="header-label">Design System Preview</p>
+    <h1 class="header-title">진서니 워크스페이스<br>공통 디자인 가이드</h1>
+    <p class="header-meta">Quiet Luxury × 하이테크 미니멀리즘 &nbsp;·&nbsp; Pretendard &nbsp;·&nbsp; 8px Base Spacing</p>
+  </header>
+
+  <!-- 01. Colors -->
+  <section class="section">
+    <p class="section-title">01 &nbsp;Colors</p>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background:#FAF9F6;border-bottom:1px solid #e8e4df;"></div>
+        <div class="color-info">
+          <p class="color-name">Background</p>
+          <p class="color-hex">#FAF9F6</p>
+          <p class="color-desc">--color-bg</p>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#1A1A1A;"></div>
+        <div class="color-info">
+          <p class="color-name">Text</p>
+          <p class="color-hex">#1A1A1A</p>
+          <p class="color-desc">--color-text</p>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#7F7F7F;"></div>
+        <div class="color-info">
+          <p class="color-name">Text Muted</p>
+          <p class="color-hex">#7F7F7F</p>
+          <p class="color-desc">--color-text-muted</p>
+        </div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background:#222222;"></div>
+        <div class="color-info">
+          <p class="color-name">Border</p>
+          <p class="color-hex">#222222 &nbsp;/&nbsp; 2.25px</p>
+          <p class="color-desc">--color-border</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02. Typography -->
+  <section class="section">
+    <p class="section-title">02 &nbsp;Typography</p>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-hero</p>
+        <p class="type-spec">88px / Black 900</p>
+      </div>
+      <p class="type-sample" style="font-size:88px;font-weight:900;line-height:1;">Aa</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-hero</p>
+        <p class="type-spec">88px / Thin 100</p>
+      </div>
+      <p class="type-sample" style="font-size:88px;font-weight:100;line-height:1;">Aa</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-h1</p>
+        <p class="type-spec">40px / Medium 500</p>
+      </div>
+      <p class="type-sample" style="font-size:40px;font-weight:500;">Career Timeline</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-h2</p>
+        <p class="type-spec">36px / Medium 500</p>
+      </div>
+      <p class="type-sample" style="font-size:36px;font-weight:500;">Experience</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-h3</p>
+        <p class="type-spec">18px / SemiBold 600</p>
+      </div>
+      <p class="type-sample" style="font-size:18px;font-weight:600;">회사명 / 프로젝트명</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-label</p>
+        <p class="type-spec">16px / SemiBold 600</p>
+      </div>
+      <p class="type-sample" style="font-size:16px;font-weight:600;">Marketing · Brand</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-body</p>
+        <p class="type-spec">14px / Regular 400</p>
+      </div>
+      <p class="type-sample" style="font-size:14px;font-weight:400;">마케터를 위한 AI 자동화 솔루션. 반복 업무를 자동화하고 창의적인 업무에 집중하세요.</p>
+    </div>
+
+    <div class="type-row">
+      <div class="type-meta">
+        <p class="type-token">--text-sm</p>
+        <p class="type-spec">13px / Regular 400</p>
+      </div>
+      <p class="type-sample" style="font-size:13px;font-weight:400;color:#7F7F7F;">2024.03 — 2026.06 &nbsp;·&nbsp; 서울 &nbsp;·&nbsp; 정규직</p>
+    </div>
+  </section>
+
+  <!-- 03. Spacing -->
+  <section class="section">
+    <p class="section-title">03 &nbsp;Spacing</p>
+    <div class="space-list">
+      <div class="space-row">
+        <span class="space-token">--space-1</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:4px;"></div></div>
+        <span class="space-val">4px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-2</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:8px;"></div></div>
+        <span class="space-val">8px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-4</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:16px;"></div></div>
+        <span class="space-val">16px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-6</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:24px;"></div></div>
+        <span class="space-val">24px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-8</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:32px;"></div></div>
+        <span class="space-val">32px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-12</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:48px;"></div></div>
+        <span class="space-val">48px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-section</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:96px;"></div></div>
+        <span class="space-val">96px</span>
+      </div>
+      <div class="space-row">
+        <span class="space-token">--space-section-lg</span>
+        <div class="space-bar-wrap"><div class="space-bar" style="width:120px;"></div></div>
+        <span class="space-val">120px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04. Components -->
+  <section class="section">
+    <p class="section-title">04 &nbsp;Components</p>
+    <div class="component-grid">
+
+      <!-- Buttons -->
+      <div>
+        <p class="component-label">Button</p>
+        <div class="demo-buttons">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-outline">Outline</button>
+          <button class="btn btn-ghost">Ghost</button>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div>
+        <p class="component-label">Input</p>
+        <div class="demo-input-wrap">
+          <label class="input-label">이름</label>
+          <input class="input" type="text" placeholder="홍길동">
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div>
+        <p class="component-label">Card</p>
+        <div class="demo-card">
+          <p class="card-label">2024.03 — 2026.06</p>
+          <h3 class="card-title">마케팅 매니저</h3>
+          <p class="card-body">브랜드 캠페인 기획 및 실행, SNS 채널 운영, 퍼포먼스 마케팅 업무를 담당했습니다.</p>
+          <div class="card-divider"></div>
+          <p class="card-meta">서울 &nbsp;·&nbsp; 정규직 &nbsp;·&nbsp; 2년 3개월</p>
+        </div>
+      </div>
+
+      <!-- Dividers -->
+      <div>
+        <p class="component-label">Divider</p>
+        <div class="demo-divider-wrap">
+          <div>
+            <p class="divider-label">Primary (#222222 / 2.25px)</p>
+            <div class="divider-full"></div>
+          </div>
+          <div>
+            <p class="divider-label">Subtle (1px / #e8e4df)</p>
+            <div class="divider-muted"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 05. Career Timeline Example -->
+  <section class="section">
+    <p class="section-title">05 &nbsp;Use Case — Career Timeline</p>
+    <div class="timeline-wrap">
+
+      <!-- Headers -->
+      <div class="timeline-header">
+        <h2 class="timeline-header-title">Career Time-line</h2>
+        <h2 class="timeline-header-title">Experience</h2>
+      </div>
+
+      <!-- Row 1: Present -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company muted">AI 프로젝트 및 대기업 AX 인바운드 자문</p>
+          <p class="timeline-meta">2025.12 — 현재</p>
+        </div>
+        <div class="timeline-right">
+          <p class="timeline-present">*Present</p>
+          실무 AI 활용 강연 및 연구 개발<br>
+          (응답하라 마케팅 커뮤니티 오프라인 AI 실무 강연, 기업 AX 자문 등)
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company">YBM PUBLWIZ (National Geographic)</p>
+          <p class="timeline-meta">2024.07 — 2025.11 &nbsp; Marketing Staff</p>
+        </div>
+        <div class="timeline-right">
+          브랜드 캠페인·프로모션 기획, E-commerce 운영(네이버, 쿠팡) 및 매출 관리,
+          퍼포먼스 마케팅(네이버 검색광고, 카카오채널톡 광고) 및 SNS·인플루언서 협업 총괄
+        </div>
+      </div>
+
+      <!-- Row 3 -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company">Gwangju Tourism Organization</p>
+          <p class="timeline-meta">2023.06 — 2023.09 &nbsp; Marketing pm intern</p>
+        </div>
+        <div class="timeline-right">
+          김대중컨벤션센터 내 디지털 사이니지 행사 홍보물 제작·관리, 학술대회 유치
+          마케팅·고객응대, CRM 기반 행사·센터 DB 구축·운영
+        </div>
+      </div>
+
+      <!-- Row 4 -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company">Food Conglomerate Project Season 4 (Woman Sense)</p>
+          <p class="timeline-meta">2023.03 — 2023.06 &nbsp; Planning Team Leader</p>
+        </div>
+        <div class="timeline-right">
+          식품 마케팅 공모전 '대상' 수여, 식품 대기업·프랜차이즈 실무 협업 프로젝트<br>
+          (피자알볼로·풀무원다논·SPC 쉐이크쉑) 기획·총괄, NPD 프로세스, F&amp;B 마케팅·직무 세미나 및 자격 교육 이수
+        </div>
+      </div>
+
+      <!-- Row 5 -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company">2022 Daejeon E.L ESG Hackathon (Blue Point Partners)</p>
+          <p class="timeline-meta">2022.12.17 &nbsp; Strategist</p>
+        </div>
+        <div class="timeline-right">
+          실시간 현장 ESG 신 사업 아이디어 도출 및 팀 기반 롤 플레잉
+        </div>
+      </div>
+
+      <!-- Row 6 -->
+      <div class="timeline-row">
+        <div class="timeline-left">
+          <p class="timeline-company">2022 Student Start-up Promising Team 300</p>
+          <p class="timeline-meta">2022.05 — 2022.11 &nbsp; Think Bake CEO</p>
+        </div>
+        <div class="timeline-right">
+          전국·호남권 창업대회 1위 수상(교육부 주최, 한국연구재단·한국청년기업가재단 주관),
+          IR 기획·투자자 영업, 창업·사업기획 교육 이수, 산학협력 EXPO 전시·예산·운영 총괄
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="padding-top:var(--space-section);padding-bottom:var(--space-8);border-top:var(--border-width) solid var(--color-border);margin-top:var(--space-section);">
+    <p style="font-size:var(--text-sm);color:var(--color-text-muted);">
+      진서니 워크스페이스 디자인 시스템 &nbsp;·&nbsp; <code style="font-size:12px;letter-spacing:0;">00-system/design-guide.md</code>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

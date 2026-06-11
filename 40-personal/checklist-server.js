@@ -14,6 +14,7 @@ const HTML_FILE     = path.join(DIR, '2026-05-12-today-checklist.html');
 const TRACKING_FILE = path.join(DIR, '44-이직현황.md');
 const BRAND_FILE    = path.join(WORKSPACE, '50-resources/소비재-브랜드-리스트.md');
 const HISTORY_FILE  = path.join(DIR, 'checklist-history.json');
+const TODOS_FILE    = path.join(DIR, 'checklist-todos.json');
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function todayStr() {
@@ -128,6 +129,40 @@ const server = http.createServer((req, res) => {
       res.writeHead(500);
       res.end(JSON.stringify({ error: e.message }));
     }
+    return;
+  }
+
+  if (req.method === 'GET' && req.url === '/api/todos') {
+    try {
+      const data = fs.existsSync(TODOS_FILE)
+        ? JSON.parse(fs.readFileSync(TODOS_FILE, 'utf-8'))
+        : { todos: [], updatedAt: null };
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify(data));
+    } catch(e) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/todos') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { todos = [] } = JSON.parse(body);
+        const data = { todos, updatedAt: new Date().toISOString() };
+        fs.writeFileSync(TODOS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
     return;
   }
 

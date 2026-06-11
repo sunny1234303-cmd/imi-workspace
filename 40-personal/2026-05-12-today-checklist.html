@@ -3,845 +3,1517 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>오늘 할 일 — 2026.05.16</title>
+  <title>체크리스트</title>
   <style>
+    :root {
+      --font: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --bg-base: #ffffff;
+      --bg-secondary: #f7f7f5;
+      --bg-hover: #f3f4f6;
+      --border: #e8e8e8;
+      --priority-high: #ef4444;
+      --priority-medium: #f97316;
+      --priority-low: #9ca3af;
+      --dot-todo: #3b82f6;
+      --dot-company: #f97316;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
+      font-family: var(--font);
+      font-size: 14px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
       min-height: 100vh;
-      padding: 48px 16px;
     }
 
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 36px 40px;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-      height: fit-content;
+    .app {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--bg-base);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
     }
 
-    .header { margin-bottom: 28px; }
-    .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .header h1 { font-size: 20px; font-weight: 700; color: #111; }
-    .header p { font-size: 13px; color: #999; margin-top: 4px; }
-
-    .now-badge {
-      font-size: 12px; font-weight: 600; color: #555;
-      background: #f0f0f0; border-radius: 8px;
-      padding: 4px 10px; white-space: nowrap;
+    /* ── Header ── */
+    .app-header {
+      padding: 20px 24px 14px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg-base);
+      z-index: 10;
     }
 
-    .progress-bar-wrap { background: #eee; border-radius: 99px; height: 6px; margin-top: 16px; overflow: hidden; }
-    .progress-bar { height: 100%; background: #111; border-radius: 99px; transition: width 0.4s ease; width: 0%; }
-    .progress-label { font-size: 12px; color: #999; text-align: right; margin-top: 6px; }
-
-    .list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-
-    .item {
-      border: 1.5px solid #e8e8e8;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.2s;
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
-    .item.done { border-color: #e0e0e0; }
-    .item.running { border-color: #111; }
 
-    .item-main {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 16px;
-      cursor: pointer; transition: background 0.15s; user-select: none;
+    .header-date { font-size: 19px; font-weight: 700; color: var(--text-primary); }
+    .header-day  { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .clock-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 4px 10px;
     }
-    .item-main:hover { background: #fafafa; }
-    .item.done .item-main { background: #f7f7f7; }
-    .item.done .text { color: #bbb; text-decoration: line-through; }
-    .item.done .badge { opacity: 0.4; }
 
-    .badge {
-      font-size: 11px; font-weight: 700; color: #fff;
-      background: #111; border-radius: 6px;
-      padding: 2px 8px; min-width: 24px; text-align: center; flex-shrink: 0;
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+    .progress-track { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--text-primary); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+    .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+    /* ── Body ── */
+    .app-body {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      flex: 1;
     }
-    .text { flex: 1; font-size: 15px; font-weight: 500; color: #222; line-height: 1.4; }
-    .sub { display: block; font-size: 12px; font-weight: 400; color: #aaa; margin-top: 2px; }
 
-    .check-icon {
-      width: 22px; height: 22px; border: 2px solid #ddd; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: all 0.2s;
+    .left-panel  { padding: 24px; border-right: 1px solid var(--border); overflow-y: auto; }
+    .right-panel { padding: 20px; position: sticky; top: 73px; height: calc(100vh - 73px); overflow-y: auto; }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
     }
-    .item.done .check-icon { background: #111; border-color: #111; }
-    .check-icon svg { display: none; }
-    .item.done .check-icon svg { display: block; }
 
-    /* 타이머 영역 */
-    .item-timer {
-      padding: 10px 16px 12px;
-      background: #fafafa;
-      border-top: 1px solid #f0f0f0;
-      display: flex; flex-direction: column; gap: 8px;
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
-    .item.done .item-timer { background: #f7f7f7; }
 
-    .duration-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .section-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--bg-secondary);
+      border-radius: 99px;
+      padding: 1px 7px;
+    }
+
+    .section-add-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+      font-family: var(--font);
+    }
+
+    .section-add-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ── Todo list ── */
+    .todo-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-bottom: 6px;
+    }
+
+    .todo-item {
+      border-radius: var(--radius-md);
+      transition: background 0.15s;
+    }
+
+    .todo-item:hover { background: var(--bg-hover); }
+    .todo-item.running { background: var(--bg-secondary); }
+    .todo-item.dragging { opacity: 0.35; }
+
+    .todo-item.drag-over-top    { border-top: 2px solid var(--text-primary); }
+    .todo-item.drag-over-bottom { border-bottom: 2px solid var(--text-primary); }
+
+    .todo-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px 8px 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .drag-handle {
+      color: var(--text-muted);
+      cursor: grab;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+    }
+
+    .todo-item:hover .drag-handle { opacity: 1; }
+    .drag-handle:active { cursor: grabbing; }
+
+    .priority-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .todo-item.priority-high   .priority-dot { background: var(--priority-high); }
+    .todo-item.priority-medium .priority-dot { background: var(--priority-medium); }
+    .todo-item.priority-low    .priority-dot { background: var(--priority-low); }
+
+    .todo-check {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .todo-item.done .todo-check { background: var(--text-primary); border-color: var(--text-primary); }
+    .todo-check-icon { display: none; }
+    .todo-item.done .todo-check-icon { display: block; }
+
+    .todo-content { flex: 1; min-width: 0; }
+    .todo-label { font-size: 14px; font-weight: 500; color: var(--text-primary); line-height: 1.4; }
+    .todo-sub   { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+    .todo-item.done .todo-label { text-decoration: line-through; color: var(--text-muted); }
+    .todo-item.done .todo-sub   { color: #d1d5db; }
+
+    .todo-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .todo-item:hover .todo-actions { opacity: 1; }
+
+    /* ── Timer ── */
+    .todo-timer {
+      padding: 6px 10px 10px 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .duration-row { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 
     .dur-btn {
-      font-size: 12px; font-weight: 500;
-      border: 1.5px solid #e8e8e8; border-radius: 99px;
-      padding: 4px 12px;
-      cursor: pointer; background: #fff; color: #555;
-      transition: all 0.15s; font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+      cursor: pointer;
+      background: var(--bg-base);
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      font-family: var(--font);
     }
-    .dur-btn:hover { border-color: #aaa; color: #222; }
-    .dur-btn.selected { background: #111; color: #fff; border-color: #111; }
 
-    /* 직접 입력 */
+    .dur-btn:hover { border-color: #aaa; color: var(--text-primary); }
+    .dur-btn.selected { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+
     .dur-custom-wrap {
-      display: flex; align-items: center; gap: 4px;
-      border: 1.5px solid #e8e8e8; border-radius: 99px;
-      padding: 3px 10px 3px 8px;
-      background: #fff; transition: border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 2px 8px 2px 6px;
+      background: var(--bg-base);
+      transition: border-color 0.15s;
     }
-    .dur-custom-wrap:focus-within { border-color: #111; }
-    .dur-custom-wrap.selected { border-color: #111; background: #f5f5f5; }
+
+    .dur-custom-wrap:focus-within,
+    .dur-custom-wrap.selected { border-color: var(--text-primary); }
 
     .dur-custom {
       border: none; outline: none;
-      font-size: 12px; color: #222; font-family: inherit;
-      width: 36px; background: transparent;
+      font-size: 11px; color: var(--text-primary);
+      font-family: var(--font);
+      width: 30px; background: transparent;
       text-align: right;
     }
-    .dur-custom::placeholder { color: #ccc; }
-    .dur-unit { font-size: 12px; color: #888; }
 
-    /* 실행 행 */
-    .timer-row { display: flex; align-items: center; gap: 10px; }
+    .dur-custom::placeholder { color: var(--text-muted); }
+    .dur-unit { font-size: 11px; color: var(--text-secondary); }
+
+    .timer-row { display: flex; align-items: center; gap: 8px; }
 
     .countdown {
-      font-size: 22px; font-weight: 700; color: #111;
-      font-variant-numeric: tabular-nums; letter-spacing: -0.5px; min-width: 72px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+      min-width: 58px;
     }
-    .countdown.idle { font-size: 14px; font-weight: 400; color: #ccc; }
+
+    .countdown.idle { font-size: 12px; font-weight: 400; color: var(--text-muted); }
 
     .start-btn {
-      padding: 7px 18px; background: #111; color: #fff;
-      border: none; border-radius: 8px;
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap;
+      padding: 5px 14px;
+      background: var(--text-primary); color: #fff;
+      border: none; border-radius: var(--radius-md);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: var(--font);
+      transition: background 0.15s; white-space: nowrap;
     }
+
     .start-btn:hover { background: #333; }
-    .start-btn:disabled { background: #ccc; cursor: default; }
+    .start-btn:disabled { background: var(--border); cursor: default; }
 
     .stop-btn {
-      padding: 7px 14px; background: #fff; color: #555;
-      border: 1.5px solid #ddd; border-radius: 8px;
-      font-size: 13px; font-weight: 500;
-      cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap;
+      padding: 5px 12px;
+      background: var(--bg-base); color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: var(--font);
+      transition: all 0.15s; white-space: nowrap; display: none;
+    }
+
+    .stop-btn:hover { border-color: #aaa; color: var(--text-primary); }
+
+    .todo-item.running .start-btn { display: none; }
+    .todo-item.running .stop-btn  { display: inline-block; }
+
+    /* ── Add forms ── */
+    .add-form {
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
       display: none;
+      background: var(--bg-secondary);
     }
-    .stop-btn:hover { border-color: #aaa; color: #222; }
 
-    .item.running .start-btn { display: none; }
-    .item.running .stop-btn { display: inline-block; }
+    .add-form.open { display: block; }
 
-    /* 구분선 */
-    .divider { border: none; border-top: 1.5px solid #f0f0f0; margin: 28px 0; }
+    .add-form-row { display: flex; gap: 6px; margin-bottom: 8px; }
+    .add-form-row:last-child { margin-bottom: 0; }
 
-    /* 회사 섹션 */
-    .section-title {
-      font-size: 15px; font-weight: 700; color: #111;
-      margin-bottom: 14px;
-      display: flex; align-items: center; justify-content: space-between;
+    .add-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--text-primary);
+      outline: none; transition: border-color 0.15s;
+      font-family: var(--font); background: var(--bg-base);
     }
-    .section-title span { font-size: 12px; font-weight: 500; color: #999; }
 
-    .company-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .add-input:focus { border-color: var(--text-primary); }
+    .add-input::placeholder { color: var(--text-muted); }
+
+    .priority-btns { display: flex; gap: 4px; }
+
+    .priority-btn {
+      padding: 5px 10px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 11px; font-weight: 700;
+      cursor: pointer; background: var(--bg-base); color: var(--text-muted);
+      transition: all 0.15s; font-family: var(--font);
+    }
+
+    .priority-btn[data-p="high"].selected   { background: #fee2e2; color: var(--priority-high);   border-color: #fca5a5; }
+    .priority-btn[data-p="medium"].selected { background: #fff7ed; color: var(--priority-medium); border-color: #fdba74; }
+    .priority-btn[data-p="low"].selected    { background: #f9fafb; color: var(--priority-low);    border-color: #d1d5db; }
+
+    .confirm-btn {
+      padding: 7px 14px;
+      background: var(--text-primary); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--font);
+      transition: background 0.15s; white-space: nowrap;
+    }
+
+    .confirm-btn:hover { background: #333; }
+
+    .cancel-btn {
+      padding: 7px 10px;
+      background: none; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 13px; cursor: pointer; font-family: var(--font);
+      transition: all 0.15s;
+    }
+
+    .cancel-btn:hover { color: var(--text-primary); border-color: #aaa; }
+
+    /* ── Icon button ── */
+    .icon-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      border: none; background: none; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--text-muted);
+      transition: all 0.15s; font-family: var(--font);
+    }
+
+    .icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .icon-btn.danger:hover { background: #fee2e2; color: #ef4444; }
+
+    /* ── Company list ── */
+    .company-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-bottom: 6px;
+    }
 
     .company-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 16px;
-      border: 1.5px solid #e8e8e8; border-radius: 10px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
       cursor: pointer; transition: background 0.15s; user-select: none;
     }
-    .company-item:hover { background: #fafafa; }
-    .company-item.applied { background: #f7f7f7; border-color: #e0e0e0; }
-    .company-item.applied .company-name { color: #bbb; text-decoration: line-through; }
-    .company-item.applied .company-role { color: #ccc; }
+
+    .company-item:hover { background: var(--bg-hover); }
+    .company-item.applied .company-name { text-decoration: line-through; color: var(--text-muted); }
+    .company-item.applied .company-role { color: #d1d5db; }
+    .company-item.past { pointer-events: none; opacity: 0.6; }
 
     .company-check {
-      width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 50%;
+      width: 16px; height: 16px;
+      border: 1.5px solid #d1d5db; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: all 0.2s;
     }
-    .company-item.applied .company-check { background: #111; border-color: #111; }
-    .company-check svg { display: none; }
-    .company-item.applied .company-check svg { display: block; }
 
-    .company-info { flex: 1; }
-    .company-name { font-size: 14px; font-weight: 600; color: #222; }
-    .company-role { font-size: 12px; color: #aaa; margin-top: 2px; }
-    .company-date { font-size: 11px; color: #ccc; margin-top: 1px; }
-    .company-item.applied .company-date { color: #ddd; }
+    .company-item.applied .company-check { background: var(--text-primary); border-color: var(--text-primary); }
+    .company-check-icon { display: none; }
+    .company-item.applied .company-check-icon { display: block; }
 
-    .delete-btn {
-      background: none; border: none; color: #ccc;
-      cursor: pointer; font-size: 16px; line-height: 1;
-      padding: 0 2px; transition: color 0.15s; flex-shrink: 0;
+    .company-info { flex: 1; min-width: 0; }
+    .company-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .company-role { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .company-date { font-size: 11px; color: #d1d5db; margin-top: 1px; }
+
+    .company-actions { display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+    .company-item:hover .company-actions { opacity: 1; }
+
+    .url-chip {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-secondary); background: var(--bg-secondary);
+      border-radius: var(--radius-sm); padding: 2px 7px;
+      text-decoration: none; white-space: nowrap;
+      transition: background 0.15s; pointer-events: auto;
     }
-    .delete-btn:hover { color: #ff4d4f; }
 
-    .add-form { display: flex; gap: 8px; flex-direction: column; }
-    .add-form-row { display: flex; gap: 8px; }
+    .url-chip:hover { background: var(--border); color: var(--text-primary); }
+    .company-item.applied .url-chip { opacity: 0.4; }
 
-    .add-input {
-      flex: 1; padding: 10px 14px;
-      border: 1.5px solid #e8e8e8; border-radius: 8px;
-      font-size: 13px; color: #222; outline: none;
-      transition: border-color 0.15s; font-family: inherit;
-    }
-    .add-input:focus { border-color: #111; }
-    .add-input::placeholder { color: #ccc; }
-
-    .add-btn {
-      padding: 10px 18px; background: #111; color: #fff;
-      border: none; border-radius: 8px;
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: background 0.15s;
-      white-space: nowrap; font-family: inherit; width: 100%;
-    }
-    .add-btn:hover { background: #333; }
-
-    .empty-msg { text-align: center; font-size: 13px; color: #ccc; padding: 16px 0; }
-
-    .url-btn {
-      font-size: 11px; font-weight: 600; color: #555;
-      background: #f0f0f0; border-radius: 6px;
-      padding: 3px 8px; text-decoration: none; white-space: nowrap;
-      flex-shrink: 0; transition: background 0.15s;
-    }
-    .url-btn:hover { background: #ddd; color: #111; }
-    .company-item.applied .url-btn { opacity: 0.4; }
-
-    .sync-status { font-size: 11px; color: #bbb; text-align: right; margin-top: 10px; line-height: 1.6; }
-    .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ddd; margin-right: 4px; vertical-align: middle; }
-    .sync-status.ok .sync-dot { background: #52c41a; }
-    .sync-status.err .sync-dot { background: #ff4d4f; }
-
-    /* 회사 날짜 구분선 */
-    .company-date-sep-li { list-style: none; }
     .company-date-sep {
       display: flex; align-items: center; gap: 8px;
-      font-size: 11px; color: #ccc; margin: 10px 0 4px;
+      font-size: 11px; color: var(--text-muted);
+      margin: 8px 0 4px; padding: 0 10px;
     }
-    .company-date-sep::before, .company-date-sep::after {
-      content: ''; flex: 1; border-top: 1px solid #f0f0f0;
-    }
-    .company-item.past { pointer-events: none; opacity: 0.7; }
-    .company-item.past:hover { background: transparent; }
 
-    /* 이전 기록 */
-    #history-section { display: none; }
-    .history-day { margin-bottom: 10px; border: 1.5px solid #f0f0f0; border-radius: 10px; overflow: hidden; }
-    .history-date {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px; cursor: pointer; background: #fafafa;
-      font-size: 13px; font-weight: 600; color: #555;
-      transition: background 0.15s;
+    .company-date-sep::before,
+    .company-date-sep::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+
+    .empty-msg { text-align: center; font-size: 13px; color: var(--text-muted); padding: 16px 0; }
+
+    .sync-status {
+      font-size: 11px; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 5px; margin-top: 10px;
     }
-    .history-date:hover { background: #f0f0f0; }
-    .history-count { font-size: 12px; font-weight: 400; color: #aaa; }
-    .history-list { list-style: none; display: none; flex-direction: column; gap: 0; }
-    .history-list.open { display: flex; }
-    .history-item {
+
+    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+    .sync-status.ok  .sync-dot { background: #22c55e; }
+    .sync-status.err .sync-dot { background: #ef4444; }
+
+    /* ── Calendar ── */
+    .cal-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 14px;
+    }
+
+    .cal-month { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+    .cal-nav   { display: flex; gap: 2px; }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .cal-weekday {
+      text-align: center;
+      font-size: 10px; font-weight: 700;
+      color: var(--text-muted);
+      padding: 4px 0; text-transform: uppercase;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.15s;
+      font-size: 12px; color: var(--text-primary);
+      position: relative;
+    }
+
+    .cal-day:hover { background: var(--bg-hover); }
+    .cal-day.empty { cursor: default; pointer-events: none; color: var(--text-muted); opacity: 0.4; }
+    .cal-day.no-data { cursor: default; pointer-events: none; }
+    .cal-day.no-data:hover { background: transparent; }
+
+    .cal-day.today { background: var(--text-primary); color: #fff; }
+    .cal-day.today:hover { background: #333; }
+
+    .cal-day.selected { outline: 2px solid var(--text-primary); outline-offset: -2px; }
+    .cal-day.today.selected { outline-color: var(--text-secondary); }
+
+    .cal-day-num { font-size: 12px; line-height: 1; }
+
+    .cal-dots { display: flex; gap: 2px; margin-top: 2px; }
+    .cal-dot  { width: 4px; height: 4px; border-radius: 50%; }
+    .cal-dot.todo    { background: var(--dot-todo); }
+    .cal-dot.company { background: var(--dot-company); }
+    .cal-day.today .cal-dot { background: rgba(255,255,255,0.65); }
+
+    /* ── Detail panel ── */
+    .detail-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 300px; height: 100vh;
+      background: var(--bg-base);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      z-index: 100;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .detail-panel.open { transform: translateX(0); }
+
+    .panel-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.12);
+      z-index: 99; display: none;
+    }
+
+    .panel-overlay.open { display: block; }
+
+    .detail-header {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 18px;
+    }
+
+    .detail-date { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+
+    .detail-section-title {
+      font-size: 10px; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 8px; margin-top: 14px;
+    }
+
+    .detail-section-title:first-of-type { margin-top: 0; }
+
+    .detail-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+    .detail-item {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 14px; border-top: 1px solid #f5f5f5;
-      font-size: 13px; color: #555;
+      padding: 5px 6px; border-radius: var(--radius-sm);
+      font-size: 13px;
     }
-    .history-item.done .history-name { color: #bbb; text-decoration: line-through; }
-    .history-item.applied .history-name { color: #bbb; text-decoration: line-through; }
-    .history-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
-    .history-item.done .history-dot, .history-item.applied .history-dot { background: #111; }
-    .history-name { flex: 1; }
-    .history-role { font-size: 11px; color: #ccc; }
+
+    .detail-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+    .detail-item.done    .detail-dot { background: var(--text-primary); }
+    .detail-item.applied .detail-dot { background: var(--priority-medium); }
+    .detail-item.done    .detail-name { text-decoration: line-through; color: var(--text-muted); }
+    .detail-item.applied .detail-name { text-decoration: line-through; color: var(--text-muted); }
+    .detail-name { flex: 1; color: var(--text-primary); }
+    .detail-role { font-size: 11px; color: var(--text-muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .app-body { grid-template-columns: 1fr; }
+      .right-panel { position: static; height: auto; border-top: 1px solid var(--border); }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
+<div class="app">
 
-    <div class="header">
-      <div class="header-top">
-        <div>
-          <h1>오늘 할 일</h1>
-          <p>2026년 5월 18일 (월)</p>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-row">
+      <div>
+        <div class="header-date" id="header-date">—</div>
+        <div class="header-day"  id="header-day">—</div>
+      </div>
+      <div class="clock-badge" id="clock">--:--</div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <span class="progress-label" id="progress-label">0 / 0 완료</span>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- Left Panel -->
+    <div class="left-panel">
+
+      <!-- Tasks -->
+      <div class="section-header">
+        <div class="section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Tasks
+          <span class="section-badge" id="task-badge">0</span>
         </div>
-        <div class="now-badge" id="now-badge">--:--</div>
+        <button class="section-add-btn" id="todo-add-toggle" onclick="toggleTodoForm()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          추가
+        </button>
       </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar" id="bar"></div>
+
+      <div class="add-form" id="todo-form">
+        <div class="add-form-row">
+          <input class="add-input" id="ti-label" type="text" placeholder="할 일 입력" />
+        </div>
+        <div class="add-form-row">
+          <input class="add-input" id="ti-sub" type="text" placeholder="부제목 (선택)" />
+        </div>
+        <div class="add-form-row" style="align-items:center;">
+          <div class="priority-btns">
+            <button class="priority-btn selected" data-p="high"   onclick="selectPriority(this)">H</button>
+            <button class="priority-btn"           data-p="medium" onclick="selectPriority(this)">M</button>
+            <button class="priority-btn"           data-p="low"    onclick="selectPriority(this)">L</button>
+          </div>
+          <div style="flex:1;"></div>
+          <button class="cancel-btn" onclick="toggleTodoForm()">취소</button>
+          <button class="confirm-btn" onclick="addTodo()">추가</button>
+        </div>
       </div>
-      <div class="progress-label" id="label">0 / 3 완료</div>
+
+      <ul class="todo-list" id="todo-list"></ul>
+
+      <hr class="section-divider" />
+
+      <!-- Applications -->
+      <div class="section-header">
+        <div class="section-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          Applications
+          <span class="section-badge" id="company-badge">0개</span>
+        </div>
+        <button class="section-add-btn" onclick="toggleCompanyForm()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          추가
+        </button>
+      </div>
+
+      <div class="add-form" id="company-form">
+        <div class="add-form-row">
+          <input class="add-input" id="ci-name" type="text" placeholder="회사명" />
+          <input class="add-input" id="ci-role" type="text" placeholder="직무 (선택)" style="max-width:130px;" />
+        </div>
+        <div class="add-form-row">
+          <input class="add-input" id="ci-url" type="url" placeholder="공고 URL (선택)" />
+        </div>
+        <div class="add-form-row" style="justify-content:flex-end;">
+          <button class="cancel-btn" onclick="toggleCompanyForm()">취소</button>
+          <button class="confirm-btn" onclick="addCompany()">추가</button>
+        </div>
+      </div>
+
+      <ul class="company-list" id="company-list"></ul>
+
+      <div class="sync-status" id="sync-status">
+        <span class="sync-dot"></span>
+        <span id="sync-text">로컬 모드 · 서버 미연결</span>
+      </div>
+
     </div>
 
-    <ul class="list">
-
-      <li class="item" id="item-1" data-label="채용 공고 리스트업">
-        <div class="item-main" onclick="toggle('item-1')">
-          <span class="badge">1</span>
-          <span class="text">채용 공고 리스트업<span class="sub">브랜드 마케터 공고 탐색 · 정리</span></span>
-          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <!-- Right Panel: Calendar -->
+    <div class="right-panel">
+      <div class="cal-header">
+        <div class="cal-month" id="cal-month-label">—</div>
+        <div class="cal-nav">
+          <button class="icon-btn" onclick="changeMonth(-1)" title="이전 달">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="icon-btn" onclick="changeMonth(1)" title="다음 달">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
         </div>
-        <div class="item-timer">
-          <div class="duration-row">
-            <button class="dur-btn" onclick="selectDur('item-1', 30, this)">30분</button>
-            <button class="dur-btn" onclick="selectDur('item-1', 60, this)">1시간</button>
-            <button class="dur-btn" onclick="selectDur('item-1', 90, this)">1시간 30분</button>
-            <button class="dur-btn" onclick="selectDur('item-1', 120, this)">2시간</button>
-            <div class="dur-custom-wrap">
-              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
-              <span class="dur-unit">분</span>
-            </div>
-          </div>
-          <div class="timer-row">
-            <div class="countdown idle" id="cd-item-1">시간 선택 후 시작</div>
-            <button class="start-btn" id="start-item-1" onclick="startTimer('item-1')" disabled>시작</button>
-            <button class="stop-btn" onclick="stopTimer('item-1')">중단</button>
-          </div>
-        </div>
-      </li>
-
-      <li class="item" id="item-2" data-label="포폴 재작성">
-        <div class="item-main" onclick="toggle('item-2')">
-          <span class="badge">2</span>
-          <span class="text">포폴 재작성<span class="sub">캠페인 성과 중심으로 재구성</span></span>
-          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        </div>
-        <div class="item-timer">
-          <div class="duration-row">
-            <button class="dur-btn" onclick="selectDur('item-2', 30, this)">30분</button>
-            <button class="dur-btn" onclick="selectDur('item-2', 60, this)">1시간</button>
-            <button class="dur-btn" onclick="selectDur('item-2', 90, this)">1시간 30분</button>
-            <button class="dur-btn" onclick="selectDur('item-2', 120, this)">2시간</button>
-            <div class="dur-custom-wrap">
-              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
-              <span class="dur-unit">분</span>
-            </div>
-          </div>
-          <div class="timer-row">
-            <div class="countdown idle" id="cd-item-2">시간 선택 후 시작</div>
-            <button class="start-btn" id="start-item-2" onclick="startTimer('item-2')" disabled>시작</button>
-            <button class="stop-btn" onclick="stopTimer('item-2')">중단</button>
-          </div>
-        </div>
-      </li>
-
-      <li class="item" id="item-3" data-label="서류 전송">
-        <div class="item-main" onclick="toggle('item-3')">
-          <span class="badge">3</span>
-          <span class="text">서류 전송<span class="sub">최종 확인 → 지원서 제출</span></span>
-          <div class="check-icon"><svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        </div>
-        <div class="item-timer">
-          <div class="duration-row">
-            <button class="dur-btn" onclick="selectDur('item-3', 30, this)">30분</button>
-            <button class="dur-btn" onclick="selectDur('item-3', 60, this)">1시간</button>
-            <button class="dur-btn" onclick="selectDur('item-3', 90, this)">1시간 30분</button>
-            <button class="dur-btn" onclick="selectDur('item-3', 120, this)">2시간</button>
-            <div class="dur-custom-wrap">
-              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
-              <span class="dur-unit">분</span>
-            </div>
-          </div>
-          <div class="timer-row">
-            <div class="countdown idle" id="cd-item-3">시간 선택 후 시작</div>
-            <button class="start-btn" id="start-item-3" onclick="startTimer('item-3')" disabled>시작</button>
-            <button class="stop-btn" onclick="stopTimer('item-3')">중단</button>
-          </div>
-        </div>
-      </li>
-
-    </ul>
-
-    <hr class="divider" />
-
-    <div class="section-title">
-      오늘 지원할 회사
-      <span id="company-count">0개</span>
-    </div>
-
-    <div class="add-form">
-      <div class="add-form-row">
-        <input class="add-input" id="input-name" type="text" placeholder="회사명" />
-        <input class="add-input" id="input-role" type="text" placeholder="직무 (선택)" style="max-width:140px;" />
       </div>
-      <div class="add-form-row">
-        <input class="add-input" id="input-url" type="url" placeholder="공고 URL (선택)" />
-      </div>
-      <div class="add-form-row">
-        <button class="add-btn" onclick="addCompany()">+ 추가</button>
-      </div>
+      <div class="cal-grid" id="cal-grid"></div>
     </div>
-
-    <ul class="company-list" id="company-list">
-      <li class="empty-msg" id="empty-msg">회사를 추가해 주세요</li>
-    </ul>
-    <div class="sync-status" id="sync-status">
-      <span class="sync-dot"></span>로컬 모드 · 연동하려면 <code style="font-size:10px;">node 40-personal/checklist-server.js</code> 실행 후 <a href="http://localhost:3737" style="color:#aaa;font-size:10px;">localhost:3737</a> 접속
-    </div>
-
-    <div id="history-section">
-      <hr class="divider" />
-      <div class="section-title">
-        이전 기록
-        <span id="history-toggle" style="cursor:pointer;" onclick="toggleHistory()">펼치기</span>
-      </div>
-      <div id="history-wrap" style="display:none;"></div>
-    </div>
-
   </div>
+</div>
 
-  <script>
-    const _dd = new Date();
-    const STORAGE_KEY = 'checklist-' + _dd.getFullYear() + '-' + String(_dd.getMonth()+1).padStart(2,'0') + '-' + String(_dd.getDate()).padStart(2,'0') + '-v2';
-    const state = {};
+<!-- Detail Panel -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeDetailPanel()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div class="detail-date" id="detail-date">—</div>
+    <button class="icon-btn" onclick="closeDetailPanel()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div id="detail-body"></div>
+</div>
 
-    /* ── 현재 시각 ── */
-    function pad(n) { return String(n).padStart(2, '0'); }
-    function todayDisplay() {
-      const d = new Date();
-      return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`;
+<script>
+  // ── Helpers ──────────────────────────────────────────────
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+
+  function isoToDot(iso) { return iso.replace(/-/g, '.'); }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  const DAYS_KO   = ['일','월','화','수','목','금','토'];
+  const MONTHS_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  // ── App state ────────────────────────────────────────────
+  let todos      = [];   // { id, label, sub, priority, order, done, durMin }
+  let companies  = [];   // { name, role, url, date, applied }
+  let timerState = {};   // { [id]: { endTime, durMin, remaining, intervalId } }
+  let histIndex  = {};   // { "2026-05-13": { companies, todos } }
+  let newPriority = 'high';
+
+  const calState = {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+    selected: null
+  };
+
+  const LS_TODOS     = 'checklist-todos-v3';
+  const LS_COMPANIES = () => `checklist-companies-${todayISO()}-v3`;
+  const LS_TIMERS    = 'checklist-timers-v3';
+  const LS_CAL       = 'checklist-cal-v3';
+
+  // ── LocalStorage ─────────────────────────────────────────
+  function saveTodos() {
+    localStorage.setItem(LS_TODOS, JSON.stringify(todos));
+    syncTodosToServer();
+  }
+
+  function saveCompanies() {
+    localStorage.setItem(LS_COMPANIES(), JSON.stringify(companies));
+  }
+
+  function saveTimers() {
+    const data = {};
+    Object.keys(timerState).forEach(id => {
+      const t = timerState[id];
+      if (t && t.endTime) data[id] = { endTime: t.endTime, durMin: t.durMin };
+    });
+    localStorage.setItem(LS_TIMERS, JSON.stringify(data));
+  }
+
+  function loadLocal() {
+    try { const r = localStorage.getItem(LS_TODOS);     if (r) todos      = JSON.parse(r); } catch(e) {}
+    try { const r = localStorage.getItem(LS_COMPANIES()); if (r) companies = JSON.parse(r); } catch(e) {}
+    try { const r = localStorage.getItem(LS_TIMERS);    if (r) timerState = JSON.parse(r); } catch(e) {}
+    try {
+      const r = localStorage.getItem(LS_CAL);
+      if (r) { const c = JSON.parse(r); calState.year = c.year; calState.month = c.month; }
+    } catch(e) {}
+  }
+
+  // ── Header ───────────────────────────────────────────────
+  function renderHeader() {
+    const d = new Date();
+    document.getElementById('header-date').textContent =
+      `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+    document.getElementById('header-day').textContent = DAYS_KO[d.getDay()] + '요일';
+  }
+
+  function updateClock() {
+    const d = new Date();
+    document.getElementById('clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function updateProgress() {
+    const total = todos.length;
+    const done  = todos.filter(t => t.done).length;
+    const pct   = total === 0 ? 0 : Math.round(done / total * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = `${done} / ${total} 완료`;
+    document.getElementById('task-badge').textContent = total;
+  }
+
+  // ── Priority selector ────────────────────────────────────
+  function selectPriority(btn) {
+    newPriority = btn.dataset.p;
+    document.querySelectorAll('#todo-form .priority-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  // ── Todo form ─────────────────────────────────────────────
+  function toggleTodoForm() {
+    const form = document.getElementById('todo-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) document.getElementById('ti-label').focus();
+  }
+
+  function addTodo() {
+    const label = document.getElementById('ti-label').value.trim();
+    if (!label) { document.getElementById('ti-label').focus(); return; }
+    const sub = document.getElementById('ti-sub').value.trim();
+
+    const todo = {
+      id: 'todo-' + Date.now(),
+      label, sub,
+      priority: newPriority,
+      order: todos.length,
+      done: false,
+      durMin: null
+    };
+    todos.push(todo);
+    document.getElementById('ti-label').value = '';
+    document.getElementById('ti-sub').value   = '';
+    document.getElementById('todo-form').classList.remove('open');
+
+    renderTodos();
+    saveTodos();
+    syncToServer();
+  }
+
+  // ── Todo render ───────────────────────────────────────────
+  function renderTodos() {
+    const list = document.getElementById('todo-list');
+    list.innerHTML = '';
+
+    const sorted = [...todos].sort((a, b) => a.order - b.order);
+
+    if (sorted.length === 0) {
+      list.innerHTML = '<li class="empty-msg">할 일을 추가해 주세요</li>';
+      updateProgress();
+      return;
     }
-    function updateClock() {
-      const d = new Date();
-      document.getElementById('now-badge').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
-    }
 
-    /* ── localStorage 저장/복원 ── */
-    function saveState() {
-      const data = {
-        done: Array.from(document.querySelectorAll('.item.done')).map(el => el.id),
-        companies: Array.from(document.querySelectorAll('.company-item')).map(el => ({
-          name: el.querySelector('.company-name').textContent,
-          role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
-          url: el.dataset.url || '',
-          date: el.dataset.date || '',
-          applied: el.classList.contains('applied')
-        })),
-        timers: {}
-      };
-      Object.keys(state).forEach(id => {
-        if (state[id] && state[id].endTime) {
-          data.timers[id] = { endTime: state[id].endTime, durMin: state[id].durMin };
-        }
+    sorted.forEach(todo => {
+      const li = document.createElement('li');
+      li.className = `todo-item priority-${todo.priority}` + (todo.done ? ' done' : '');
+      li.dataset.id = todo.id;
+      li.draggable = true;
+
+      li.innerHTML = `
+        <div class="todo-main">
+          <span class="drag-handle" title="드래그로 순서 변경">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9"  cy="5"  r="1" fill="currentColor"/><circle cx="9"  cy="12" r="1" fill="currentColor"/><circle cx="9"  cy="19" r="1" fill="currentColor"/>
+              <circle cx="15" cy="5"  r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="priority-dot"></span>
+          <div class="todo-check">
+            <svg class="todo-check-icon" width="10" height="8" viewBox="0 0 12 9" fill="none">
+              <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="todo-content">
+            <div class="todo-label">${esc(todo.label)}</div>
+            ${todo.sub ? `<div class="todo-sub">${esc(todo.sub)}</div>` : ''}
+          </div>
+          <div class="todo-actions">
+            <button class="icon-btn danger" title="삭제" data-delete="${esc(todo.id)}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="todo-timer">
+          <div class="duration-row">
+            <button class="dur-btn" data-min="30">30분</button>
+            <button class="dur-btn" data-min="60">1시간</button>
+            <button class="dur-btn" data-min="90">1시간 30분</button>
+            <button class="dur-btn" data-min="120">2시간</button>
+            <div class="dur-custom-wrap">
+              <input class="dur-custom" type="number" min="1" max="480" placeholder="직접" />
+              <span class="dur-unit">분</span>
+            </div>
+          </div>
+          <div class="timer-row">
+            <div class="countdown idle" id="cd-${esc(todo.id)}">시간 선택 후 시작</div>
+            <button class="start-btn" id="start-${esc(todo.id)}" disabled>시작</button>
+            <button class="stop-btn"  id="stop-${esc(todo.id)}">중단</button>
+          </div>
+        </div>
+      `;
+
+      // Event: toggle done (click on main except actions/timer/handle)
+      li.querySelector('.todo-main').addEventListener('click', e => {
+        if (e.target.closest('.todo-actions') || e.target.closest('.drag-handle')) return;
+        toggleTodo(todo.id);
       });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
 
-    function loadState() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      try {
-        const data = JSON.parse(raw);
+      // Event: delete
+      li.querySelector('[data-delete]').addEventListener('click', e => {
+        e.stopPropagation();
+        deleteTodo(todo.id);
+      });
 
-        /* 완료 항목 복원 */
-        if (data.done) {
-          data.done.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('done');
-          });
-          updateProgress();
-        }
+      // Event: duration preset buttons
+      li.querySelectorAll('.dur-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectDur(todo.id, parseInt(btn.dataset.min), btn, li));
+      });
 
-        /* 회사 목록 복원 */
-        if (data.companies && data.companies.length > 0) {
-          const emptyMsg = document.getElementById('empty-msg');
-          if (emptyMsg) emptyMsg.remove();
-          data.companies.forEach(c => {
-            const li = document.createElement('li');
-            li.className = 'company-item' + (c.applied ? ' applied' : '');
-            li.dataset.url = c.url || '';
-            li.dataset.date = c.date || '';
-            li.innerHTML = `
-              <div class="company-check" onclick="toggleCompany(this.parentElement)">
-                <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
-                  <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="company-info" onclick="toggleCompany(this.parentElement)">
-                <div class="company-name">${esc(c.name)}</div>
-                ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
-                ${c.date ? `<div class="company-date">${esc(c.date)}</div>` : ''}
-              </div>
-              ${c.url ? `<a class="url-btn" href="${esc(c.url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
-              <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
-            `;
-            document.getElementById('company-list').appendChild(li);
-          });
-          updateCompanyCount();
-        }
-
-        /* 타이머 복원 */
-        if (data.timers) {
-          Object.keys(data.timers).forEach(id => {
-            const t = data.timers[id];
-            const remaining = Math.floor((t.endTime - Date.now()) / 1000);
-            if (!state[id]) state[id] = {};
-            state[id].durMin = t.durMin;
-            if (remaining > 0) {
-              state[id].endTime = t.endTime;
-              state[id].remaining = remaining;
-              const cd = document.getElementById('cd-' + id);
-              cd.classList.remove('idle');
-              cd.textContent = formatTime(remaining);
-              document.getElementById('start-' + id).disabled = false;
-              const item = document.getElementById(id);
-              item.classList.add('running');
-              state[id].intervalId = setInterval(() => {
-                state[id].remaining--;
-                document.getElementById('cd-' + id).textContent = formatTime(state[id].remaining);
-                if (state[id].remaining <= 0) {
-                  clearInterval(state[id].intervalId);
-                  state[id].intervalId = null;
-                  delete state[id].endTime;
-                  item.classList.remove('running');
-                  document.getElementById('cd-' + id).textContent = '완료!';
-                  sendNotif(item.dataset.label);
-                  saveState();
-                }
-              }, 1000);
-            }
-          });
-        }
-      } catch(e) {}
-    }
-
-    /* ── 직접 입력 이벤트 연결 ── */
-    document.querySelectorAll('.dur-custom').forEach(input => {
-      const wrap = input.closest('.dur-custom-wrap');
-      const item = input.closest('.item');
-      const id = item.id;
-
-      input.addEventListener('input', () => {
-        const min = parseInt(input.value);
+      // Event: custom duration input
+      const customInput = li.querySelector('.dur-custom');
+      const customWrap  = li.querySelector('.dur-custom-wrap');
+      customInput.addEventListener('input', () => {
+        const min = parseInt(customInput.value);
         if (min > 0) {
-          item.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
-          wrap.classList.add('selected');
-          if (!state[id]) state[id] = {};
-          state[id].durMin = min;
-          if (!state[id].intervalId) {
-            const cd = document.getElementById('cd-' + id);
+          li.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+          customWrap.classList.add('selected');
+          const t = timerState[todo.id] || (timerState[todo.id] = {});
+          t.durMin = min;
+          if (!t.intervalId) {
+            const cd = document.getElementById('cd-' + todo.id);
             cd.classList.remove('idle');
             cd.textContent = formatTime(min * 60);
-            document.getElementById('start-' + id).disabled = false;
+            document.getElementById('start-' + todo.id).disabled = false;
           }
         } else {
-          wrap.classList.remove('selected');
+          customWrap.classList.remove('selected');
+        }
+      });
+      customInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const min = parseInt(customInput.value);
+          if (min > 0) startTimer(todo.id, li);
         }
       });
 
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const min = parseInt(input.value);
-          if (min > 0) startTimer(id);
-        }
-      });
+      // Event: start / stop
+      document.getElementById('start-' + todo.id).addEventListener('click', () => startTimer(todo.id, li));
+      document.getElementById('stop-'  + todo.id).addEventListener('click', () => stopTimer(todo.id, li));
+
+      // Drag events
+      li.addEventListener('dragstart', onDragStart);
+      li.addEventListener('dragover',  onDragOver);
+      li.addEventListener('dragleave', onDragLeave);
+      li.addEventListener('drop',      onDrop);
+      li.addEventListener('dragend',   onDragEnd);
+
+      // Restore running timer
+      restoreTimer(todo.id, li);
+
+      list.appendChild(li);
     });
 
-    /* ── 프리셋 선택 ── */
-    function selectDur(id, min, btn) {
-      const item = document.getElementById(id);
-      item.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      item.querySelector('.dur-custom-wrap').classList.remove('selected');
-      item.querySelector('.dur-custom').value = '';
+    updateProgress();
+  }
 
-      if (!state[id]) state[id] = {};
-      state[id].durMin = min;
+  // ── Todo actions ──────────────────────────────────────────
+  function toggleTodo(id) {
+    const t = todos.find(x => x.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    renderTodos();
+    saveTodos();
+    syncToServer();
+  }
 
-      if (!state[id].intervalId) {
-        const cd = document.getElementById('cd-' + id);
-        cd.classList.remove('idle');
-        cd.textContent = formatTime(min * 60);
-        document.getElementById('start-' + id).disabled = false;
-      }
+  function deleteTodo(id) {
+    const t = timerState[id];
+    if (t && t.intervalId) clearInterval(t.intervalId);
+    delete timerState[id];
+    todos = todos.filter(x => x.id !== id);
+    todos.forEach((x, i) => { x.order = i; });
+    renderTodos();
+    saveTodos();
+    syncToServer();
+  }
+
+  // ── Drag & Drop ───────────────────────────────────────────
+  let dragSrcId = null;
+
+  function onDragStart(e) {
+    dragSrcId = this.dataset.id;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (this.dataset.id === dragSrcId) return;
+    document.querySelectorAll('.todo-item').forEach(el => {
+      el.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+    const rect = this.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) {
+      this.classList.add('drag-over-top');
+    } else {
+      this.classList.add('drag-over-bottom');
+    }
+  }
+
+  function onDragLeave() {
+    this.classList.remove('drag-over-top', 'drag-over-bottom');
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    if (!dragSrcId || dragSrcId === this.dataset.id) return;
+    const list  = document.getElementById('todo-list');
+    const srcEl = list.querySelector(`[data-id="${dragSrcId}"]`);
+    const tgtEl = this;
+    const rect  = tgtEl.getBoundingClientRect();
+
+    if (e.clientY < rect.top + rect.height / 2) {
+      list.insertBefore(srcEl, tgtEl);
+    } else {
+      list.insertBefore(srcEl, tgtEl.nextSibling);
     }
 
-    /* ── 타이머 시작 ── */
-    function startTimer(id) {
-      const s = state[id];
-      if (!s || !s.durMin) return;
-      if (Notification.permission === 'default') Notification.requestPermission();
+    Array.from(list.querySelectorAll('.todo-item[data-id]')).forEach((el, i) => {
+      const t = todos.find(x => x.id === el.dataset.id);
+      if (t) t.order = i;
+    });
 
-      s.remaining = s.durMin * 60;
-      s.endTime = Date.now() + s.remaining * 1000;
-      const item = document.getElementById(id);
-      item.classList.add('running');
-      saveState();
+    document.querySelectorAll('.todo-item').forEach(el => {
+      el.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+  }
 
-      s.intervalId = setInterval(() => {
-        s.remaining--;
-        document.getElementById('cd-' + id).textContent = formatTime(s.remaining);
-        if (s.remaining <= 0) {
-          clearInterval(s.intervalId);
-          s.intervalId = null;
-          delete s.endTime;
-          item.classList.remove('running');
-          document.getElementById('cd-' + id).textContent = '완료!';
-          sendNotif(item.dataset.label);
-          saveState();
+  function onDragEnd() {
+    document.querySelectorAll('.todo-item').forEach(el => {
+      el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+    });
+    dragSrcId = null;
+    saveTodos();
+  }
+
+  // ── Timer ─────────────────────────────────────────────────
+  function formatTime(sec) {
+    return pad(Math.floor(sec / 60)) + ':' + pad(sec % 60);
+  }
+
+  function selectDur(id, min, btn, li) {
+    li.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    li.querySelector('.dur-custom-wrap').classList.remove('selected');
+    li.querySelector('.dur-custom').value = '';
+
+    const t = timerState[id] || (timerState[id] = {});
+    t.durMin = min;
+    if (!t.intervalId) {
+      const cd = document.getElementById('cd-' + id);
+      cd.classList.remove('idle');
+      cd.textContent = formatTime(min * 60);
+      document.getElementById('start-' + id).disabled = false;
+    }
+  }
+
+  function startTimer(id, li) {
+    const t = timerState[id];
+    if (!t || !t.durMin) return;
+    if (Notification.permission === 'default') Notification.requestPermission();
+
+    t.remaining = t.durMin * 60;
+    t.endTime   = Date.now() + t.remaining * 1000;
+    li.classList.add('running');
+    saveTimers();
+
+    t.intervalId = setInterval(() => {
+      t.remaining--;
+      const cd = document.getElementById('cd-' + id);
+      if (cd) cd.textContent = formatTime(t.remaining);
+      if (t.remaining <= 0) {
+        clearInterval(t.intervalId);
+        t.intervalId = null;
+        delete t.endTime;
+        const liEl = document.querySelector(`.todo-item[data-id="${id}"]`);
+        if (liEl) liEl.classList.remove('running');
+        if (cd) cd.textContent = '완료!';
+        const todo = todos.find(x => x.id === id);
+        if (todo && Notification.permission === 'granted') {
+          new Notification('시간 완료!', { body: todo.label + ' 시간이 끝났어요.' });
+        }
+        saveTimers();
+      }
+    }, 1000);
+  }
+
+  function stopTimer(id, li) {
+    const t = timerState[id];
+    if (!t) return;
+    clearInterval(t.intervalId);
+    t.intervalId = null;
+    delete t.endTime;
+    li.classList.remove('running');
+    const cd = document.getElementById('cd-' + id);
+    if (cd) cd.textContent = formatTime(t.remaining || 0);
+    saveTimers();
+  }
+
+  function restoreTimer(id, li) {
+    const t = timerState[id];
+    if (!t) return;
+    const remaining = t.endTime ? Math.floor((t.endTime - Date.now()) / 1000) : 0;
+
+    if (remaining > 0) {
+      t.remaining = remaining;
+      const cd = document.getElementById('cd-' + id);
+      cd.classList.remove('idle');
+      cd.textContent = formatTime(remaining);
+      document.getElementById('start-' + id).disabled = false;
+      li.classList.add('running');
+
+      t.intervalId = setInterval(() => {
+        t.remaining--;
+        const cdEl = document.getElementById('cd-' + id);
+        if (cdEl) cdEl.textContent = formatTime(t.remaining);
+        if (t.remaining <= 0) {
+          clearInterval(t.intervalId);
+          t.intervalId = null;
+          delete t.endTime;
+          const liEl = document.querySelector(`.todo-item[data-id="${id}"]`);
+          if (liEl) liEl.classList.remove('running');
+          if (cdEl) cdEl.textContent = '완료!';
+          const todo = todos.find(x => x.id === id);
+          if (todo && Notification.permission === 'granted') {
+            new Notification('시간 완료!', { body: todo.label + ' 시간이 끝났어요.' });
+          }
+          saveTimers();
         }
       }, 1000);
+    } else if (t.durMin) {
+      const cd = document.getElementById('cd-' + id);
+      cd.classList.remove('idle');
+      cd.textContent = formatTime(t.durMin * 60);
+      document.getElementById('start-' + id).disabled = false;
+    }
+  }
+
+  // ── Company form ──────────────────────────────────────────
+  function toggleCompanyForm() {
+    const form = document.getElementById('company-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) document.getElementById('ci-name').focus();
+  }
+
+  function addCompany() {
+    const name = document.getElementById('ci-name').value.trim();
+    if (!name) { document.getElementById('ci-name').focus(); return; }
+
+    companies.push({
+      name,
+      role: document.getElementById('ci-role').value.trim(),
+      url:  document.getElementById('ci-url').value.trim(),
+      date: isoToDot(todayISO()),
+      applied: false
+    });
+    document.getElementById('ci-name').value = '';
+    document.getElementById('ci-role').value = '';
+    document.getElementById('ci-url').value  = '';
+    document.getElementById('company-form').classList.remove('open');
+
+    renderCompanies();
+    saveCompanies();
+    syncToServer();
+  }
+
+  // ── Company render ────────────────────────────────────────
+  function renderCompanies() {
+    const list = document.getElementById('company-list');
+    list.innerHTML = '';
+
+    const pastGroups = getPastGroups();
+
+    if (companies.length === 0 && pastGroups.length === 0) {
+      list.innerHTML = '<li class="empty-msg">회사를 추가해 주세요</li>';
+      updateCompanyBadge();
+      return;
     }
 
-    /* ── 타이머 중단 ── */
-    function stopTimer(id) {
-      const s = state[id];
-      if (!s) return;
-      clearInterval(s.intervalId);
-      s.intervalId = null;
-      delete s.endTime;
-      document.getElementById(id).classList.remove('running');
-      document.getElementById('cd-' + id).textContent = formatTime(s.remaining);
-      saveState();
+    companies.forEach((c, idx) => {
+      list.appendChild(buildCompanyLi(c, idx, false));
+    });
+
+    pastGroups.forEach(({ date, list: cs }) => {
+      if (!cs || cs.length === 0) return;
+      const sep = document.createElement('li');
+      sep.innerHTML = `<div class="company-date-sep">${date}</div>`;
+      list.appendChild(sep);
+      cs.forEach(c => list.appendChild(buildCompanyLi(c, -1, true)));
+    });
+
+    updateCompanyBadge();
+  }
+
+  function buildCompanyLi(c, idx, isPast) {
+    const li = document.createElement('li');
+    li.className = 'company-item' + (c.applied ? ' applied' : '') + (isPast ? ' past' : '');
+    if (!isPast) li.dataset.idx = idx;
+
+    li.innerHTML = `
+      <div class="company-check">
+        <svg class="company-check-icon" width="10" height="8" viewBox="0 0 12 9" fill="none">
+          <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="company-info">
+        <div class="company-name">${esc(c.name)}</div>
+        ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
+        ${c.date ? `<div class="company-date">${esc(c.date)}</div>` : ''}
+      </div>
+      ${c.url ? `<a class="url-chip" href="${esc(c.url)}" target="_blank">공고</a>` : ''}
+      ${!isPast ? `<div class="company-actions">
+        <button class="icon-btn danger" data-del-idx="${idx}" title="삭제">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>` : ''}
+    `;
+
+    if (!isPast) {
+      li.querySelector('.company-check').addEventListener('click', e => {
+        e.stopPropagation();
+        toggleCompany(idx);
+      });
+      li.querySelector('.company-info').addEventListener('click', () => toggleCompany(idx));
+      const delBtn = li.querySelector('[data-del-idx]');
+      if (delBtn) delBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteCompany(parseInt(delBtn.dataset.delIdx));
+      });
+      // prevent URL click from toggling
+      const urlLink = li.querySelector('.url-chip');
+      if (urlLink) urlLink.addEventListener('click', e => e.stopPropagation());
     }
 
-    function formatTime(sec) {
-      const m = Math.floor(sec / 60);
-      const s = sec % 60;
-      return pad(m) + ':' + pad(s);
-    }
+    return li;
+  }
 
-    /* ── 알림 ── */
-    function sendNotif(label) {
-      if (Notification.permission !== 'granted') return;
-      new Notification('시간 완료!', { body: label + ' 시간이 끝났어요.' });
-    }
+  function toggleCompany(idx) {
+    if (idx < 0 || idx >= companies.length) return;
+    companies[idx].applied = !companies[idx].applied;
+    renderCompanies();
+    saveCompanies();
+    syncToServer();
+  }
 
-    /* ── 체크 토글 ── */
-    function toggle(id) {
-      document.getElementById(id).classList.toggle('done');
-      updateProgress();
-      saveState();
-      syncToServer();
-    }
+  function deleteCompany(idx) {
+    if (idx < 0 || idx >= companies.length) return;
+    companies.splice(idx, 1);
+    renderCompanies();
+    saveCompanies();
+    syncToServer();
+  }
 
-    function updateProgress() {
-      const total = document.querySelectorAll('.item').length;
-      const done  = document.querySelectorAll('.item.done').length;
-      document.getElementById('bar').style.width = Math.round(done / total * 100) + '%';
-      document.getElementById('label').textContent = done + ' / ' + total + ' 완료';
-    }
+  function updateCompanyBadge() {
+    const total   = companies.length;
+    const applied = companies.filter(c => c.applied).length;
+    document.getElementById('company-badge').textContent =
+      total === 0 ? '0개' : (applied === total ? `${total}개 완료 ✓` : `${applied} / ${total}개`);
+  }
 
-    /* ── 서버 연동 ── */
-    function syncToServer() {
-      if (location.protocol === 'file:') return;
-      const companies = Array.from(document.querySelectorAll('.company-item:not(.past)')).map(el => ({
-        name: el.querySelector('.company-name').textContent,
-        role: el.querySelector('.company-role') ? el.querySelector('.company-role').textContent : '',
-        url: el.dataset.url || '',
-        date: el.dataset.date || '',
-        applied: el.classList.contains('applied')
-      }));
-      const todos = Array.from(document.querySelectorAll('.item')).map(el => ({
-        id: el.id,
-        label: el.dataset.label,
-        done: el.classList.contains('done')
-      }));
-      fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companies, todos })
+  function getPastGroups() {
+    const today = todayISO();
+    return Object.entries(histIndex)
+      .filter(([d]) => d !== today)
+      .sort(([a],[b]) => b.localeCompare(a))
+      .slice(0, 5)
+      .map(([d, v]) => ({
+        date: isoToDot(d),
+        list: Array.isArray(v) ? v : (v.companies || [])
+      }))
+      .filter(g => g.list.length > 0);
+  }
+
+  // ── Server sync ───────────────────────────────────────────
+  function syncToServer() {
+    if (location.protocol === 'file:') return;
+    fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companies: companies.map(c => ({...c})),
+        todos: todos.map(t => ({ id: t.id, label: t.label, done: t.done }))
       })
-        .then(r => r.json())
-        .then(() => setSyncStatus('ok'))
-        .catch(() => setSyncStatus('err'));
+    })
+      .then(r => r.json())
+      .then(() => setSyncStatus('ok'))
+      .catch(() => setSyncStatus('err'));
+  }
+
+  function syncTodosToServer() {
+    if (location.protocol === 'file:') return;
+    fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ todos })
+    }).catch(() => {});
+  }
+
+  function setSyncStatus(status) {
+    const el   = document.getElementById('sync-status');
+    const text = document.getElementById('sync-text');
+    el.className = 'sync-status ' + status;
+    text.textContent = status === 'ok'
+      ? '워크스페이스 연동됨 · 44-이직현황.md 자동 커밋'
+      : '서버 연결 끊김';
+  }
+
+  // ── Calendar ──────────────────────────────────────────────
+  function changeMonth(delta) {
+    calState.month += delta;
+    if (calState.month < 0)  { calState.month = 11; calState.year--; }
+    if (calState.month > 11) { calState.month = 0;  calState.year++; }
+    localStorage.setItem(LS_CAL, JSON.stringify({ year: calState.year, month: calState.month }));
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const { year, month } = calState;
+    document.getElementById('cal-month-label').textContent = `${year}년 ${MONTHS_KO[month]}`;
+
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    // Weekday headers Mon–Sun
+    ['월','화','수','목','금','토','일'].forEach(d => {
+      const cell = document.createElement('div');
+      cell.className = 'cal-weekday';
+      cell.textContent = d;
+      grid.appendChild(cell);
+    });
+
+    const firstDow   = new Date(year, month, 1).getDay();       // 0=Sun
+    const startOff   = (firstDow + 6) % 7;                      // Mon-start offset
+    const lastDay    = new Date(year, month + 1, 0).getDate();
+    const todayStr   = todayISO();
+
+    // Leading empty cells
+    for (let i = 0; i < startOff; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-day empty';
+      grid.appendChild(cell);
     }
 
-    function setSyncStatus(status) {
-      const el = document.getElementById('sync-status');
-      if (!el) return;
-      el.className = 'sync-status ' + status;
-      el.innerHTML = status === 'ok'
-        ? '<span class="sync-dot"></span>워크스페이스 연동됨 · 44-이직현황.md 자동 커밋'
-        : '<span class="sync-dot"></span>서버 연결 끊김';
-    }
+    // Day cells
+    for (let d = 1; d <= lastDay; d++) {
+      const dateISO = `${year}-${pad(month+1)}-${pad(d)}`;
+      const entry   = histIndex[dateISO];
+      const isToday = dateISO === todayStr;
 
-    /* ── 회사 리스트 ── */
-    function addCompany() {
-      const nameEl = document.getElementById('input-name');
-      const roleEl = document.getElementById('input-role');
-      const urlEl  = document.getElementById('input-url');
-      const name = nameEl.value.trim();
-      const role = roleEl.value.trim();
-      const url  = urlEl.value.trim();
-      if (!name) { nameEl.focus(); return; }
+      const hasTodos     = entry && !Array.isArray(entry) && (entry.todos || []).length > 0;
+      const hasCompanies = entry && (Array.isArray(entry) ? entry.length > 0 : (entry.companies || []).length > 0);
+      const hasData      = hasTodos || hasCompanies || isToday;
 
-      const emptyMsg = document.getElementById('empty-msg');
-      if (emptyMsg) emptyMsg.remove();
+      const cell = document.createElement('div');
+      cell.className = 'cal-day' + (isToday ? ' today' : '') + (!hasData ? ' no-data' : '') +
+                       (calState.selected === dateISO ? ' selected' : '');
 
-      const today = todayDisplay();
-      const li = document.createElement('li');
-      li.className = 'company-item';
-      li.dataset.url = url;
-      li.dataset.date = today;
-      li.innerHTML = `
-        <div class="company-check" onclick="toggleCompany(this.parentElement)">
-          <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
-            <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="company-info" onclick="toggleCompany(this.parentElement)">
-          <div class="company-name">${esc(name)}</div>
-          ${role ? `<div class="company-role">${esc(role)}</div>` : ''}
-          <div class="company-date">${today}</div>
-        </div>
-        ${url ? `<a class="url-btn" href="${esc(url)}" target="_blank" onclick="event.stopPropagation()">공고</a>` : ''}
-        <button class="delete-btn" onclick="deleteCompany(this.parentElement)">✕</button>
-      `;
-      document.getElementById('company-list').appendChild(li);
-      nameEl.value = ''; roleEl.value = ''; urlEl.value = '';
-      nameEl.focus();
-      updateCompanyCount();
-      saveState();
-      syncToServer();
-    }
-
-    function toggleCompany(el) { el.classList.toggle('applied'); updateCompanyCount(); saveState(); syncToServer(); }
-
-    function deleteCompany(el) {
-      el.remove();
-      if (!document.querySelector('.company-item')) {
-        const empty = document.createElement('li');
-        empty.className = 'empty-msg'; empty.id = 'empty-msg';
-        empty.textContent = '회사를 추가해 주세요';
-        document.getElementById('company-list').appendChild(empty);
+      let dotsHtml = '';
+      if (hasTodos || hasCompanies) {
+        dotsHtml = '<div class="cal-dots">';
+        if (hasTodos)     dotsHtml += '<div class="cal-dot todo"></div>';
+        if (hasCompanies) dotsHtml += '<div class="cal-dot company"></div>';
+        dotsHtml += '</div>';
       }
-      updateCompanyCount();
-      saveState();
-      syncToServer();
+
+      cell.innerHTML = `<div class="cal-day-num">${d}</div>${dotsHtml}`;
+
+      if (hasData) {
+        cell.addEventListener('click', () => openDetailPanel(dateISO));
+      }
+
+      grid.appendChild(cell);
+    }
+  }
+
+  // ── Detail panel ──────────────────────────────────────────
+  function openDetailPanel(dateISO) {
+    calState.selected = dateISO;
+    renderCalendar();
+
+    document.getElementById('detail-date').textContent = isoToDot(dateISO);
+    const body = document.getElementById('detail-body');
+    body.innerHTML = '';
+
+    const isToday = dateISO === todayISO();
+    const entry   = histIndex[dateISO];
+
+    let todosData     = [];
+    let companiesData = [];
+
+    if (isToday) {
+      todosData     = todos.map(t => ({ label: t.label, done: t.done }));
+      companiesData = companies.map(c => ({ name: c.name, role: c.role, applied: c.applied }));
+    } else if (entry) {
+      todosData     = Array.isArray(entry) ? [] : (entry.todos || []);
+      companiesData = Array.isArray(entry) ? entry : (entry.companies || []);
     }
 
-    function updateCompanyCount() {
-      const total   = document.querySelectorAll('.company-item:not(.past)').length;
-      const applied = document.querySelectorAll('.company-item:not(.past).applied').length;
-      document.getElementById('company-count').textContent =
-        total === 0 ? '0개' : applied === total ? total + '개 완료 ✓' : applied + ' / ' + total + '개';
+    if (todosData.length > 0) {
+      const h = document.createElement('div');
+      h.className = 'detail-section-title';
+      h.textContent = 'Tasks';
+      body.appendChild(h);
+
+      const ul = document.createElement('ul');
+      ul.className = 'detail-list';
+      todosData.forEach(t => {
+        ul.innerHTML += `
+          <li class="detail-item ${t.done ? 'done' : ''}">
+            <span class="detail-dot"></span>
+            <span class="detail-name">${esc(t.label)}</span>
+          </li>`;
+      });
+      body.appendChild(ul);
     }
 
-    function esc(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    if (companiesData.length > 0) {
+      const h2 = document.createElement('div');
+      h2.className = 'detail-section-title';
+      h2.textContent = 'Applications';
+      body.appendChild(h2);
+
+      const ul2 = document.createElement('ul');
+      ul2.className = 'detail-list';
+      companiesData.forEach(c => {
+        ul2.innerHTML += `
+          <li class="detail-item ${c.applied ? 'applied' : ''}">
+            <span class="detail-dot"></span>
+            <span class="detail-name">${esc(c.name)}${c.role ? `<span class="detail-role"> · ${esc(c.role)}</span>` : ''}</span>
+          </li>`;
+      });
+      body.appendChild(ul2);
     }
 
-    document.getElementById('input-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-role').focus(); });
-    document.getElementById('input-role').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('input-url').focus(); });
-    document.getElementById('input-url').addEventListener('keydown', e => { if (e.key === 'Enter') addCompany(); });
-
-    /* ── 이전 기록 ── */
-    function loadHistory() {
-      if (location.protocol === 'file:') return;
-      fetch('/api/history')
-        .then(r => r.json())
-        .then(history => renderHistory(history))
-        .catch(() => {});
+    if (todosData.length === 0 && companiesData.length === 0) {
+      body.innerHTML = '<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:24px 0;">기록 없음</p>';
     }
 
-    function renderHistory(history) {
-      const todayKey = todayDisplay();
-      const pastDates = Object.keys(history).filter(d => d !== todayKey).sort().reverse();
-      if (pastDates.length === 0) return;
+    document.getElementById('detail-panel').classList.add('open');
+    document.getElementById('panel-overlay').classList.add('open');
+  }
 
-      // 1. 회사 리스트 하단에 이전 날짜 회사 추가 (read-only)
-      const companyListEl = document.getElementById('company-list');
-      pastDates.forEach(date => {
-        const entry = history[date];
-        const companies = Array.isArray(entry) ? entry : (entry.companies || []);
-        if (companies.length === 0) return;
+  function closeDetailPanel() {
+    calState.selected = null;
+    document.getElementById('detail-panel').classList.remove('open');
+    document.getElementById('panel-overlay').classList.remove('open');
+    renderCalendar();
+  }
 
-        const sep = document.createElement('li');
-        sep.className = 'company-date-sep-li';
-        sep.innerHTML = `<div class="company-date-sep">${date}</div>`;
-        companyListEl.appendChild(sep);
-
-        companies.forEach(c => {
-          const li = document.createElement('li');
-          li.className = 'company-item past' + (c.applied ? ' applied' : '');
-          li.innerHTML = `
-            <div class="company-check">
-              <svg width="11" height="8" viewBox="0 0 12 9" fill="none">
-                <path d="M1 4L4.5 7.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="company-info">
-              <div class="company-name">${esc(c.name)}</div>
-              ${c.role ? `<div class="company-role">${esc(c.role)}</div>` : ''}
-              <div class="company-date">${c.date || date}</div>
-            </div>
-            ${c.url ? `<a class="url-btn" href="${esc(c.url)}" target="_blank" onclick="event.stopPropagation()" style="pointer-events:auto;">공고</a>` : ''}
-          `;
-          companyListEl.appendChild(li);
+  // ── Load from server ──────────────────────────────────────
+  function loadHistory() {
+    if (location.protocol === 'file:') return;
+    fetch('/api/history')
+      .then(r => r.json())
+      .then(hist => {
+        histIndex = {};
+        Object.entries(hist).forEach(([k, v]) => {
+          histIndex[k.replace(/\./g, '-')] = v;
         });
-      });
+        renderCalendar();
+        renderCompanies();
+      })
+      .catch(() => {});
+  }
 
-      // 2. 이전 기록 섹션에 할일 완료 이력 표시
-      const hasTodos = pastDates.some(date => {
-        const entry = history[date];
-        return !Array.isArray(entry) && (entry.todos || []).length > 0;
-      });
-      if (!hasTodos) return;
+  function loadServerTodos() {
+    if (location.protocol === 'file:') return;
+    fetch('/api/todos')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.todos || data.todos.length === 0) return;
+        const serverTime = new Date(data.updatedAt || 0).getTime();
+        const localRaw   = localStorage.getItem(LS_TODOS);
+        const localTime  = localRaw ? (JSON.parse(localRaw)._updatedAt || 0) : 0;
+        if (serverTime > localTime) {
+          todos = data.todos;
+          renderTodos();
+        }
+      })
+      .catch(() => {});
+  }
 
-      document.getElementById('history-section').style.display = 'block';
-      const wrap = document.getElementById('history-wrap');
-      wrap.innerHTML = '';
+  // ── Keyboard shortcuts ────────────────────────────────────
+  document.getElementById('ti-label').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('ti-sub').focus(); }
+    if (e.key === 'Escape') toggleTodoForm();
+  });
+  document.getElementById('ti-sub').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addTodo(); }
+    if (e.key === 'Escape') toggleTodoForm();
+  });
+  document.getElementById('ci-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('ci-role').focus();
+    if (e.key === 'Escape') toggleCompanyForm();
+  });
+  document.getElementById('ci-role').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('ci-url').focus();
+    if (e.key === 'Escape') toggleCompanyForm();
+  });
+  document.getElementById('ci-url').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCompany();
+    if (e.key === 'Escape') toggleCompanyForm();
+  });
 
-      pastDates.forEach(date => {
-        const entry = history[date];
-        const todos = Array.isArray(entry) ? [] : (entry.todos || []);
-        const companies = Array.isArray(entry) ? entry : (entry.companies || []);
-        if (todos.length === 0) return;
+  // ── Boot ──────────────────────────────────────────────────
+  renderHeader();
+  updateClock();
+  setInterval(updateClock, 30000);
 
-        const doneCount = todos.filter(t => t.done).length;
-        const appliedCount = companies.filter(c => c.applied).length;
-        const listId = 'hl-' + date.replace(/\./g, '-');
+  loadLocal();
+  renderTodos();
+  renderCompanies();
+  renderCalendar();
+  loadHistory();
+  loadServerTodos();
 
-        const day = document.createElement('div');
-        day.className = 'history-day';
-        day.innerHTML = `
-          <div class="history-date" onclick="document.getElementById('${listId}').classList.toggle('open')">
-            <span>${date}</span>
-            <span class="history-count">할일 ${doneCount}/${todos.length} · 지원 ${appliedCount}/${companies.length}개</span>
-          </div>
-          <ul class="history-list" id="${listId}">
-            ${todos.map(t => `
-              <li class="history-item ${t.done ? 'done' : ''}">
-                <span class="history-dot"></span>
-                <span class="history-name">${esc(t.label)}</span>
-              </li>
-            `).join('')}
-          </ul>
-        `;
-        wrap.appendChild(day);
-      });
-    }
-
-    function toggleHistory() {
-      const wrap = document.getElementById('history-wrap');
-      const btn  = document.getElementById('history-toggle');
-      const open = wrap.style.display === 'none';
-      wrap.style.display = open ? 'block' : 'none';
-      btn.textContent = open ? '접기' : '펼치기';
-    }
-
-    updateClock();
-    setInterval(updateClock, 30000);
-    loadState();
-    loadHistory();
-
-    if (location.protocol !== 'file:') setSyncStatus('ok');
-  </script>
+  if (location.protocol !== 'file:') setSyncStatus('ok');
+</script>
 </body>
 </html>

@@ -338,7 +338,8 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
+  const reqPath = req.url.split('?')[0];
+  if (req.method === 'GET' && (reqPath === '/' || reqPath === '/index.html')) {
     try {
       const html = fs.readFileSync(HTML_FILE, 'utf-8');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');

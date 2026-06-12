@@ -30,11 +30,55 @@
     const popup = document.createElement('div');
     popup.id = POPUP_ID;
     popup.innerHTML = `<iframe src="${serverUrl}" allowtransparency="true"></iframe>`;
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.id = '__jc-float-resize__';
+    popup.appendChild(resizeHandle);
+
     document.body.appendChild(popup);
 
-    // ── 위치 초기화 ─────────────────────────────────────────────────────────
-    chrome.storage.sync.get({ btnXPct: DEFAULT_POS.xPct, btnYPct: DEFAULT_POS.yPct }, ({ btnXPct, btnYPct }) => {
-      applyPosition(btn, pctToPos(btnXPct, btnYPct));
+    // ── 크기 초기화 ─────────────────────────────────────────────────────────
+    let popupW = null;  // null → 뷰포트 기본값
+    let popupH = null;
+
+    // ── 위치·크기 초기화 ────────────────────────────────────────────────────
+    chrome.storage.sync.get(
+      { btnXPct: DEFAULT_POS.xPct, btnYPct: DEFAULT_POS.yPct, popupW: null, popupH: null },
+      ({ btnXPct, btnYPct, popupW: sw, popupH: sh }) => {
+        applyPosition(btn, pctToPos(btnXPct, btnYPct));
+        if (sw !== null) popupW = sw;
+        if (sh !== null) popupH = sh;
+      }
+    );
+
+    // ── 팝업 리사이즈 ───────────────────────────────────────────────────────
+    let resizing = false, rsX, rsY, rsW, rsH;
+
+    resizeHandle.addEventListener('pointerdown', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      resizing = true;
+      rsX = e.clientX; rsY = e.clientY;
+      rsW = popup.offsetWidth; rsH = popup.offsetHeight;
+      resizeHandle.setPointerCapture(e.pointerId);
+      const ifrm = popup.querySelector('iframe');
+      if (ifrm) ifrm.style.setProperty('pointer-events', 'none', 'important');
+    });
+
+    resizeHandle.addEventListener('pointermove', e => {
+      if (!resizing) return;
+      popupW = clamp(rsW + (e.clientX - rsX), 320, window.innerWidth  - 48);
+      popupH = clamp(rsH + (e.clientY - rsY), 400, window.innerHeight - 48);
+      popup.style.setProperty('width',  `${popupW}px`, 'important');
+      popup.style.setProperty('height', `${popupH}px`, 'important');
+    });
+
+    resizeHandle.addEventListener('pointerup', () => {
+      if (!resizing) return;
+      resizing = false;
+      const ifrm = popup.querySelector('iframe');
+      if (ifrm) ifrm.style.removeProperty('pointer-events');
+      chrome.storage.sync.set({ popupW, popupH });
     });
 
     // ── 팝업 토글 ───────────────────────────────────────────────────────────
@@ -120,7 +164,6 @@
 
         if (isOpen) positionPopup();
       } else {
-        // 이동 없으면 클릭으로 처리
         isOpen ? closePopup() : openPopup();
       }
     });
@@ -130,8 +173,8 @@
       const br = btn.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const pw = Math.min(800, vw - 48);
-      const ph = Math.min(620, vh - 108);
+      const pw = popupW !== null ? clamp(popupW, 320, vw - 48) : Math.min(800, vw - 48);
+      const ph = popupH !== null ? clamp(popupH, 400, vh - 48) : Math.min(620, vh - 108);
       const gap = 10;
 
       // 가로: 버튼 오른쪽 정렬, 뷰포트 초과 시 왼쪽 정렬
@@ -157,6 +200,7 @@
         height: ${ph}px !important;
       `;
     }
+
   }
 
   // ── 유틸 ──────────────────────────────────────────────────────────────────

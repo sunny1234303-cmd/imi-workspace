@@ -88,6 +88,16 @@
       border-top: 1px solid var(--border-subtle);
       letter-spacing: -0.01em; line-height: 1.4;
     }
+    .header-message {
+      font-size: 13px; color: var(--text-primary);
+      margin-top: 6px; letter-spacing: -0.02em; line-height: 1.5;
+    }
+    .header-name-btn {
+      font-weight: 600; cursor: pointer;
+      border-bottom: 1px dashed var(--text-muted);
+      padding-bottom: 1px;
+    }
+    .header-name-btn:hover { border-bottom-color: var(--text-primary); }
 
     /* ── 이전 데이터 토글 ── */
     .history-toggle {
@@ -807,6 +817,7 @@
       .app-body { grid-template-columns: 1fr; }
       .right-panel { position: static; height: auto; border-top: 1px solid var(--border-subtle); }
     }
+
   </style>
 </head>
 <body>
@@ -826,6 +837,7 @@
       <span class="progress-label" id="progress-label">0 / 0 완료</span>
     </div>
     <div class="header-briefing" id="header-briefing">로딩 중…</div>
+    <div class="header-message" id="header-message"></div>
   </header>
 
   <div class="app-body">
@@ -870,6 +882,7 @@
       <hr class="section-divider" />
 
       <!-- Applications -->
+      <div id="company-section">
       <div class="section-header">
         <div class="section-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
@@ -908,6 +921,8 @@
       </div>
 
       <ul class="company-list" id="company-list"></ul>
+
+      </div><!-- /#company-section -->
 
       <!-- 이전 데이터 토글 -->
       <button class="history-toggle" id="history-toggle" onclick="toggleHistoryPanel()">
@@ -1242,17 +1257,125 @@
     updateBriefing();
   }
 
+  // ── 이름 설정 ────────────────────────────────────────────────
+  const USER_NAME_KEY = 'checklist-user-name';
+  function getUserName() { return localStorage.getItem(USER_NAME_KEY) || '서니'; }
+  function editUserName() {
+    const cur = getUserName();
+    const next = window.prompt('이름을 입력해주세요', cur);
+    if (next !== null && next.trim()) {
+      localStorage.setItem(USER_NAME_KEY, next.trim());
+      updateBriefing();
+    }
+  }
+
+  // ── 일일 메시지 ──────────────────────────────────────────────
+  function getDailyMessage({ name, total, done, events, pending }) {
+    const now   = new Date();
+    const dow   = now.getDay();   // 0=일 1=월 … 6=토
+    const hour  = now.getHours();
+    const seed  = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    const pick  = (arr) => arr[seed % arr.length];
+
+    if (total > 0 && done === total) {
+      return pick([
+        `오늘 할일을 모두 완료했어요! 정말 대단해요.`,
+        `모든 할일 완료! 오늘 하루 수고 많으셨어요.`,
+        `완벽한 하루였어요. 잘 쉬세요!`,
+      ]);
+    }
+
+    const ratio = total > 0 ? done / total : -1;
+
+    if (total >= 5 && ratio < 0.3) {
+      return pick([
+        `할일이 많은 날이에요. 우선순위를 세우는 걸 추천드려요!`,
+        `오늘은 하나씩 차근차근 해봐요. 리스트가 길어도 괜찮아요.`,
+        `집중이 필요한 날이에요. 중요한 것 먼저 시작해봐요!`,
+      ]);
+    }
+
+    if (events >= 3) {
+      return pick([
+        `일정이 많은 날이에요. 이동 시간도 미리 챙겨두세요.`,
+        `오늘 바쁜 하루예요. 중간중간 쉬는 시간도 중요해요.`,
+      ]);
+    }
+
+    if (dow === 1) {
+      return pick([
+        `새로운 한 주가 시작됐어요. 이번 주도 잘 해봐요!`,
+        `월요일 파이팅! 작은 것 하나부터 시작해봐요.`,
+      ]);
+    }
+
+    if (dow === 5) {
+      return pick([
+        `한 주의 마무리가 다가왔어요. 잘 마무리해봐요!`,
+        `이번 주도 수고 많았어요. 조금만 더 파이팅!`,
+      ]);
+    }
+
+    if (dow === 0 || dow === 6) {
+      return pick([
+        `주말이에요. 충분히 쉬는 것도 중요해요.`,
+        `오늘은 여유롭게 보내도 좋아요. 잘 쉬세요!`,
+      ]);
+    }
+
+    if (hour < 10) {
+      return pick([
+        `좋은 아침이에요! 오늘도 잘 부탁드려요.`,
+        `하루를 상쾌하게 시작해봐요!`,
+        `오늘의 첫 시작이에요. 작은 것부터 해봐요!`,
+      ]);
+    }
+
+    if (hour >= 22) {
+      return pick([
+        `오늘 하루도 수고했어요. 충분히 쉬세요.`,
+        `내일을 위해 편히 쉬는 건 어때요?`,
+      ]);
+    }
+
+    if (pending > 0) {
+      return pick([
+        `지원 중인 곳의 소식을 기다리고 있어요. 잘 될 거예요!`,
+        `오늘도 좋은 결과가 있을 거예요. 기대해봐요.`,
+      ]);
+    }
+
+    if (ratio >= 0.5 && ratio < 1) {
+      return pick([
+        `절반 이상 완료했어요! 순조롭게 진행 중이에요.`,
+        `잘 하고 있어요. 계속 이 속도로 가봐요!`,
+      ]);
+    }
+
+    return pick([
+      `오늘도 차근차근 해봐요!`,
+      `오늘 하루도 잘 부탁드려요!`,
+      `작은 것부터 시작해보는 건 어때요?`,
+      `오늘은 어떤 하루를 만들어볼까요?`,
+    ]);
+  }
+
   function updateBriefing() {
-    const total = todos.length;
-    const done  = todos.filter(t => t.done).length;
-    const todayEvts = (gcalEvents[todayISO()] || []).length;
-    const parts = [];
+    const total    = todos.length;
+    const done     = todos.filter(t => t.done).length;
+    const events   = (gcalEvents[todayISO()] || []).length;
+    const pending  = companies.filter(c => !c.applied).length;
+    const parts    = [];
     if (total > 0) parts.push(`할일 ${total}개 중 ${done}개 완료`);
     else parts.push('오늘 할일 없음');
-    if (todayEvts > 0) parts.push(`오늘 일정 ${todayEvts}개`);
-    const compCount = companies.filter(c => !c.applied).length;
-    if (compCount > 0) parts.push(`지원 대기 ${compCount}개`);
+    if (events > 0) parts.push(`오늘 일정 ${events}개`);
+    if (pending > 0) parts.push(`지원 대기 ${pending}개`);
     document.getElementById('header-briefing').textContent = parts.join(' · ');
+
+    const name = getUserName();
+    const msg  = getDailyMessage({ name, total, done, events, pending });
+    const el   = document.getElementById('header-message');
+    el.innerHTML = `<span class="header-name-btn" onclick="editUserName()" title="클릭하여 이름 변경">${name}님</span> ${msg}`;
   }
 
   // ── 이전 데이터 패널 ─────────────────────────────────────────
@@ -2403,6 +2526,13 @@
   renderHeader();
   updateClock();
   setInterval(updateClock, 30000);
+
+  // 초기 인사 메시지
+  (function() {
+    const name = getUserName();
+    const el = document.getElementById('header-message');
+    if (el) el.innerHTML = `<span class="header-name-btn" onclick="editUserName()" title="클릭하여 이름 변경">${name}님</span> 간밧테~`;
+  })();
 
   loadLocal();
   renderTodos();

@@ -1478,15 +1478,42 @@
     "companies": [],
     "todos": [
       {
-        "id": "todo-1781195136101",
-        "label": "26년 재무 플랜",
+        "id": "todo-1781168542274",
+        "label": "ㄴㄴㅇㄴㅇㄴ",
         "done": true
       },
       {
-        "id": "todo-1781195154034",
-        "label": "블로그 작성",
+        "id": "todo-1781276023044",
+        "label": "나는야 쥬스",
         "done": false
       }
-    ]
+    ],
+    "memo": ""
+  },
+  "2026.06.13": {
+    "companies": [],
+    "todos": [
+      {
+        "id": "todo-1781278839334",
+        "label": "테스트",
+        "done": false
+      },
+      {
+        "id": "todo-1781278988083",
+        "label": "나는야 쥬스될거야",
+        "done": false
+      },
+      {
+        "id": "todo-1781279029383",
+        "label": "나는야 캐찹될꺼야",
+        "done": false
+      },
+      {
+        "id": "todo-1781279149165",
+        "label": "제발 마지막 테스트",
+        "done": false
+      }
+    ],
+    "memo": ""
   }
 }

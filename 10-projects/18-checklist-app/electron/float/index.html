@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 96px;
+      height: auto;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    body { -webkit-app-region: no-drag; }
+
+    #btn {
+      width: 96px;
+      height: 48px;
+      background: #FAF9F6;
+      border: 1.5px solid #d8d4ce;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08);
+      user-select: none;
+    }
+    #btn.dragging { cursor: grabbing; }
+    #btn.dragging .label { color: #888; }
+
+    #btn:hover .label { color: #888; }
+    #btn:active .label { color: #bbb; }
+
+    .label {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A1A1A;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      pointer-events: none;
+      transition: color 0.15s ease;
+    }
+
+    #timer-badge {
+      display: none;
+      width: 96px;
+      margin-top: 6px;
+      background: #FAF9F6;
+      border: 1.5px solid #d8d4ce;
+      border-radius: 100px;
+      padding: 5px 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      pointer-events: none;
+    }
+    #timer-badge.visible { display: flex; }
+    #timer-time {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1A1A1A;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    #timer-label {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      color: #999;
+      max-width: 76px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #timer-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: #3b82f6;
+      animation: pulse 1.2s ease-in-out infinite;
+      position: absolute;
+      top: 6px; right: 8px;
+    }
+    #timer-badge { position: relative; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <div id="btn">
+    <span class="label">TODO</span>
+  </div>
+  <div id="timer-badge">
+    <span id="timer-dot"></span>
+    <span id="timer-time">00:00</span>
+    <span id="timer-label"></span>
+  </div>
+  <script>
+    const btn = document.getElementById('btn');
+    let dragStartX, dragStartY, winStartX, winStartY;
+    let isDragging = false;
+    const DRAG_THRESHOLD = 4;
+
+    btn.addEventListener('mousedown', async e => {
+      e.preventDefault();
+      dragStartX = e.screenX;
+      dragStartY = e.screenY;
+      isDragging = false;
+      const pos = await window.electronAPI.getFloatPos();
+      winStartX = pos[0];
+      winStartY = pos[1];
+      btn.classList.add('dragging');
+
+      function onMouseMove(e) {
+        const dx = e.screenX - dragStartX;
+        const dy = e.screenY - dragStartY;
+        if (!isDragging && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+          isDragging = true;
+        }
+        if (isDragging) {
+          window.electronAPI.setFloatPos(winStartX + dx, winStartY + dy);
+        }
+      }
+
+      function onMouseUp() {
+        btn.classList.remove('dragging');
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        if (!isDragging) window.electronAPI.toggleMain();
+      }
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    const timerBadge = document.getElementById('timer-badge');
+    const timerTime  = document.getElementById('timer-time');
+    const timerLabel = document.getElementById('timer-label');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function fmt(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) return h + 'h ' + pad(m) + 'm';
+      return m + 'm ' + pad(s) + 's';
+    }
+
+    if (window.electronAPI && window.electronAPI.onFloatTimer) {
+      window.electronAPI.onFloatTimer(data => {
+        if (data && data.remaining > 0) {
+          timerTime.textContent  = fmt(data.remaining);
+          timerLabel.textContent = data.label || '';
+          timerTime.style.color  = data.remaining <= 300 ? '#ef4444' : '#1A1A1A';
+          timerBadge.classList.add('visible');
+        } else {
+          timerBadge.classList.remove('visible');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

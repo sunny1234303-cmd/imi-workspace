@@ -1,23 +1,44 @@
 {
   "todos": [
     {
-      "id": "todo-1781195136101",
-      "label": "26년 재무 플랜",
+      "id": "todo-1781278839334",
+      "label": "테스트",
       "sub": "",
       "priority": "high",
       "order": 0,
-      "done": true,
-      "durMin": null
+      "done": false,
+      "durMin": null,
+      "gtaskId": "bjdhYVluOTFVelRYTXJtMQ"
     },
     {
-      "id": "todo-1781195154034",
-      "label": "블로그 작성",
-      "sub": "아하 모먼트 6월",
+      "id": "todo-1781278988083",
+      "label": "나는야 쥬스될거야",
+      "sub": "",
       "priority": "high",
       "order": 1,
+      "done": false,
+      "durMin": null,
+      "gtaskId": "U3VQM1dyN1ltVzRoTmY0Vw"
+    },
+    {
+      "id": "todo-1781279029383",
+      "label": "나는야 캐찹될꺼야",
+      "sub": "",
+      "priority": "medium",
+      "order": 2,
+      "done": false,
+      "durMin": null,
+      "gtaskId": "djh0bDZ2NUxkRHd6RDRzNQ"
+    },
+    {
+      "id": "todo-1781279149165",
+      "label": "제발 마지막 테스트",
+      "sub": "",
+      "priority": "low",
+      "order": 3,
       "done": false,
       "durMin": null
     }
   ],
-  "updatedAt": "2026-06-11T16:26:47.870Z"
+  "updatedAt": "2026-06-12T15:45:49.168Z"
 }

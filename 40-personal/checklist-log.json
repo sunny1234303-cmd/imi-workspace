@@ -1,0 +1,108 @@
+[
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:22:37",
+    "data": {
+      "fileCount": 0,
+      "todoCount": 3,
+      "companyCount": 0
+    }
+  },
+  {
+    "type": "company_delete",
+    "ts": "2026.06.12 15:22:37",
+    "data": {
+      "name": "호호",
+      "role": "",
+      "url": "ㅗ호",
+      "group": "회사리스트",
+      "date": "2026.06.12"
+    }
+  },
+  {
+    "type": "company_add",
+    "ts": "2026.06.12 15:22:34",
+    "data": {
+      "name": "호호",
+      "group": "회사리스트"
+    }
+  },
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:22:34",
+    "data": {
+      "fileCount": 1,
+      "todoCount": 3,
+      "companyCount": 1
+    }
+  },
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:22:30",
+    "data": {
+      "fileCount": 0,
+      "todoCount": 3,
+      "companyCount": 0
+    }
+  },
+  {
+    "type": "company_delete",
+    "ts": "2026.06.12 15:22:30",
+    "data": {
+      "name": "호",
+      "role": "",
+      "url": "호호",
+      "group": "인사이트",
+      "date": "2026.06.12"
+    }
+  },
+  {
+    "type": "company_add",
+    "ts": "2026.06.12 15:22:23",
+    "data": {
+      "name": "호",
+      "group": "인사이트"
+    }
+  },
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:22:23",
+    "data": {
+      "fileCount": 1,
+      "todoCount": 3,
+      "companyCount": 1
+    }
+  },
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:21:57",
+    "data": {
+      "fileCount": 0,
+      "todoCount": 3,
+      "companyCount": 0
+    }
+  },
+  {
+    "type": "memo_sync",
+    "ts": "2026.06.12 15:21:57",
+    "data": {
+      "date": "2026-06-12"
+    }
+  },
+  {
+    "type": "sync",
+    "ts": "2026.06.12 15:21:56",
+    "data": {
+      "fileCount": 0,
+      "todoCount": 3,
+      "companyCount": 0
+    }
+  },
+  {
+    "type": "memo_sync",
+    "ts": "2026.06.12 15:21:56",
+    "data": {
+      "date": "2026-06-12"
+    }
+  }
+]

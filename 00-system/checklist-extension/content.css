@@ -44,13 +44,15 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
 }
 
-.__jc-btn-img__ {
-  width: 80% !important;
-  height: 80% !important;
-  object-fit: contain !important;
-  display: block !important;
+.__jc-btn-label__ {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #1A1A1A !important;
+  letter-spacing: -0.04em !important;
   pointer-events: none !important;
   user-select: none !important;
+  line-height: 1 !important;
 }
 
 /* ── 팝업 ───────────────────────────────────────────────────────── */

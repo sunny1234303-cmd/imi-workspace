@@ -19,10 +19,10 @@
     btn.id = BTN_ID;
     btn.setAttribute('title', 'Open Checklist (drag to move)');
 
-    const img = document.createElement('img');
-    img.src = chrome.runtime.getURL('icons/button.png');
-    img.className = '__jc-btn-img__';
-    btn.appendChild(img);
+    const label = document.createElement('span');
+    label.className = '__jc-btn-label__';
+    label.textContent = 'TODO';
+    btn.appendChild(label);
 
     document.body.appendChild(btn);
 

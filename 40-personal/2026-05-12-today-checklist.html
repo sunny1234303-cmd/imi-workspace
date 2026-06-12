@@ -82,6 +82,87 @@
     .progress-track { flex: 1; height: 2px; background: var(--border-subtle); border-radius: 0; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--text-primary); border-radius: 0; transition: width 0.4s ease; width: 0%; }
     .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .header-briefing {
+      font-size: 12px; color: var(--text-muted);
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid var(--border-subtle);
+      letter-spacing: -0.01em; line-height: 1.4;
+    }
+
+    /* ── 이전 데이터 토글 ── */
+    .history-toggle {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 8px 10px;
+      background: none; border: none; border-top: 1px solid var(--border-subtle);
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-muted); cursor: pointer;
+      margin-top: 16px; transition: color 0.15s;
+    }
+    .history-toggle:hover { color: var(--text-primary); }
+    .history-toggle svg { margin-left: auto; transition: transform 0.2s; }
+    .history-toggle.open svg { transform: rotate(180deg); }
+    .history-body { display: none; }
+    .history-body.open { display: block; }
+    .history-date-item {
+      border-bottom: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+    .history-date-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 8px 10px; background: none; border: none;
+      font-family: inherit; font-size: 12px; color: var(--text-primary);
+      cursor: pointer; text-align: left; transition: background 0.1s;
+    }
+    .history-date-btn:hover { background: var(--bg-secondary); }
+    .history-date-btn svg { flex-shrink: 0; transition: transform 0.2s; color: var(--text-muted); }
+    .history-date-btn.open svg { transform: rotate(180deg); }
+    .history-date-content { display: none; padding: 8px 12px 12px; background: var(--bg-secondary); }
+    .history-date-content.open { display: block; }
+    .history-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin: 8px 0 4px; }
+    .history-todo-item { font-size: 12px; color: var(--text-primary); padding: 2px 0; display: flex; align-items: center; gap: 6px; }
+    .history-todo-item.done { color: var(--text-muted); text-decoration: line-through; }
+    .history-memo-text { font-size: 12px; color: var(--text-primary); white-space: pre-wrap; line-height: 1.6; }
+
+    /* ── 로그 토글 ── */
+    .log-toggle {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 8px 10px;
+      background: none; border: none; border-top: 1px solid var(--border-subtle);
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-muted); cursor: pointer;
+      margin-top: 8px; transition: color 0.15s;
+    }
+    .log-toggle:hover { color: var(--text-primary); }
+    .log-toggle svg { margin-left: auto; transition: transform 0.2s; }
+    .log-toggle.open svg { transform: rotate(180deg); }
+    .log-body { display: none; max-height: 320px; overflow-y: auto; }
+    .log-body.open { display: block; }
+    .log-entry {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 10px; border-bottom: 1px solid var(--border-subtle);
+      font-size: 11px;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-type-badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+      padding: 1px 5px; flex-shrink: 0; margin-top: 1px;
+    }
+    .log-type-badge.add    { background: #dcfce7; color: #166534; }
+    .log-type-badge.delete { background: #fee2e2; color: #991b1b; }
+    .log-type-badge.sync   { background: #e0f2fe; color: #075985; }
+    .log-type-badge.err    { background: #fef3c7; color: #92400e; }
+    .log-entry-content { flex: 1; }
+    .log-entry-title { color: var(--text-primary); }
+    .log-entry-ts    { color: var(--text-muted); font-size: 10px; margin-top: 1px; }
+    .log-restore-btn {
+      background: none; border: 1px solid var(--border-subtle);
+      font-family: inherit; font-size: 10px; color: var(--text-muted);
+      padding: 2px 6px; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .log-restore-btn:hover { border-color: #22c55e; color: #16a34a; }
 
     /* ── Body ── */
     .app-body {
@@ -491,6 +572,8 @@
     .group-header:hover .group-action-btn { opacity: 1; }
     .group-action-btn:hover { color: var(--text-primary); }
     .group-action-btn.danger:hover { color: #ef4444; }
+    .group-action-btn.move { padding: 2px 2px; }
+    .group-action-btn.move:disabled { opacity: 0.2 !important; cursor: default; }
 
     .company-items { list-style: none; }
     .company-group.collapsed .company-items { display: none; }
@@ -742,6 +825,7 @@
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
       <span class="progress-label" id="progress-label">0 / 0 완료</span>
     </div>
+    <div class="header-briefing" id="header-briefing">로딩 중…</div>
   </header>
 
   <div class="app-body">
@@ -825,6 +909,14 @@
 
       <ul class="company-list" id="company-list"></ul>
 
+      <!-- 이전 데이터 토글 -->
+      <button class="history-toggle" id="history-toggle" onclick="toggleHistoryPanel()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        이전 데이터
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="history-body" id="history-body"></div>
+
     </div>
 
     <!-- Right Panel: Calendar -->
@@ -887,6 +979,15 @@
           </div>
         </div>
       </div>
+
+      <!-- 로그 토글 -->
+      <button class="log-toggle" id="log-toggle" onclick="toggleLogPanel()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        활동 로그
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="log-body" id="log-body"></div>
+
     </div>
   </div>
 </div>
@@ -1138,6 +1239,168 @@
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-label').textContent = `${done} / ${total} 완료`;
     document.getElementById('task-badge').textContent = total;
+    updateBriefing();
+  }
+
+  function updateBriefing() {
+    const total = todos.length;
+    const done  = todos.filter(t => t.done).length;
+    const todayEvts = (gcalEvents[todayISO()] || []).length;
+    const parts = [];
+    if (total > 0) parts.push(`할일 ${total}개 중 ${done}개 완료`);
+    else parts.push('오늘 할일 없음');
+    if (todayEvts > 0) parts.push(`오늘 일정 ${todayEvts}개`);
+    const compCount = companies.filter(c => !c.applied).length;
+    if (compCount > 0) parts.push(`지원 대기 ${compCount}개`);
+    document.getElementById('header-briefing').textContent = parts.join(' · ');
+  }
+
+  // ── 이전 데이터 패널 ─────────────────────────────────────────
+  function toggleHistoryPanel() {
+    const btn  = document.getElementById('history-toggle');
+    const body = document.getElementById('history-body');
+    const isOpen = btn.classList.toggle('open');
+    body.classList.toggle('open', isOpen);
+    if (isOpen) renderHistoryPanel();
+  }
+
+  function renderHistoryPanel() {
+    const body = document.getElementById('history-body');
+    const dates = Object.keys(histIndex).sort().reverse();
+    const today = todayISO();
+    const pastDates = dates.filter(d => d !== today && d < today);
+    if (pastDates.length === 0) {
+      body.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:var(--text-muted);">이전 기록 없음</div>';
+      return;
+    }
+    body.innerHTML = pastDates.map(dateISO => {
+      const d = histIndex[dateISO] || {};
+      const todoCount = (d.todos || []).length;
+      const doneCount = (d.todos || []).filter(t => t.done).length;
+      const compCount = (d.companies || []).length;
+      const displayDate = dateISO.replace(/-/g, '.');
+      const summary = [
+        todoCount > 0 ? `할일 ${doneCount}/${todoCount}` : '',
+        compCount > 0 ? `지원 ${compCount}건` : '',
+        d.memo ? '메모 있음' : '',
+      ].filter(Boolean).join(' · ') || '기록만 있음';
+      return `<div class="history-date-item">
+        <button class="history-date-btn" onclick="toggleHistoryDate(this,'${dateISO}')">
+          <span>${displayDate} <span style="color:var(--text-muted);font-size:11px;">${summary}</span></span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="history-date-content" id="hdc-${dateISO}"></div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleHistoryDate(btn, dateISO) {
+    btn.classList.toggle('open');
+    const content = document.getElementById('hdc-' + dateISO);
+    if (!content.classList.toggle('open')) return;
+    const d = histIndex[dateISO] || {};
+    let html = '';
+    if ((d.todos || []).length > 0) {
+      html += `<div class="history-section-label">할일</div>`;
+      html += (d.todos || []).map(t =>
+        `<div class="history-todo-item${t.done ? ' done' : ''}">
+          <span style="width:6px;height:6px;border-radius:50%;background:${t.done ? 'var(--text-primary)' : 'var(--border-subtle)'};flex-shrink:0;display:inline-block;margin-top:3px;"></span>
+          ${t.label}${t.sub ? `<span style="color:var(--text-muted);"> · ${t.sub}</span>` : ''}
+        </div>`
+      ).join('');
+    }
+    if ((d.companies || []).length > 0) {
+      html += `<div class="history-section-label">지원 현황</div>`;
+      html += (d.companies || []).map(c =>
+        `<div class="history-todo-item${c.applied ? ' done' : ''}">
+          <span style="width:6px;height:6px;border-radius:50%;background:${c.applied ? 'var(--priority-medium)' : 'var(--border-subtle)'};flex-shrink:0;display:inline-block;margin-top:3px;"></span>
+          ${c.name}${c.role ? `<span style="color:var(--text-muted);"> · ${c.role}</span>` : ''}
+        </div>`
+      ).join('');
+    }
+    if (d.memo) {
+      html += `<div class="history-section-label">메모</div><div class="history-memo-text">${d.memo}</div>`;
+    }
+    content.innerHTML = html || '<div style="color:var(--text-muted);font-size:12px;">데이터 없음</div>';
+  }
+
+  // ── 로그 패널 ────────────────────────────────────────────────
+  function logAction(type, data) {
+    if (location.protocol === 'file:') return;
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data })
+    }).catch(() => {});
+  }
+
+  function toggleLogPanel() {
+    const btn  = document.getElementById('log-toggle');
+    const body = document.getElementById('log-body');
+    const isOpen = btn.classList.toggle('open');
+    body.classList.toggle('open', isOpen);
+    if (isOpen) loadAndRenderLog();
+  }
+
+  function loadAndRenderLog() {
+    fetch('/api/log').then(r => r.json()).then(renderLogPanel).catch(() => {});
+  }
+
+  const LOG_TYPE_MAP = {
+    todo_add:    { label: '추가', cls: 'add' },
+    todo_delete: { label: '삭제', cls: 'delete' },
+    todo_toggle: { label: '체크', cls: 'sync' },
+    company_add: { label: '추가', cls: 'add' },
+    company_delete: { label: '삭제', cls: 'delete' },
+    group_delete: { label: '그룹삭제', cls: 'delete' },
+    sync:        { label: '동기화', cls: 'sync' },
+    memo_sync:   { label: '메모', cls: 'sync' },
+    error:       { label: '오류', cls: 'err' },
+  };
+
+  function renderLogPanel(log) {
+    const body = document.getElementById('log-body');
+    if (!log || log.length === 0) {
+      body.innerHTML = '<div style="padding:10px 12px;font-size:12px;color:var(--text-muted);">로그 없음</div>';
+      return;
+    }
+    body.innerHTML = log.slice(0, 100).map((entry, i) => {
+      const meta = LOG_TYPE_MAP[entry.type] || { label: entry.type, cls: 'sync' };
+      const isDelete = entry.type === 'todo_delete' || entry.type === 'company_delete';
+      const title = entry.data?.label || entry.data?.name || entry.data?.date
+        || (entry.data?.todoCount !== undefined ? `할일 ${entry.data.todoCount}개` : entry.type);
+      return `<div class="log-entry">
+        <span class="log-type-badge ${meta.cls}">${meta.label}</span>
+        <div class="log-entry-content">
+          <div class="log-entry-title">${title}</div>
+          <div class="log-entry-ts">${entry.ts}</div>
+        </div>
+        ${isDelete && entry.data ? `<button class="log-restore-btn" onclick="restoreFromLog(${i})">복원</button>` : ''}
+      </div>`;
+    }).join('');
+    // 복원에 사용할 로그 캐시
+    window._logCache = log;
+  }
+
+  function restoreFromLog(idx) {
+    const entry = (window._logCache || [])[idx];
+    if (!entry) return;
+    if (entry.type === 'todo_delete') {
+      const d = entry.data;
+      if (!d || !d.id) return;
+      if (todos.find(t => t.id === d.id)) { alert('이미 존재하는 항목입니다.'); return; }
+      todos.push({ id: d.id, label: d.label, sub: d.sub || '', priority: d.priority || 'medium', order: todos.length, done: false, durMin: null });
+      saveTodos(); renderTodos();
+      logAction('todo_add', { id: d.id, label: d.label, note: '로그에서 복원' });
+      loadAndRenderLog();
+    } else if (entry.type === 'company_delete') {
+      const d = entry.data;
+      if (!d || !d.name) return;
+      companies.push({ id: 'c-' + Date.now(), name: d.name, role: d.role || '', url: d.url || '', group: d.group || '회사리스트', date: d.date || todayISO(), applied: false });
+      saveCompanies(); renderCompanies(); syncToServer();
+      logAction('company_add', { name: d.name, note: '로그에서 복원' });
+      loadAndRenderLog();
+    }
   }
 
   // ── Priority selector ────────────────────────────────────
@@ -1175,6 +1438,7 @@
     saveTodos();
     renderTodos();
     syncToServer();
+    logAction('todo_add', { id: todo.id, label: todo.label, sub: todo.sub, priority: todo.priority });
 
     console.log('[GTasks] gcalConnected:', gcalConnected);
     if (gcalConnected) {
@@ -1346,6 +1610,7 @@
 
   function deleteTodo(id) {
     const target = todos.find(x => x.id === id);
+    if (target) logAction('todo_delete', { id: target.id, label: target.label, sub: target.sub, priority: target.priority, done: target.done });
     if (gcalConnected && target && target.gtaskId) {
       fetch('/api/gtasks/' + encodeURIComponent(target.gtaskId), { method: 'DELETE' }).catch(() => {});
     }
@@ -1545,6 +1810,16 @@
     }
   }
 
+  function moveGroup(name, dir) {
+    const idx = companyGroups.indexOf(name);
+    if (idx < 1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 1 || newIdx >= companyGroups.length) return;
+    [companyGroups[idx], companyGroups[newIdx]] = [companyGroups[newIdx], companyGroups[idx]];
+    saveCompanies();
+    renderCompanies();
+  }
+
   function deleteGroup(name) {
     if (name === '회사리스트') return;
     if (!confirm(`"${name}" 그룹을 삭제하시겠습니까?\n그룹 내 항목은 회사리스트로 이동됩니다.`)) return;
@@ -1596,6 +1871,7 @@
     renderCompanies();
     saveCompanies();
     syncToServer();
+    logAction('company_add', { name, group: addToGroup });
   }
 
   // ── Company render ────────────────────────────────────────
@@ -1632,11 +1908,18 @@
           </button>
           <span class="group-name-text">${esc(groupName)}</span>
           <span class="group-badge-sm">${badge}</span>
-          <button class="group-action-btn" data-add-group="${esc(groupName)}" title="회사 추가">
+          <button class="group-action-btn" data-add-group="${esc(groupName)}" title="추가">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             추가
           </button>
-          ${groupName !== '회사리스트' ? `<button class="group-action-btn danger" data-del-group="${esc(groupName)}" title="그룹 삭제">
+          ${groupName !== '회사리스트' ? `
+          <button class="group-action-btn move" data-move="${esc(groupName)}" data-dir="-1" title="위로" ${companyGroups.indexOf(groupName) <= 1 ? 'disabled' : ''}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button class="group-action-btn move" data-move="${esc(groupName)}" data-dir="1" title="아래로" ${companyGroups.indexOf(groupName) >= companyGroups.length - 1 ? 'disabled' : ''}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <button class="group-action-btn danger" data-del-group="${esc(groupName)}" title="그룹 삭제">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>` : ''}
         </div>
@@ -1658,6 +1941,14 @@
       if (delGroupBtn) delGroupBtn.addEventListener('click', e => {
         e.stopPropagation();
         deleteGroup(groupName);
+      });
+
+      groupEl.querySelectorAll('[data-move]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          if (btn.disabled) return;
+          moveGroup(btn.dataset.move, parseInt(btn.dataset.dir));
+        });
       });
 
       const itemsEl = groupEl.querySelector('.company-items');
@@ -1763,6 +2054,8 @@
 
   function deleteCompany(idx) {
     if (idx < 0 || idx >= companies.length) return;
+    const target = companies[idx];
+    logAction('company_delete', { name: target.name, role: target.role, url: target.url, group: target.group, date: target.date });
     companies.splice(idx, 1);
     renderCompanies();
     saveCompanies();

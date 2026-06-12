@@ -19,6 +19,7 @@ const TODOS_FILE    = path.join(DIR, 'checklist-todos.json');
 const GROUPS_DIR    = path.join(DIR, 'groups');
 const NOTES_IDS_FILE  = path.join(DIR, 'checklist-notes-ids.json');
 const GCAL_TOKEN_FILE = path.join(DIR, 'checklist-gcal-token.json');
+const LOG_FILE        = path.join(DIR, 'checklist-log.json');
 const GCAL_REDIRECT   = `http://localhost:${PORT}/api/auth/google/callback`;
 const GCAL_SCOPE      = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks';
 
@@ -240,15 +241,30 @@ async function gtasksAPI(method, apiPath, body) {
   return httpsJSON(options, bodyStr);
 }
 
-function saveHistory(date, companies, todos) {
+function saveHistory(date, companies, todos, memo) {
   let history = {};
   try {
     if (fs.existsSync(HISTORY_FILE)) {
       history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
     }
   } catch(e) {}
-  history[date] = { companies, todos: todos || [] };
+  const prev = history[date] || {};
+  history[date] = {
+    companies: companies !== undefined ? companies : (prev.companies || []),
+    todos:     todos     !== undefined ? todos     : (prev.todos     || []),
+    memo:      memo      !== undefined ? memo      : (prev.memo      || ''),
+  };
   fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2), 'utf-8');
+}
+
+function appendLog(type, data) {
+  let log = [];
+  try { if (fs.existsSync(LOG_FILE)) log = JSON.parse(fs.readFileSync(LOG_FILE, 'utf-8')); } catch(e) {}
+  const n = new Date();
+  const ts = `${n.getFullYear()}.${pad(n.getMonth()+1)}.${pad(n.getDate())} ${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  log.unshift({ type, ts, data });
+  if (log.length > 500) log = log.slice(0, 500);
+  try { fs.writeFileSync(LOG_FILE, JSON.stringify(log, null, 2), 'utf-8'); } catch(e) {}
 }
 
 function syncToMarkdown(companies) {
@@ -351,6 +367,39 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.url === '/api/log') {
+    try {
+      const log = fs.existsSync(LOG_FILE)
+        ? JSON.parse(fs.readFileSync(LOG_FILE, 'utf-8'))
+        : [];
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      res.end(JSON.stringify(log));
+    } catch(e) {
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/log') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { type, data } = JSON.parse(body);
+        appendLog(type, data || {});
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(200);
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
   if (req.method === 'GET' && req.url === '/api/todos') {
     try {
       const data = fs.existsSync(TODOS_FILE)
@@ -393,6 +442,10 @@ const server = http.createServer(async (req, res) => {
         const { date, content, todos } = JSON.parse(body);
         if (!date) throw new Error('date required');
         syncToNotes(date, content || '', todos || []);
+        // 메모도 history에 저장
+        const dotDate = date.replace(/-/g, '.');
+        saveHistory(dotDate, undefined, undefined, content || '');
+        appendLog('memo_sync', { date });
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);
         res.end(JSON.stringify({ ok: true }));
@@ -492,6 +545,7 @@ const server = http.createServer(async (req, res) => {
           }
         });
 
+        appendLog('sync', { fileCount: syncedFiles.length, todoCount: todos.length, companyCount: companies.length });
         saveHistory(todayStr(), companies, todos);
         res.setHeader('Content-Type', 'application/json');
         res.writeHead(200);

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Color Chips</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', serif;
+      background: #fdf6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    .container {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .chip-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .chip {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      box-shadow:
+        inset -6px -6px 14px rgba(0,0,0,0.18),
+        inset 4px 4px 10px rgba(255,255,255,0.45),
+        0 4px 16px rgba(0,0,0,0.12);
+    }
+    .name-en {
+      font-style: italic;
+      font-size: 15px;
+      color: #555;
+      font-family: 'Georgia', serif;
+    }
+    .name-ko {
+      font-size: 12px;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+    .hex {
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: 0.06em;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="chip-wrap">
+      <div class="chip" style="background: #C8AADB;"></div>
+      <div class="name-en">Delight</div>
+      <div class="name-ko">딜라잇</div>
+      <div class="hex">#C8AADB</div>
+    </div>
+
+    <div class="chip-wrap">
+      <div class="chip" style="background: #CC8FA4;"></div>
+      <div class="name-en">Purity</div>
+      <div class="name-ko">퓨리티</div>
+      <div class="hex">#CC8FA4</div>
+    </div>
+
+    <div class="chip-wrap">
+      <div class="chip" style="background: #A082B0;"></div>
+      <div class="name-en">Hazy</div>
+      <div class="name-ko">헤이지</div>
+      <div class="hex">#A082B0</div>
+    </div>
+
+    <div class="chip-wrap">
+      <div class="chip" style="background: #E2749E;"></div>
+      <div class="name-en">Fancy</div>
+      <div class="name-ko">팬시</div>
+      <div class="hex">#E2749E</div>
+    </div>
+
+    <div class="chip-wrap">
+      <div class="chip" style="background: #DA90AE;"></div>
+      <div class="name-en">Taffy</div>
+      <div class="name-ko">태피</div>
+      <div class="hex">#DA90AE</div>
+    </div>
+
+  </div>
+</body>
+</html>

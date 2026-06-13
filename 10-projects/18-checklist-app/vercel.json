@@ -9,11 +9,11 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/sync",         "destination": "/api/stub?route=sync" },
+    { "source": "/api/todos",        "destination": "/api/data?type=todos" },
+    { "source": "/api/sync",         "destination": "/api/data?type=sync" },
+    { "source": "/api/log",          "destination": "/api/data?type=log" },
     { "source": "/api/sync-files",   "destination": "/api/stub?route=sync-files" },
     { "source": "/api/sync-memo",    "destination": "/api/stub?route=sync-memo" },
-    { "source": "/api/todos",        "destination": "/api/stub?route=todos" },
-    { "source": "/api/log",          "destination": "/api/stub?route=log" },
     { "source": "/api/history",      "destination": "/api/stub?route=history" },
     { "source": "/api/create-group", "destination": "/api/stub?route=create-group" },
     { "source": "/api/delete-group", "destination": "/api/stub?route=delete-group" },

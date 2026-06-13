@@ -1100,6 +1100,7 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  const API_BASE  = window.electronAPI ? 'https://18-checklist-app.vercel.app' : '';
   const DAYS_KO   = ['일','월','화','수','목','금','토'];
   const MONTHS_KO = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 
@@ -1127,6 +1128,28 @@
   const LS_TIMERS       = 'checklist-timers-v3';
   const LS_CAL          = 'checklist-cal-v3';
   const LS_MEMO         = () => `checklist-memo-${todayISO()}-v1`;
+
+  // ── API 인증 헬퍼 ────────────────────────────────────────────
+  let _cachedToken = null;
+  async function getAuthHeaders(extra) {
+    const base = { 'Content-Type': 'application/json', ...extra };
+    if (!window.electronAPI) return base;
+    if (!_cachedToken || (Date.now() > (_cachedToken.expiry || 0) - 60000)) {
+      _cachedToken = await window.electronAPI.getToken().catch(() => null);
+    }
+    if (!_cachedToken) return base;
+    return {
+      ...base,
+      'Authorization': `Bearer ${_cachedToken.access_token}`,
+      'X-User-Id':     _cachedToken.user_id || '',
+    };
+  }
+
+  function apiFetch(path, options = {}) {
+    return getAuthHeaders(options.headers).then(headers =>
+      fetch(`${API_BASE}${path}`, { ...options, headers })
+    );
+  }
 
   // ── LocalStorage ─────────────────────────────────────────
   function saveTodos() {
@@ -1197,9 +1220,9 @@
   }
 
   function syncAppleNotes() {
-    if (location.protocol === 'file:') return;
+    if (!window.electronAPI && location.protocol === 'file:') return;
     const content = document.getElementById('memo-textarea').value;
-    fetch('/api/sync-memo', {
+    apiFetch('/api/sync-memo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1230,19 +1253,22 @@
 
   // ── Google Calendar ───────────────────────────────────────
   function gcalConnect() {
-    window.open('/api/auth/google', '_blank', 'width=500,height=600');
-    // 팝업 닫힌 후 상태 재확인
-    const timer = setInterval(() => {
-      fetch('/api/auth/status').then(r => r.json()).then(d => {
-        if (d.authenticated) { clearInterval(timer); initGcal(); }
-      }).catch(() => {});
-    }, 2000);
-    setTimeout(() => clearInterval(timer), 120000);
+    if (window.electronAPI) {
+      window.electronAPI.openAuth();
+    } else {
+      window.open(`${API_BASE}/api/auth/google`, '_blank', 'width=500,height=600');
+      const timer = setInterval(() => {
+        apiFetch('/api/auth/status').then(r => r.json()).then(d => {
+          if (d.authenticated) { clearInterval(timer); initGcal(); }
+        }).catch(() => {});
+      }, 2000);
+      setTimeout(() => clearInterval(timer), 120000);
+    }
   }
 
   async function initGcal() {
-    if (location.protocol === 'file:') return;
-    const res = await fetch('/api/auth/status').then(r => r.json()).catch(() => ({}));
+    if (!window.electronAPI && location.protocol === 'file:') return;
+    const res = await apiFetch('/api/auth/status').then(r => r.json()).catch(() => ({}));
     gcalConnected = !!res.authenticated;
     const dot    = document.getElementById('gcal-dot');
     const detail = document.getElementById('gcal-detail');
@@ -1263,7 +1289,7 @@
 
   function loadGCalEvents(year, month) {
     if (!gcalConnected || location.protocol === 'file:') return;
-    fetch(`/api/calendar/events?year=${year}&month=${month + 1}`)
+    apiFetch(`/api/calendar/events?year=${year}&month=${month + 1}`)
       .then(r => r.json())
       .then(({ events = [] }) => {
         gcalEvents = {};
@@ -1283,7 +1309,7 @@
 
   function gcalAddEvent(title, date) {
     if (!gcalConnected) return;
-    fetch('/api/calendar/events', {
+    apiFetch('/api/calendar/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, date, description: '체크리스트에서 추가됨' })
@@ -1293,7 +1319,7 @@
   }
 
   function gcalDeleteEvent(id) {
-    fetch(`/api/calendar/events/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    apiFetch(`/api/calendar/events/${encodeURIComponent(id)}`, { method: 'DELETE' })
       .then(() => loadGCalEvents(calState.year, calState.month))
       .catch(() => {});
   }
@@ -1513,8 +1539,8 @@
 
   // ── 로그 패널 ────────────────────────────────────────────────
   function logAction(type, data) {
-    if (location.protocol === 'file:') return;
-    fetch('/api/log', {
+    if (!window.electronAPI && location.protocol === 'file:') return;
+    apiFetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, data })
@@ -1531,7 +1557,7 @@
 
   function loadAndRenderLog() {
     if (window._demoLog) { renderLogPanel(window._demoLog); return; }
-    fetch('/api/log').then(r => r.json()).then(renderLogPanel).catch(() => {});
+    apiFetch('/api/log').then(r => r.json()).then(renderLogPanel).catch(() => {});
   }
 
   const LOG_TYPE_MAP = {
@@ -1630,7 +1656,7 @@
 
     console.log('[GTasks] gcalConnected:', gcalConnected);
     if (gcalConnected) {
-      fetch('/api/gtasks', {
+      apiFetch('/api/gtasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: todo.label, notes: todo.sub || '' })
@@ -1801,7 +1827,7 @@
     renderTodos();
     syncToServer();
     if (gcalConnected && t.gtaskId) {
-      fetch('/api/gtasks/' + encodeURIComponent(t.gtaskId), {
+      apiFetch('/api/gtasks/' + encodeURIComponent(t.gtaskId), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ done: t.done })
@@ -1813,7 +1839,7 @@
     const target = todos.find(x => x.id === id);
     if (target) logAction('todo_delete', { id: target.id, label: target.label, sub: target.sub, priority: target.priority, done: target.done });
     if (gcalConnected && target && target.gtaskId) {
-      fetch('/api/gtasks/' + encodeURIComponent(target.gtaskId), { method: 'DELETE' }).catch(() => {});
+      apiFetch('/api/gtasks/' + encodeURIComponent(target.gtaskId), { method: 'DELETE' }).catch(() => {});
     }
     const t = timerState[id];
     if (t && t.intervalId) clearInterval(t.intervalId);
@@ -2043,8 +2069,8 @@
     document.getElementById('group-form').classList.remove('open');
     renderCompanies();
     saveCompanies();
-    if (location.protocol !== 'file:') {
-      fetch('/api/create-group', {
+    if (window.electronAPI || location.protocol !== 'file:') {
+      apiFetch('/api/create-group', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
@@ -2065,7 +2091,7 @@
   function deleteGroup(name) {
     if (name === '회사리스트') return;
     if (!confirm(`"${name}" 그룹을 삭제하시겠습니까?\n그룹 내 항목은 회사리스트로 이동됩니다.`)) return;
-    fetch('/api/delete-group', {
+    apiFetch('/api/delete-group', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -2075,7 +2101,7 @@
     renderCompanies();
     saveCompanies();
     syncToServer();
-    fetch('/api/sync-files').then(r => r.json()).then(data => setSyncStatus('ok', data.files || [])).catch(() => {});
+    apiFetch('/api/sync-files').then(r => r.json()).then(data => setSyncStatus('ok', data.files || [])).catch(() => {});
   }
 
   // ── Company form ──────────────────────────────────────────
@@ -2326,8 +2352,8 @@
 
   // ── Server sync ───────────────────────────────────────────
   function syncToServer() {
-    if (location.protocol === 'file:') return;
-    fetch('/api/sync', {
+    if (!window.electronAPI && location.protocol === 'file:') return;
+    apiFetch('/api/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2341,8 +2367,8 @@
   }
 
   function syncTodosToServer() {
-    if (location.protocol === 'file:') return;
-    fetch('/api/todos', {
+    if (!window.electronAPI && location.protocol === 'file:') return;
+    apiFetch('/api/todos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ todos })
@@ -2572,8 +2598,8 @@
 
   // ── Load from server ──────────────────────────────────────
   function loadHistory() {
-    if (location.protocol === 'file:') return;
-    fetch('/api/history')
+    if (!window.electronAPI && location.protocol === 'file:') return;
+    apiFetch('/api/history')
       .then(r => r.json())
       .then(hist => {
         histIndex = {};
@@ -2587,13 +2613,13 @@
   }
 
   function loadServerTodos() {
-    if (location.protocol === 'file:') return;
+    if (!window.electronAPI && location.protocol === 'file:') return;
     // localStorage가 비어있을 때만 서버에서 로드 (localStorage 우선)
     const localRaw = localStorage.getItem(LS_TODOS);
     if (localRaw) {
       try { if (JSON.parse(localRaw).length > 0) return; } catch(e) {}
     }
-    fetch('/api/todos')
+    apiFetch('/api/todos')
       .then(r => r.json())
       .then(data => {
         if (!data.todos || data.todos.length === 0) return;
@@ -2698,6 +2724,14 @@
   window.addEventListener('storage', __syncFromStorage__);
   setInterval(__syncFromStorage__, 2000);
 
+  // Electron OAuth 결과 수신
+  if (window.electronAPI) {
+    window.electronAPI.onAuthResult(({ ok, email }) => {
+      _cachedToken = null; // 캐시 초기화
+      if (ok) { initGcal(); }
+    });
+  }
+
   // 메시지 수신 (OAuth 콜백 + 랜딩페이지 데모)
   window.addEventListener('message', e => {
     if (!e.data) return;
@@ -2744,7 +2778,7 @@
   });
 
   if (location.protocol !== 'file:') {
-    fetch('/api/sync-files')
+    apiFetch('/api/sync-files')
       .then(r => r.json())
       .then(data => setSyncStatus('ok', data.files || []))
       .catch(() => setSyncStatus('ok', []));

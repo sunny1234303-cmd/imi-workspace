@@ -1,6 +1,6 @@
 {
   "name": "checkmate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Checkmate — 오늘의 모든 것, 항상 여기에",
   "main": "electron/main.js",
   "scripts": {

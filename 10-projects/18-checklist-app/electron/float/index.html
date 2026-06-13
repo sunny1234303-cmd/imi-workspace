@@ -90,12 +90,41 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    #hint {
+      display: none;
+      position: relative;
+      margin-top: 6px;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: #333;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+      text-align: center;
+      transition: opacity .3s ease;
+    }
+    #hint::before {
+      content: '';
+      position: absolute;
+      top: -5px; left: 50%; transform: translateX(-50%);
+      width: 8px; height: 5px;
+      background: #fff;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      filter: drop-shadow(0 -1px 0 #e5e5e5);
+    }
+    #hint.visible { display: block; }
   </style>
 </head>
 <body>
   <div id="btn">
     <span class="label">TODO</span>
   </div>
+  <div id="hint">클릭해서 시작하세요 ✦</div>
   <div id="timer-badge">
     <span id="timer-dot"></span>
     <span id="timer-time">00:00</span>
@@ -132,7 +161,7 @@
         btn.classList.remove('dragging');
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
-        if (!isDragging) window.electronAPI.toggleMain();
+        if (!isDragging) { hideHint(); window.electronAPI.toggleMain(); }
       }
 
       window.addEventListener('mousemove', onMouseMove);
@@ -150,6 +179,29 @@
       const s = sec % 60;
       if (h > 0) return h + 'h ' + pad(m) + 'm';
       return m + 'm ' + pad(s) + 's';
+    }
+
+    const hint = document.getElementById('hint');
+    let hintTimer = null;
+
+    function showHint() {
+      hint.style.opacity = '';
+      hint.classList.add('visible');
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        hint.style.opacity = '0';
+        setTimeout(() => { hint.classList.remove('visible'); hint.style.opacity = ''; }, 300);
+      }, 8000);
+    }
+
+    function hideHint() {
+      clearTimeout(hintTimer);
+      hint.classList.remove('visible');
+    }
+
+    if (window.electronAPI) {
+      if (window.electronAPI.onShowHint) window.electronAPI.onShowHint(() => showHint());
+      if (window.electronAPI.onHideHint) window.electronAPI.onHideHint(() => hideHint());
     }
 
     if (window.electronAPI && window.electronAPI.onFloatTimer) {

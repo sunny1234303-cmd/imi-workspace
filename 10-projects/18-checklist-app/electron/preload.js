@@ -15,4 +15,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getToken:         ()         => ipcRenderer.invoke('get-token'),
   clearToken:       ()         => ipcRenderer.invoke('clear-token'),
   onAuthResult:     (cb)       => ipcRenderer.on('auth-result', (_, v) => cb(v)),
+
+  // 온보딩
+  setOnboarded:     ()         => ipcRenderer.invoke('set-onboarded'),
+  onShowHint:       (cb)       => ipcRenderer.on('show-hint', cb),
+  onHideHint:       (cb)       => ipcRenderer.on('hide-hint', cb),
 });

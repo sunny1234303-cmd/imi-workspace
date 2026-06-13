@@ -6,7 +6,11 @@ const https   = require('https');
 
 const API_BASE    = 'https://18-checklist-app.vercel.app';
 const CALLBACK_URL = `${API_BASE}/api/auth/callback`;
-const TOKEN_FILE  = () => path.join(app.getPath('userData'), 'gtoken.bin');
+const TOKEN_FILE   = () => path.join(app.getPath('userData'), 'gtoken.bin');
+const ONBOARD_FLAG = () => path.join(app.getPath('userData'), 'onboarded.flag');
+
+function isOnboarded()  { return fs.existsSync(ONBOARD_FLAG()); }
+function markOnboarded() { fs.writeFileSync(ONBOARD_FLAG(), '1'); }
 
 // ── 단일 인스턴스 ─────────────────────────────────────────────
 if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0); }
@@ -234,6 +238,17 @@ ipcMain.on('update-float-timer', (_, data) => {
   floatWin.webContents.send('float-timer', data);
 });
 
+// 온보딩 IPC
+ipcMain.handle('set-onboarded', () => {
+  markOnboarded();
+  if (floatWin) {
+    const [fx, fy] = floatWin.getPosition();
+    floatWin.setSize(96, 48);
+    floatWin.setPosition(fx, fy);
+    floatWin.webContents.send('hide-hint');
+  }
+});
+
 // 토큰 IPC
 ipcMain.handle('get-token', async () => {
   const token = await getValidToken();
@@ -291,6 +306,20 @@ app.whenReady().then(() => {
   );
 
   createFloatWindow();
+  if (!isOnboarded()) setTimeout(() => {
+    if (!floatWin) return;
+    const [fx, fy] = floatWin.getPosition();
+    floatWin.setSize(96, 84);
+    floatWin.setPosition(fx, fy);
+    floatWin.webContents.send('show-hint');
+    // auto-collapse after 8.4s (hint fades at 8s + 0.3s transition)
+    setTimeout(() => {
+      if (!floatWin || isOnboarded()) return;
+      const [fx2, fy2] = floatWin.getPosition();
+      floatWin.setSize(96, 48);
+      floatWin.setPosition(fx2, fy2);
+    }, 8400);
+  }, 800);
   app.on('activate', () => { if (!floatWin) createFloatWindow(); });
 });
 

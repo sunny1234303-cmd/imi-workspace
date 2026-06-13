@@ -876,6 +876,99 @@
     0%, 100% { outline-color: #1A1A1A; }
     50%       { outline-color: #d8d4ce; }
   }
+
+  /* ── 온보딩 모달 오버레이 ──────────────────────────────── */
+  #onboarding-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(26,26,26,.55);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  #onboarding-overlay.visible { display: flex; }
+  @keyframes obFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  #onboarding-modal {
+    width: 400px;
+    background: var(--bg-base);
+    border: 2.25px solid #222;
+    padding: 36px 32px 28px;
+    animation: obFadeIn .22s ease;
+  }
+
+  .ob-step { display: none; }
+  .ob-step.active { display: block; }
+
+  .ob-eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: .12em; color: var(--text-muted);
+    margin-bottom: 20px; text-transform: uppercase;
+  }
+  .ob-title {
+    font-size: 22px; font-weight: 700;
+    letter-spacing: -.04em; line-height: 1.25;
+    margin-bottom: 10px; color: var(--text-primary);
+  }
+  .ob-card-title {
+    font-size: 18px; font-weight: 700;
+    letter-spacing: -.03em; margin-bottom: 8px;
+  }
+  .ob-sub {
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.65; margin-bottom: 20px;
+  }
+  .ob-card-sub {
+    font-size: 13px; color: var(--text-secondary);
+    line-height: 1.65; margin-bottom: 18px;
+  }
+  .ob-feature-list {
+    list-style: none; margin-bottom: 28px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ob-feature-list li {
+    font-size: 13px; color: var(--text-primary);
+    font-weight: 500; letter-spacing: -.01em;
+  }
+  .ob-input-row {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 4px;
+  }
+  .ob-input {
+    flex: 1; padding: 10px 0;
+    font-size: 15px; font-family: var(--font);
+    font-weight: 500; letter-spacing: -.02em;
+    background: transparent; border: none;
+    border-bottom: var(--border-width) solid var(--border);
+    outline: none; color: var(--text-primary);
+  }
+  .ob-input::placeholder { color: var(--text-muted); font-weight: 400; }
+  .ob-input:focus { border-bottom-color: var(--text-primary); }
+
+  .ob-inline-btn {
+    padding: 10px 20px; flex-shrink: 0;
+    background: var(--text-primary); color: var(--bg-base);
+    font-size: 13px; font-weight: 500; font-family: var(--font);
+    letter-spacing: -.01em; border: none; cursor: pointer;
+    transition: opacity .15s; white-space: nowrap;
+  }
+  .ob-inline-btn:hover { opacity: .8; }
+  .ob-inline-btn:disabled { opacity: .4; cursor: default; }
+
+  .ob-action-row { display: flex; align-items: center; gap: 14px; margin-bottom: 4px; }
+  .ob-skip-link {
+    font-size: 12px; color: var(--text-muted);
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+  .ob-skip-link:hover { color: var(--text-primary); }
+
+  .ob-dots {
+    display: flex; gap: 6px; margin-top: 20px;
+  }
+  .ob-dot {
+    width: 5px; height: 5px;
+    background: var(--border-subtle); border-radius: 50%;
+    transition: background .2s;
+  }
+  .ob-dot.active { background: var(--text-primary); }
   </style>
 </head>
 <body>
@@ -1083,6 +1176,66 @@
   <div id="detail-body"></div>
 </div>
 
+<!-- 온보딩 오버레이 (첫 실행 시) -->
+<div id="onboarding-overlay">
+  <div id="onboarding-modal">
+
+    <!-- Step 1: 앱 소개 -->
+    <div class="ob-step active" id="ob-step-1">
+      <p class="ob-eyebrow">CHECKMATE</p>
+      <h2 class="ob-title">오늘 하루,<br>항상 여기에.</h2>
+      <p class="ob-sub">화면 어디서든 TODO 버튼 하나로 꺼내 쓰는<br>일간 체크리스트 앱입니다.</p>
+      <ul class="ob-feature-list">
+        <li>✓ 투두 관리 + 집중 타이머</li>
+        <li>◈ Google Calendar 연동 — 오늘 일정 확인</li>
+        <li>✎ Apple Notes 자동 동기화</li>
+      </ul>
+      <button class="ob-inline-btn" onclick="obShowStep(2)">시작하기 →</button>
+    </div>
+
+    <!-- Step 2: 이름 -->
+    <div class="ob-step" id="ob-step-2">
+      <p class="ob-eyebrow">2 / 4</p>
+      <h2 class="ob-card-title">이름이 무엇인가요?</h2>
+      <p class="ob-card-sub">앱에서 이름으로 불러드릴게요.</p>
+      <div class="ob-input-row">
+        <input class="ob-input" id="ob-name-input" type="text" placeholder="이름 입력" maxlength="20" autocomplete="off" />
+        <button class="ob-inline-btn" onclick="obStep2Next()">다음 →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Google Calendar -->
+    <div class="ob-step" id="ob-step-3">
+      <p class="ob-eyebrow">3 / 4</p>
+      <h2 class="ob-card-title">Google Calendar 연동</h2>
+      <p class="ob-card-sub">오늘 일정을 앱에서 바로 확인하고 이벤트를 추가할 수 있습니다.</p>
+      <div class="ob-action-row">
+        <button class="ob-inline-btn" id="ob-gcal-btn" onclick="obConnectGcal()">Google 계정으로 연결하기</button>
+        <button class="ob-skip-link" onclick="obShowStep(4)">나중에</button>
+      </div>
+      <p id="ob-gcal-status" style="display:none;font-size:12px;color:#22c55e;margin-top:10px;">✓ 연결되었습니다</p>
+    </div>
+
+    <!-- Step 4: Apple Notes -->
+    <div class="ob-step" id="ob-step-4">
+      <p class="ob-eyebrow">4 / 4</p>
+      <h2 class="ob-card-title">Apple Notes 자동 동기화</h2>
+      <p class="ob-card-sub">메모를 입력하면 Apple Notes <strong>체크리스트</strong> 폴더에 자동 저장됩니다. 처음 실행 시 macOS의 접근 허용 팝업이 뜨면 <strong>허용</strong>을 클릭하세요.</p>
+      <div class="ob-action-row">
+        <button class="ob-inline-btn" onclick="obDone()">완료 →</button>
+      </div>
+    </div>
+
+    <!-- 진행 점 -->
+    <div class="ob-dots">
+      <span class="ob-dot active" id="ob-dot-1"></span>
+      <span class="ob-dot" id="ob-dot-2"></span>
+      <span class="ob-dot" id="ob-dot-3"></span>
+      <span class="ob-dot" id="ob-dot-4"></span>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── Helpers ──────────────────────────────────────────────
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -1220,16 +1373,33 @@
   }
 
   function syncAppleNotes() {
-    if (!window.electronAPI && location.protocol === 'file:') return;
     const content = document.getElementById('memo-textarea').value;
+    const payload = {
+      date: todayISO(),
+      content,
+      todos: todos.map(t => ({ label: t.label, done: t.done }))
+    };
+
+    if (window.electronAPI?.syncNotes) {
+      window.electronAPI.syncNotes(payload).then(r => {
+        if (r?.ok) {
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          setNotesStatus(true, `${hh}:${mm}`);
+        } else {
+          setNotesStatus(false);
+        }
+      }).catch(() => setNotesStatus(false));
+      return;
+    }
+
+    // 웹 환경 fallback
+    if (location.protocol === 'file:') return;
     apiFetch('/api/sync-memo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: todayISO(),
-        content,
-        todos: todos.map(t => ({ label: t.label, done: t.done }))
-      })
+      body: JSON.stringify(payload)
     }).then(r => {
       if (r.ok) {
         const now = new Date();
@@ -2783,6 +2953,73 @@
       .then(data => setSyncStatus('ok', data.files || []))
       .catch(() => setSyncStatus('ok', []));
     initGcal();
+  }
+
+  // ── 온보딩 ──────────────────────────────────────────────
+  const ONBOARD_KEY = 'checkmate-onboarded-v1';
+
+  function obShowStep(n) {
+    [1, 2, 3, 4].forEach(i => {
+      const step = document.getElementById(`ob-step-${i}`);
+      const dot  = document.getElementById(`ob-dot-${i}`);
+      if (step) step.classList.toggle('active', i === n);
+      if (dot)  dot.classList.toggle('active', i === n);
+    });
+    if (n === 2) setTimeout(() => document.getElementById('ob-name-input')?.focus(), 80);
+  }
+
+  function obStep2Next() {
+    const raw  = document.getElementById('ob-name-input').value.trim();
+    const name = raw || '서니';
+    localStorage.setItem(USER_NAME_KEY, name);
+    obShowStep(3);
+  }
+
+  function obConnectGcal() {
+    if (window.electronAPI) {
+      window.electronAPI.openAuth();
+      window.electronAPI.onAuthResult(({ ok }) => {
+        if (ok) {
+          document.getElementById('ob-gcal-status').style.display = '';
+          document.getElementById('ob-gcal-btn').textContent = '✓ 연결됨';
+          document.getElementById('ob-gcal-btn').disabled = true;
+          document.getElementById('ob-gcal-btn').style.opacity = '.5';
+          setTimeout(() => obShowStep(4), 1200);
+        }
+      });
+    } else {
+      gcalConnect();
+      const check = setInterval(() => {
+        if (gcalConnected) {
+          clearInterval(check);
+          document.getElementById('ob-gcal-status').style.display = '';
+          document.getElementById('ob-gcal-btn').textContent = '✓ 연결됨';
+          document.getElementById('ob-gcal-btn').disabled = true;
+          document.getElementById('ob-gcal-btn').style.opacity = '.5';
+          setTimeout(() => obShowStep(4), 1200);
+        }
+      }, 800);
+    }
+  }
+
+  function obDone() {
+    localStorage.setItem(ONBOARD_KEY, '1');
+    window.electronAPI?.setOnboarded();
+    const overlay = document.getElementById('onboarding-overlay');
+    overlay.style.transition = 'opacity .2s';
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.classList.remove('visible'); overlay.style.opacity = ''; }, 220);
+    renderHeader();
+    updateBriefing();
+    initGcal();
+  }
+
+  document.getElementById('ob-name-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') obStep2Next();
+  });
+
+  if (!localStorage.getItem(ONBOARD_KEY) && window.electronAPI) {
+    document.getElementById('onboarding-overlay').classList.add('visible');
   }
 </script>
 </body>

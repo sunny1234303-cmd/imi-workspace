@@ -259,6 +259,7 @@ ipcMain.handle('clear-token', () => { clearToken(); });
 
 // Apple Notes 동기화
 ipcMain.handle('sync-notes', async (_, { date, content, todos }) => {
+  if (process.platform !== 'darwin') return { ok: false, error: 'macos-only' };
   const title    = `${date} 체크리스트 메모`;
   const tmpBody  = `/tmp/checkmate-note-${Date.now()}.html`;
   const tmpScript = `/tmp/checkmate-sync.scpt`;

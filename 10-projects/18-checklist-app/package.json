@@ -5,7 +5,8 @@
   "main": "electron/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --mac dmg"
+    "build": "electron-builder --mac dmg",
+    "build:win": "electron-builder --win nsis"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",
@@ -41,6 +42,16 @@
         "width": 540,
         "height": 380
       }
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Checkmate"
     }
   }
 }

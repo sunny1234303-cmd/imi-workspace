@@ -20,4 +20,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setOnboarded:     ()         => ipcRenderer.invoke('set-onboarded'),
   onShowHint:       (cb)       => ipcRenderer.on('show-hint', cb),
   onHideHint:       (cb)       => ipcRenderer.on('hide-hint', cb),
+
+  // 플랫폼
+  platform:         process.platform,
 });

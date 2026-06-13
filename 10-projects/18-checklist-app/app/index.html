@@ -1362,10 +1362,19 @@
     clearTimeout(_memoTimer);
     _memoTimer = setTimeout(saveMemo, 600);
   }
+  const isWin = window.electronAPI?.platform === 'win32';
+
   function setNotesStatus(ok, time) {
     const dot    = document.getElementById('notes-dot');
     const detail = document.getElementById('notes-detail');
     if (!dot) return;
+    if (isWin) {
+      intState.notes = false;
+      dot.className = 'int-dot';
+      detail.textContent = 'macOS 전용';
+      updateIntegrationDot();
+      return;
+    }
     intState.notes = ok;
     dot.className = 'int-dot ' + (ok ? 'ok' : 'err');
     detail.textContent = ok ? `동기화됨 · ${time}` : '연동 실패';
@@ -1373,6 +1382,7 @@
   }
 
   function syncAppleNotes() {
+    if (isWin) { setNotesStatus(false); return; }
     const content = document.getElementById('memo-textarea').value;
     const payload = {
       date: todayISO(),
@@ -3017,6 +3027,12 @@
   document.getElementById('ob-name-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') obStep2Next();
   });
+
+  if (isWin) {
+    const step4 = document.getElementById('ob-step-4');
+    if (step4) step4.querySelector('.ob-card-sub').innerHTML =
+      'Apple Notes 동기화는 <strong>macOS 전용 기능</strong>입니다.<br>Windows에서는 지원되지 않습니다.';
+  }
 
   if (!localStorage.getItem(ONBOARD_KEY) && window.electronAPI) {
     document.getElementById('onboarding-overlay').classList.add('visible');

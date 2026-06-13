@@ -4,6 +4,8 @@ const { execSync } = require('child_process');
 const fs      = require('fs');
 const https   = require('https');
 
+app.setName('Checkmate');
+
 const API_BASE    = 'https://18-checklist-app.vercel.app';
 const CALLBACK_URL = `${API_BASE}/api/auth/callback`;
 const TOKEN_FILE   = () => path.join(app.getPath('userData'), 'gtoken.bin');
@@ -211,7 +213,6 @@ function createMainWindow() {
 
   lastOpenedDate = todayStr();
   mainWin.loadFile(path.join(__dirname, '../app/index.html'));
-  mainWin.webContents.openDevTools({ mode: 'detach' });
   mainWin.on('closed', () => { mainWin = null; });
 }
 

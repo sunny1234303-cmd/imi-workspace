@@ -2698,9 +2698,12 @@
   window.addEventListener('storage', __syncFromStorage__);
   setInterval(__syncFromStorage__, 2000);
 
-  // 랜딩페이지 메시지 수신 (이름 설정 / 데모 데이터)
+  // 메시지 수신 (OAuth 콜백 + 랜딩페이지 데모)
   window.addEventListener('message', e => {
     if (!e.data) return;
+
+    if (e.data === 'gcal_ok') { initGcal(); return; }
+    if (e.data === 'gcal_error') { console.warn('[gcal] OAuth 실패'); return; }
 
     if (e.data.type === 'set-name' && e.data.name) {
       localStorage.setItem(USER_NAME_KEY, e.data.name);

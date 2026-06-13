@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm install",
+  "outputDirectory": ".",
+  "cleanUrls": true,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/sync",         "destination": "/api/stub?route=sync" },
+    { "source": "/api/sync-files",   "destination": "/api/stub?route=sync-files" },
+    { "source": "/api/sync-memo",    "destination": "/api/stub?route=sync-memo" },
+    { "source": "/api/todos",        "destination": "/api/stub?route=todos" },
+    { "source": "/api/log",          "destination": "/api/stub?route=log" },
+    { "source": "/api/history",      "destination": "/api/stub?route=history" },
+    { "source": "/api/create-group", "destination": "/api/stub?route=create-group" },
+    { "source": "/api/delete-group", "destination": "/api/stub?route=delete-group" },
+    { "source": "/app",              "destination": "/app/index.html" }
+  ]
+}

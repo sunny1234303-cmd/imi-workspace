@@ -1288,9 +1288,9 @@
   }
 
   function loadGCalEvents(year, month) {
-    if (!gcalConnected || location.protocol === 'file:') return;
+    if (!gcalConnected || (!window.electronAPI && location.protocol === 'file:')) return;
     apiFetch(`/api/calendar/events?year=${year}&month=${month + 1}`)
-      .then(r => r.json())
+      .then(r => r.json().then(d => { if (r.ok) return d; console.error('[gcal]', d); return {}; }))
       .then(({ events = [] }) => {
         gcalEvents = {};
         events.forEach(e => {

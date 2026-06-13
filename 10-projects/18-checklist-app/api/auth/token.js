@@ -10,11 +10,29 @@ module.exports = async (req, res) => {
     const oauth2 = getOAuth2Client();
 
     if (action === 'exchange') {
-      const { tokens } = await oauth2.getToken(code);
+      console.log('[token/exchange] step1: getting token, code prefix:', code?.slice(0, 10));
+      let tokens;
+      try {
+        const result = await oauth2.getToken(code);
+        tokens = result.tokens;
+        console.log('[token/exchange] step1 ok, has access_token:', !!tokens.access_token);
+      } catch (e) {
+        console.error('[token/exchange] step1 FAILED:', e.message);
+        return res.status(500).json({ error: 'code_exchange_failed: ' + e.message });
+      }
+
       oauth2.setCredentials(tokens);
 
-      const oauth2api = google.oauth2({ version: 'v2', auth: oauth2 });
-      const { data: userInfo } = await oauth2api.userinfo.get();
+      let userInfo = { id: null, email: null };
+      try {
+        const oauth2api = google.oauth2({ version: 'v2', auth: oauth2 });
+        const { data } = await oauth2api.userinfo.get();
+        userInfo = data;
+        console.log('[token/exchange] step2 ok, email:', userInfo.email);
+      } catch (e) {
+        console.error('[token/exchange] step2 (userinfo) FAILED:', e.message);
+        // userinfo 실패해도 access_token이 있으면 계속 진행
+      }
 
       return res.json({
         access_token:  tokens.access_token,

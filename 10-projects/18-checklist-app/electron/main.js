@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, shell, safeStorage } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, shell, safeStorage, session } = require('electron');
 const path    = require('path');
 const { execSync } = require('child_process');
 const fs      = require('fs');
@@ -62,7 +62,13 @@ async function fetchJson(url, options = {}) {
     }, res => {
       let data = '';
       res.on('data', c => { data += c; });
-      res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode >= 400) reject(new Error(parsed.error || `HTTP ${res.statusCode}`));
+          else resolve(parsed);
+        } catch(e) { reject(e); }
+      });
     });
     req.on('error', reject);
     if (body) req.write(body);
@@ -90,45 +96,61 @@ async function getValidToken() {
 
 // ── OAuth 팝업 ────────────────────────────────────────────────
 function openAuthWindow() {
-  const authWin = new BrowserWindow({
-    width: 520,
-    height: 640,
-    webPreferences: { nodeIntegration: false, contextIsolation: true },
-  });
+  // 전용 session partition → onBeforeRequest로 callback URL 네트워크 레벨 차단
+  const partition = `auth-${Date.now()}`;
+  const authSes   = session.fromPartition(partition);
 
-  authWin.loadURL(`${API_BASE}/api/auth/google`);
+  let handled = false;
+  const doExchange = (url) => {
+    if (handled) return;
+    handled = true;
+    console.log('[auth] intercepted:', url.slice(0, 80));
 
-  const handleRedirect = async (url) => {
-    if (!url.startsWith(CALLBACK_URL)) return false;
-
-    const urlObj  = new URL(url);
-    const code    = urlObj.searchParams.get('code');
+    const urlObj   = new URL(url);
+    const code     = urlObj.searchParams.get('code');
     const errParam = urlObj.searchParams.get('error');
 
-    authWin.destroy();
+    try { authWin.destroy(); } catch {}
 
     if (errParam || !code) {
       mainWin?.webContents.send('auth-result', { ok: false });
-      return true;
+      return;
     }
 
-    try {
-      const data = await fetchJson(`${API_BASE}/api/auth/token`, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'exchange', code }),
-      });
+    fetchJson(`${API_BASE}/api/auth/token`, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'exchange', code }),
+    }).then(data => {
       saveToken(data);
       mainWin?.webContents.send('auth-result', { ok: true, email: data.email });
-    } catch (e) {
+    }).catch(e => {
+      console.error('[auth] exchange failed:', e.message);
       mainWin?.webContents.send('auth-result', { ok: false, error: e.message });
-    }
-    return true;
+    });
   };
 
-  authWin.webContents.on('will-redirect', (event, url) => {
-    if (url.startsWith(CALLBACK_URL)) { event.preventDefault(); handleRedirect(url); }
+  // 네트워크 레벨에서 callback URL 차단 (모든 URL 감시 후 내부 필터링)
+  authSes.webRequest.onBeforeRequest((details, callback) => {
+    const url = details.url;
+    console.log('[auth-req]', url.slice(0, 100));
+    if (url.startsWith(CALLBACK_URL)) {
+      callback({ cancel: true });
+      doExchange(url);
+    } else {
+      callback({});
+    }
   });
-  authWin.webContents.on('did-navigate', (_, url) => { handleRedirect(url); });
+
+  const authWin = new BrowserWindow({
+    width: 520,
+    height: 640,
+    webPreferences: { nodeIntegration: false, contextIsolation: true, partition },
+  });
+
+  authWin.loadURL(`${API_BASE}/api/auth/google`);
+  authWin.on('closed', () => {
+    if (!handled) mainWin?.webContents.send('auth-result', { ok: false });
+  });
 }
 
 // ── 플로팅 버튼 창 ────────────────────────────────────────────
@@ -184,6 +206,7 @@ function createMainWindow() {
 
   lastOpenedDate = todayStr();
   mainWin.loadFile(path.join(__dirname, '../app/index.html'));
+  mainWin.webContents.openDevTools({ mode: 'detach' });
   mainWin.on('closed', () => { mainWin = null; });
 }
 
@@ -258,6 +281,15 @@ end tell
 
 // ── 앱 초기화 ─────────────────────────────────────────────────
 app.whenReady().then(() => {
+  // Electron file:// → Vercel API CORS 우회 (Origin을 같은 도메인으로 설정)
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: [`${API_BASE}/api/*`] },
+    (details, callback) => {
+      details.requestHeaders['Origin'] = API_BASE;
+      callback({ requestHeaders: details.requestHeaders });
+    }
+  );
+
   createFloatWindow();
   app.on('activate', () => { if (!floatWin) createFloatWindow(); });
 });

@@ -163,6 +163,7 @@ function createFloatWindow() {
     width: 96, height: 48,
     frame: false, transparent: true, alwaysOnTop: true,
     resizable: false, hasShadow: false, skipTaskbar: true,
+    backgroundColor: '#00000000',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
   });
   const { width } = screen.getPrimaryDisplay().workAreaSize;
